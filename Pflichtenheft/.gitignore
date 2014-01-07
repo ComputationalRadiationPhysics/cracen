@@ -1,0 +1,7 @@
+Levenberg_Marquardt.tex
+Speichertransfer.tex
+Host.tex
+*.toc
+*.out
+*.aux
+*.log

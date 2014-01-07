@@ -1,0 +1,76 @@
+\documentclass[paper=a4, headings=small]{scrartcl}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath}
+\usepackage{pbox}
+\usepackage{tabu}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{listings}
+%\lstnewenvironment{code}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+backgroundcolor=\color{lbcolor},
+% Taken from http://tex.stackexchange.com/questions/81834/whats-the-best-way-to-typeset-c-codes-in-latex
+    tabsize=4,    
+%   rulecolor=,
+    language=[GNU]C++,
+        basicstyle=\scriptsize,
+        upquote=true,
+        aboveskip={1.5\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=false,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        numbers=left,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.026,0.112,0.095},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+        numberstyle=\color[rgb]{0.205, 0.142, 0.73}
+%        \lstdefinestyle{C++}{language=C++,style=numbers}’
+}
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+	\large{Pflichtenheft\\ Helmholtz-Zentrum Dresden-Rossendorf } \\[10mm]
+	\textbf{\Large{Digital Signal Processing}}\\[5mm]
+	\rule{\linewidth}{0.5mm}
+  \textbf{\LARGE{ --- Beschreibung hier eingügen ---}}
+	\rule{\linewidth}{0.5mm}\\[3cm]
+
+\parbox{0cm}{
+\begin{tabbing}
+  Fabian Jung	              \hspace{2cm}	\= Nico Wehmeyer  \hspace{2cm}	\= Richard Pfeifer\\
+  Mat.Nr.:  3755341                         \> Mat.Nr.: 3658043			    \> Mat.Nr.: ??????\\
+  Diplom Informatik 			            \> Diplom Informatik     	    \> Diplom Physiker?\\
+\end{tabbing}
+}
+
+\vfill
+{\large \today}
+\end{center}
+
+\end{titlepage}
+
+\tableofcontents
+\newpage
+\input{Levenberg_Marquardt.tex}
+\newpage
+\input{Speichertransfer.tex}
+\newpage
+\input{Host.tex}
+
+\end{document}
