@@ -1,0 +1,21 @@
+\section{Optimierungsalgorithmus}
+	\begin{itemize}
+		\item Aufgabe
+		
+		Der Algorithmus soll die gemessenen Daten näherungsweise als Funktion interpretieren. (Die Daten sind gleichmäßig über die Zeit verteilt und repräsentieren die Funktionswerte.)\\
+		Anschließend sollen der Anfangs-, End- und Maximalwert der Funktion bestimmt werden.\\
+		
+		\item Implementierungsschritte
+		
+		\begin{itemize}
+			\item Levenberg-Marquardt-Algorithmus
+			\item double zu short int konvertieren (betrifft Messdaten)
+			\item kernel-Methode (statt main)
+			\item Speicher der Grafikkarte nutzen (statt malloc)
+			\item Cuda Array nutzen (statt Array)
+			\item Berechnung von Anfangs- und Endfunktionswerten (ggf. mitteln)
+			\item Rückgabe der Ergebnisdaten
+			\item ggf. kernel zu sub-kernel parallelisieren
+			\item ggf. andere Fit-Funktion (z. B. $e^{-x^2}$ mit entsprechenden Parametern) verwenden oder Daten vor Bestimmung der quadratischen Funktion trimmen
+		\end{itemize}
+	\end{itemize}
