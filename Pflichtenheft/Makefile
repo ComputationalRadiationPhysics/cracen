@@ -8,7 +8,7 @@ Pflichtenheft.pdf: $(OBJECTS) Pflichtenheft.tex
 	
 .PHONY: clean
 clean:
-	@rm -f $(OBJECTS)
+	@rm -f Speichertransfer.tex Host.tex
 	@rm -f Pflichtenheft.aux Pflichtenheft.out
 	@rm -f Pflichtenheft.pdf
 	@rm -f *~

@@ -1,8 +1,8 @@
 # Speichertransfer zwischen Host und Device
 
 ## Grobgliederung
-Die Daten werden aus einem Ringpuffer mit den Sampledaten gelesen. 
-Um die einzelnen Nodes zu verwalten wird eine Klasse implementiert, deren Objekte jeweils einen der 4 Nodes der GPU verwalten.
+
+Die Eingangsdaten werden aus einem Ringpuffer gelesen. Die Ergebnisse werden zunächst in einem Ringpuffer zwischengespeichert und dann in eine Datei geschrieben. Jeder Node erhält seinen eigenen Thread, der die Daten aus dem Eingangspuffer auf die Grafikkarte kopieren. Das Schreiben in die Datei wird ebenfalls von einem eigenen Thread erledigt. Damit es nicht zu Lese- oder Schreibkonflikten kommt, werden die Puffer durch Semaphoren geschützt. Um die einzelnen Nodes zu verwalten wird eine Klasse implementiert, deren Objekte jeweils einen der 4 Nodes der GPU verwalten.
 
 ## Aufgaben
 
@@ -36,9 +36,25 @@ Um die einzelnen Nodes zu verwalten wird eine Klasse implementiert, deren Objekt
 	
 - Speichertransfer Device -> Host
 	- Ende des Kernels abwarten
-	- Daten in Ausgangs
+	- cudaMemcopy der Daten auf den Stack
+	- Einfügen in Ausgangspuffer
 	
 - Ausgangspuffer
+	- Attribute
+		- ofstream outputFile
+		- vector<bool> finished 
+			- Zeigt für jeden Node an, ob dieser noch weitere Daten liefert
 	- Initialisierung
-	- Read
+		- Datei öffnen
+		- finished mit false füllen
+	- Destruktor
+		- Datei schließen
+	- Empty
+		- Wird in eigenen Thread gestartet
+		- Läuft, solange mindestens einer der Werte aus dem vector finished false
+		- Schreibt die Ergebnisse unsortiert in Datei
+		- Sortierte Ausgabe mögliche Erweiterung 
 	- Write
+		- Id und Datenstruct in Queue schreiben
+	- finished
+		- setzt ein Bit für einen Node in finished auf true

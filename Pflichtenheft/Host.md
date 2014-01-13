@@ -14,13 +14,22 @@ Die Anforderungen sind typisch für ein Erzeuger-Verbraucher-Problem. Dieses wir
 
 Der Ringpuffer wird durch Erzeuger und Verbraucher gefüllt/geleert. Die Puffergröße ist fix. Threadsicherheit wird mittels Semaphoren in die Ringpufferklasse implementiert. Da momentan POSIX-Plattformen als Ziel genannt sind, wird `semaphore.h` dafür genutzt.
 
-    class Ringbuffer()
-        public:
-            Ringbuffer(size_t bSize)
-            ~Ringbuffer()
-            int write(wform* data, size_t size)   // blockierendes Schreiben
-            int readToHost(wform* host_data, size_t size)
-            int readToCUDA(wform* gpu_data, size_t size)
+\begin{lstlisting}
+template <class type>
+class Ringbuffer() {
+private:
+	sem_t mtx;
+	sem_t full, empty;
+public:
+    Ringbuffer(size_t bSize);
+    ~Ringbuffer();
+    type* reserveHead(unsigned int count);
+    int freeHead(type* data, unsigned int count);
+    type* reserveTail(unsigned int count);
+    int freeTail(type* gpu_data, unsigned int count);
+}	
+\end{lstlisting}
+            
             
 + Der Zustand voll / leer wird über die Semaphore `sem_w` (Anfangszustand `bSize`), `sem_r` (Anfangszustand `0`) festgestellt. 
 + Die Funktion `write` blockiert bei vollem Puffer um ein Verlust an Messdaten entgegenzuwirken. Für späteres Lesen eines Datenstroms direkt vom Messgerät kann auch nichtblockierendes Schreiben in den Puffer mit entsprechendem Überlauf implementiert werden.
