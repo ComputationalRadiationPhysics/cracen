@@ -1,18 +1,24 @@
 #ifndef NODE_H
 #define NUDE_H
 
-template <class type>
-class Ringbuffer() {
+#include <pthread.h>
+#include "Types.h"
+
+class Node {
 private:
-	sem_t mtx;
-	sem_t full, empty;
+	int deviceIdentifier;
+	bool finish;
+	InputBuffer* iBuffer;
+	pthread_t thread_tid;
+	void run();
+	static void* run_helper(void* This) { 
+		static_cast<Node*>(This)->run();
+		return NULL;
+	};
+	
 public:
-    Ringbuffer(size_t bSize);
-    ~Ringbuffer();
-    type* reserveHead(unsigned int count);
-    int freeHead(type* data, unsigned int count);
-    type* reserveTail(unsigned int count);
-    int freeTail(type* gpu_data, unsigned int count);
-}	
+	Node(int deviceIdentifier, InputBuffer* input);
+	int stop();
+};
 
 #endif
