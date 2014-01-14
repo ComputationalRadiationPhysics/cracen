@@ -2,6 +2,7 @@ OBJECTS = LevenbergMarquardt.tex Speichertransfer.tex Host.tex
 
 Pflichtenheft.pdf: $(OBJECTS) Pflichtenheft.tex
 	pdflatex Pflichtenheft.tex
+	pdflatex Pflichtenheft.tex
 	
 %.tex: %.md
 	pandoc -o $@ $<
