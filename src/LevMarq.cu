@@ -1,16 +1,16 @@
-/*TODO
- - double -> short int (pertains measured data)
- - main -> kernel
- - malloc -> gpu memory
- - array -> cuda array
- - calculation of start and end values (maybe averaged)
- - return the result
- - maybe kernel with sub-kernels (parallelization)
- - maybe other fit-function (e. g. e^(-x^2) with params) or trim data
- (see Pflichtenheft.pdf)
-*/
+/*
+TODO (see also Pflichtenheft.pdf)
+ (1) data array -> texture memory
+ (2) calculation of start and end values (maybe averaged)
+ (3) maybe other fit-function* (e. g. a*e^(b*(x+c)^2)+d, b < 0) (before (2)) or trim data (after (2))
+ (4) return a boolean (successful / not successful) in the result (no lm_infmsg)
+ (5) maybe use shared memory with dynamic size (depending on countData and COUNTPARAM) instead of MAXCOUNTDATA
+ (6) optimizing to use less memory -> higher MAXCOUNTDATA is possible
+ (7) maybe kernel with sub-kernels (parallelization)
 
-/* CHANGES (in preparation for cuda)
+ * (3) Note: e-function with 4 parameters needs a good starting value, e. g. { 10000, -1, -500, -31000 } -> it would be necessary to check the data before
+
+CHANGES (already done)
  - horrible goto-instructions replaced
  - reduced to one file with integrated fit-function, residue calculation etc.
  - without controlling
@@ -19,34 +19,70 @@
  - example data for testing
  - reduced to uniform distribution of x-coord. -> 1 array (instead of 2)
  - extremum calculation
+ - double -> DATATYPE (= short int) (pertains measured data)
+ - cuda kernel etc.
+ - return the fit function result
  
  Note: Some original comments were not updated after code changes.
 */
 
 
 /*
-* Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
-*           (lmdif and other routines from the public-domain library
-*           netlib::minpack, Argonne National Laboratories, March 1980);
-*           Steve Moshier (initial C translation);
-*           Joachim Wuttke (conversion into C++ compatible ANSI style,
-*           corrections, comments, wrappers, hosting).
-* Original source: http://sourceforge.net/projects/lmfit/
+Original source: http://sourceforge.net/projects/lmfit/ (for Levenberg-Marquardt algorithm)
+Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
+          (lmdif and other routines from the public-domain library
+          netlib::minpack, Argonne National Laboratories, March 1980);
+          Steve Moshier (initial C translation);
+          Joachim Wuttke (conversion into C++ compatible ANSI style,
+          corrections, comments, wrappers, hosting).
 */
+
+
+//--- USER DEFINITIONS ---
+
+#define CUDA //defined: runs on GPU, otherwise on CPU (useful for debugging)
+
+//#define MAXCOUNTDATA 2450 //for compute capability 2.0 or higher - currently ca. 2450 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 48 kB (= max. shared memory)
+#define MAXCOUNTDATA 800 //for compute capability 1.x - currently ca. 800 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 16 kB (= max. shared memory)
+
+#define DATATYPE short int
+#define MAXCALL 100
+#define COUNTPARAM 3
+#define PARAMSTARTVALUE { 1, 1, 1 } //any value, but not { 0, 0, 0 } (count = COUNTPARAM)
+
+//------------------------
 
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
 #include <stdio.h>
 
-/* machine-dependent constants from float.h */
-#define LM_MACHEP     DBL_EPSILON   /* resolution of arithmetic */
-#define LM_DWARF      DBL_MIN       /* smallest nonzero number */
-#define LM_SQRT_DWARF sqrt(DBL_MIN) /* square should not underflow */
-#define LM_SQRT_GIANT sqrt(DBL_MAX) /* square should not overflow */
-#define LM_USERTOL    30*LM_MACHEP  /* users are recommened to require this */
+struct fitData {
+	float param[COUNTPARAM];
+	float startValue;
+	float endValue;
+	float extremumPos; //or replace to timestamp
+	float extremumValue;
+};
 
-// following messages are indexed by the variable info
+#ifdef CUDA
+#define GLOBAL __global__
+#define DEVICE __device__
+#define SHARED __shared__
+#else
+#define GLOBAL
+#define DEVICE
+#define SHARED
+#endif
+
+//machine-dependent constants from float.h
+#define LM_MACHEP     FLT_EPSILON   //resolution of arithmetic
+#define LM_DWARF      FLT_MIN       //smallest nonzero number
+#define LM_SQRT_DWARF sqrt(FLT_MIN) //square should not underflow
+#define LM_SQRT_GIANT sqrt(FLT_MAX) //square should not overflow
+#define LM_USERTOL    30*LM_MACHEP  //users are recommened to require this
+
+//following messages are indexed by the variable info
 const char *lm_infmsg[] = {
 	"fatal coding error (improper input parameters)",
 	"success (the relative error in the sum of squares is at most tol)",
@@ -64,35 +100,38 @@ const char *lm_infmsg[] = {
 #define MAX(a,b) (((a)>=(b)) ? (a) : (b))
 #define SQR(x)   (x)*(x)
 
-double fitFunction(double x, double *param) //get y(x)
+DEVICE void fitFunction(float x, float* param, float* y) //get y(x)
 {
-	return param[0] * x * x + param[1] * x + param[2];
+	*y = param[0] * x * x + param[1] * x + param[2];
+	//*y = param[0] * exp(param[1] * (x + param[2]) * (x + param[2])) + param[3];
 }
 
-double fitFunctionExtremum(double *param) //get x
+DEVICE void fitFunctionExtremum(float* param, float* x) //get x
 {
 	//f': y = 2 * param[0] * x + param[1] and y = 0
 	if (param[0] == 0)
-		return 0; //no Extremum
+		*x = 0; //no Extremum
 	else
-		return -param[1] / (2 * param[0]);
+		*x = -param[1] / (2 * param[0]);
 }
 
-void lm_evaluate(double *par, int m_dat, double *fvec, double *ydat)
+DEVICE void lm_evaluate(float *param, int countData, float *fvec, DATATYPE *data)
 {
 	int i;
+	float y;
 
-	for (i = 0; i < m_dat; i++)
-		fvec[i] = ydat[i] - fitFunction(i, par);
-		//fvec[i] = ydat[i] - fitFunction(xdat[i], par); //if i is not equivalent to x-coord.
+	for (i = 0; i < countData; i++) {
+		fitFunction(i, param, &y); //fitFunction(xdata[i], param, &y); //if i is not equivalent to x-coord. (add parameter xdata)
+		fvec[i] = data[i] - y;
+	}
 }
 
-void lm_qrsolv(int n, double *r, int ldr, int *ipvt, double *diag,
-			   double *qtb, double *x, double *sdiag, double *wa)
+DEVICE void lm_qrsolv(int n, float *r, int ldr, int *ipvt, float *diag,
+			   float *qtb, float *x, float *sdiag, float *wa)
 {
 	int i, kk, j, k, nsing;
-	double qtbpj, sum, temp;
-	double _sin, _cos, _tan, _cot; /* local variables, not functions */
+	float qtbpj, sum, temp;
+	float _sin, _cos, _tan, _cot; /* local variables, not functions */
 
 	/*** qrsolv: copy r and (q transpose)*b to preserve input and initialize s.
 	in particular, save the diagonal elements of r in x. ***/
@@ -187,20 +226,19 @@ void lm_qrsolv(int n, double *r, int ldr, int *ipvt, double *diag,
 
 	for (j = 0; j < n; j++)
 		x[ipvt[j]] = wa[j];
+}
 
-} /*** lm_qrsolv. ***/
-
-double lm_enorm(int n, double *x)
+DEVICE void lm_enorm(int n, float *x, float* result)
 {
 	int i;
-	double agiant, s1, s2, s3, xabs, x1max, x3max, temp;
+	float agiant, s1, s2, s3, xabs, x1max, x3max, temp;
 
 	s1 = 0;
 	s2 = 0;
 	s3 = 0;
 	x1max = 0;
 	x3max = 0;
-	agiant = LM_SQRT_GIANT / ((double) n);
+	agiant = LM_SQRT_GIANT / ((float) n);
 
 	/** sum squares. **/
 	for (i = 0; i < n; i++) {
@@ -239,26 +277,25 @@ double lm_enorm(int n, double *x)
 	/** calculation of norm. **/
 
 	if (s1 != 0)
-		return x1max * sqrt(s1 + (s2 / x1max) / x1max);
-	if (s2 != 0) {
+		*result = x1max * sqrt(s1 + (s2 / x1max) / x1max);
+	else if (s2 != 0) {
 		if (s2 >= x3max)
-			return sqrt(s2 * (1 + (x3max / s2) * (x3max * s3)));
+			*result = sqrt(s2 * (1 + (x3max / s2) * (x3max * s3)));
 		else
-			return sqrt(x3max * ((s2 / x3max) + (x3max * s3)));
+			*result = sqrt(x3max * ((s2 / x3max) + (x3max * s3)));
 	}
+	else
+		*result = x3max * sqrt(s3);
 
-	return x3max * sqrt(s3);
+}
 
-} /*** lm_enorm. ***/
-
-void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
-			  double *qtb, double delta, double *par, double *x,
-			  double *sdiag, double *wa1, double *wa2)
+DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
+			  float *qtb, float delta, float *par, float *x,
+			  float *sdiag, float *wa1, float *wa2)
 {
 	int i, iter, j, nsing;
-	double dxnorm, fp, fp_old, gnorm, parc, parl, paru;
-	double sum, temp;
-	static double p1 = 0.1;
+	float dxnorm, fp, fp_old, gnorm, parc, parl, paru;
+	float sum, temp;
 
 	/*** lmpar: compute and store in x the gauss-newton direction. if the
 	jacobian is rank-deficient, obtain a least squares solution. ***/
@@ -288,9 +325,9 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 	iter = 0;
 	for (j = 0; j < n; j++)
 		wa2[j] = diag[j] * x[j];
-	dxnorm = lm_enorm(n, wa2);
+	lm_enorm(n, wa2, &dxnorm);
 	fp = dxnorm - delta;
-	if (fp <= p1 * delta) {
+	if (fp <= 0.1 * delta) {
 		*par = 0;
 		return;
 	}
@@ -310,7 +347,7 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 				sum += r[j * ldr + i] * wa1[i];
 			wa1[j] = (wa1[j] - sum) / r[j + ldr * j];
 		}
-		temp = lm_enorm(n, wa1);
+		lm_enorm(n, wa1, &temp);
 		parl = fp / delta / temp / temp;
 	}
 
@@ -322,10 +359,10 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 			sum += r[j * ldr + i] * qtb[i];
 		wa1[j] = sum / diag[ipvt[j]];
 	}
-	gnorm = lm_enorm(n, wa1);
+	lm_enorm(n, wa1, &gnorm);
 	paru = gnorm / delta;
 	if (paru == 0.)
-		paru = LM_DWARF / MIN(delta, p1);
+		paru = LM_DWARF / MIN(delta, 0.1);
 
 	/*** lmpar: if the input par lies outside of the interval (parl,paru),
 	set par to the closer endpoint. ***/
@@ -349,7 +386,7 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 		lm_qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
 		for (j = 0; j < n; j++)
 			wa2[j] = diag[j] * x[j];
-		dxnorm = lm_enorm(n, wa2);
+		lm_enorm(n, wa2, &dxnorm);
 		fp_old = fp;
 		fp = dxnorm - delta;
 
@@ -357,7 +394,7 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 		of par. Also test for the exceptional cases where parl
 		is zero or the number of iterations has reached 10. **/
 
-		if (fabs(fp) <= p1 * delta
+		if (fabs(fp) <= 0.1 * delta
 			|| (parl == 0. && fp <= fp_old && fp_old < 0.)
 			|| iter == 10)
 			break; /* the only exit from the iteration. */
@@ -372,7 +409,7 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 			for (i = j + 1; i < n; i++)
 				wa1[i] -= r[j * ldr + i] * wa1[j];
 		}
-		temp = lm_enorm(n, wa1);
+		lm_enorm(n, wa1, &temp);
 		parc = fp / delta / temp / temp;
 
 		/** depending on the sign of the function, update parl or paru. **/
@@ -386,22 +423,19 @@ void lm_lmpar(int n, double *r, int ldr, int *ipvt, double *diag,
 		/** compute an improved estimate for par. **/
 
 		*par = MAX(parl, *par + parc);
-
 	}
+}
 
-} /*** lm_lmpar. ***/
-
-void lm_qrfac(int m, int n, double *a, int pivot, int *ipvt,
-			  double *rdiag, double *acnorm, double *wa)
+DEVICE void lm_qrfac(int m, int n, float *a, int pivot, int *ipvt,
+			  float *rdiag, float *acnorm, float *wa)
 {
 	int i, j, k, kmax, minmn;
-	double ajnorm, sum, temp;
-	static double p05 = 0.05;
+	float ajnorm, sum, temp;
 
 	/*** qrfac: compute initial column norms and initialize several arrays. ***/
 
 	for (j = 0; j < n; j++) {
-		acnorm[j] = lm_enorm(m, &a[j * m]);
+		lm_enorm(m, &a[j * m], &acnorm[j]);
 		rdiag[j] = acnorm[j];
 		wa[j] = rdiag[j];
 		if (pivot)
@@ -440,7 +474,7 @@ void lm_qrfac(int m, int n, double *a, int pivot, int *ipvt,
 		/** compute the Householder transformation to reduce the
 		j-th column of a to a multiple of the j-th unit vector. **/
 
-		ajnorm = lm_enorm(m - j, &a[j * m + j]);
+		lm_enorm(m - j, &a[j * m + j], &ajnorm);
 		if (ajnorm == 0.) {
 			rdiag[j] = 0;
 			continue;
@@ -471,8 +505,8 @@ void lm_qrfac(int m, int n, double *a, int pivot, int *ipvt,
 				temp = MAX(0., 1 - temp * temp);
 				rdiag[k] *= sqrt(temp);
 				temp = rdiag[k] / wa[k];
-				if (p05 * SQR(temp) <= LM_MACHEP) {
-					rdiag[k] = lm_enorm(m - j - 1, &a[m * k + j + 1]);
+				if (0.05 * SQR(temp) <= LM_MACHEP) {
+					lm_enorm(m - j - 1, &a[m * k + j + 1], &rdiag[k]);
 					wa[k] = rdiag[k];
 				}
 			}
@@ -482,18 +516,16 @@ void lm_qrfac(int m, int n, double *a, int pivot, int *ipvt,
 	}
 }
 
-void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
-			  double xtol, double gtol, int maxfev, double epsfcn,
-			  double *diag, int mode, double factor, int *info, int *nfev,
-			  double *fjac, int *ipvt, double *qtf, double *wa1,
-			  double *wa2, double *wa3, double *wa4,
-			  double *ydat)
+DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
+			  float xtol, float gtol, int maxfev, float epsfcn,
+			  float *diag, int mode, float factor, int *info, int *nfev,
+			  float *fjac, int *ipvt, float *qtf, float *wa1,
+			  float *wa2, float *wa3, float *wa4,
+			  DATATYPE *data)
 {
 	int i, iter, j;
-	double actred, delta, dirder, eps, fnorm, fnorm1, gnorm, par, pnorm,
+	float actred, delta, dirder, eps, fnorm, fnorm1, gnorm, par, pnorm,
 		prered, ratio, step, sum, temp, temp1, temp2, temp3, xnorm;
-	static double p1 = 0.1;
-	static double p0001 = 1.0e-4;
 
 	*nfev = 0;			/* function evaluation counter */
 	iter = 1;			/* outer loop counter */
@@ -522,9 +554,9 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 	/*** lmdif: evaluate function at starting point and calculate norm. ***/
 
 	*info = 0;
-	lm_evaluate(x, m, fvec, ydat);
+	lm_evaluate(x, m, fvec, data);
 	++(*nfev);
-	fnorm = lm_enorm(m, fvec);
+	lm_enorm(m, fvec, &fnorm);
 
 	/*** lmdif: the outer loop. ***/
 
@@ -539,7 +571,7 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 				step = eps;
 			x[j] = temp + step;
 			*info = 0;
-			lm_evaluate(x, m, wa4, ydat);
+			lm_evaluate(x, m, wa4, data);
 			for (i = 0; i < m; i++) /* changed in 2.3, Mark Bydder */
 				fjac[j * m + i] = (wa4[i] - fvec[i]) / (x[j] - temp);
 			x[j] = temp;
@@ -561,7 +593,7 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 			/* use diag to scale x, then calculate the norm */
 			for (j = 0; j < n; j++)
 				wa3[j] = diag[j] * x[j];
-			xnorm = lm_enorm(n, wa3);
+			lm_enorm(n, wa3, &xnorm);
 			/* initialize the step bound delta. */
 			delta = factor * xnorm;
 			if (delta == 0.)
@@ -628,7 +660,7 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 				wa2[j] = x[j] + wa1[j];
 				wa3[j] = diag[j] * wa1[j];
 			}
-			pnorm = lm_enorm(n, wa3);
+			lm_enorm(n, wa3, &pnorm);
 
 			/*** inner: on the first iteration, adjust the initial step bound. ***/
 
@@ -638,14 +670,14 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 			/* evaluate the function at x + p and calculate its norm. */
 
 			*info = 0;
-			lm_evaluate(wa2, m, wa4, ydat);
+			lm_evaluate(wa2, m, wa4, data);
 			++(*nfev);
 
-			fnorm1 = lm_enorm(m, wa4);
+			lm_enorm(m, wa4, &fnorm1);
 
 			/*** inner: compute the scaled actual reduction. ***/
 
-			if (p1 * fnorm1 < fnorm)
+			if (0.1 * fnorm1 < fnorm)
 				actred = 1 - SQR(fnorm1 / fnorm);
 			else
 				actred = -1;
@@ -658,7 +690,8 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 				for (i = 0; i <= j; i++)
 					wa3[i] += fjac[j * m + i] * wa1[ipvt[j]];
 			}
-			temp1 = lm_enorm(n, wa3) / fnorm;
+			lm_enorm(n, wa3, &temp1);
+			temp1 /= fnorm;
 			temp2 = sqrt(par) * pnorm / fnorm;
 			prered = SQR(temp1) + 2 * SQR(temp2);
 			dirder = -(SQR(temp1) + SQR(temp2));
@@ -674,9 +707,9 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 					temp = 0.5;
 				else
 					temp = 0.5 * dirder / (dirder + 0.55 * actred);
-				if (p1 * fnorm1 >= fnorm || temp < p1)
-					temp = p1;
-				delta = temp * MIN(delta, pnorm / p1);
+				if (0.1 * fnorm1 >= fnorm || temp < 0.1)
+					temp = 0.1;
+				delta = temp * MIN(delta, pnorm / 0.1);
 				par /= temp;
 			} else if (par == 0. || ratio >= 0.75) {
 				delta = pnorm / 0.5;
@@ -685,7 +718,7 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 
 			/*** inner: test for successful iteration. ***/
 
-			if (ratio >= p0001) {
+			if (ratio >= 0.0001) {
 				/* yes, success: update x, fvec, and their norms. */
 				for (j = 0; j < n; j++) {
 					x[j] = wa2[j];
@@ -693,7 +726,7 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 				}
 				for (i = 0; i < m; i++)
 					fvec[i] = wa4[i];
-				xnorm = lm_enorm(n, wa2);
+				lm_enorm(n, wa2, &xnorm);
 				fnorm = fnorm1;
 				iter++;
 			}
@@ -724,75 +757,71 @@ void lm_lmdif(int m, int n, double *x, double *fvec, double ftol,
 
 			/*** inner: end of the loop. repeat if iteration unsuccessful. ***/
 
-		} while (ratio < p0001);
+		} while (ratio < 0.0001);
 
 		/*** outer: end of the loop. ***/
 
 	} while (1);
 
-} /*** lm_lmdif. ***/
+}
 
-void lm_minimize(int countDat, int countParam, double *param, double *ydat, int maxcall)
+GLOBAL void kernel(int countData, DATATYPE *data, struct fitData *result)
 {
+	float param[COUNTPARAM] = PARAMSTARTVALUE;
+	int nfev = 0, info = 0, i;
 
-	/*** allocate work space. ***/
+	//TODO IMPORTANT: check if only one thread per shared memory runs the following code
+	SHARED float fvec[MAXCOUNTDATA];
+	SHARED float fjac[COUNTPARAM * MAXCOUNTDATA];
+	SHARED float wa4[MAXCOUNTDATA];
 
-	double *fvec, *diag, *fjac, *qtf, *wa1, *wa2, *wa3, *wa4;
-	int *ipvt;
+	float diag[COUNTPARAM], qtf[COUNTPARAM];
+	float wa1[COUNTPARAM], wa2[COUNTPARAM], wa3[COUNTPARAM];
+	int ipvt[COUNTPARAM];
 
-	int nfev = 0, info = 0;
+	lm_lmdif(countData, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
+		MAXCALL * (COUNTPARAM + 1), LM_USERTOL, diag, 1, 100, &info,
+		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, data);
 
-	if ((fvec = (double *) malloc(countDat * sizeof(double))) == NULL ||
-		(diag = (double *) malloc(countParam * sizeof(double))) == NULL ||
-		(qtf  = (double *) malloc(countParam * sizeof(double))) == NULL ||
-		(fjac = (double *) malloc(countParam * countDat * sizeof(double))) == NULL ||
-		(wa1  = (double *) malloc(countParam * sizeof(double))) == NULL ||
-		(wa2  = (double *) malloc(countParam * sizeof(double))) == NULL ||
-		(wa3  = (double *) malloc(countParam * sizeof(double))) == NULL ||
-		(wa4  = (double *) malloc(countDat * sizeof(double))) == NULL ||
-		(ipvt = (int *)    malloc(countParam * sizeof(int))) == NULL) {
-			info = 9;
-			return;
-	}
+	for (i = 0; i < COUNTPARAM; i++)
+		result->param[i] = param[i];
+	//result->startValue = ... coming soon, see TODO (2) and (3)
+	//result->endValue = ...
+	fitFunctionExtremum(param, &result->extremumPos);
+	fitFunction(result->extremumPos, param, &result->extremumValue);
+}
 
-	/*** perform fit. ***/
 
-	/* this goes through the modified legacy interface: */
-	lm_lmdif(countDat, countParam, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
-		maxcall * (countParam + 1), LM_USERTOL, diag, 1, 100, &info,
-		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, ydat);
-
-	//double fnorm = lm_enorm(countDat, fvec);
-
-	free(fvec);
-	free(diag);
-	free(qtf);
-	free(fjac);
-	free(wa1);
-	free(wa2);
-	free(wa3);
-	free(wa4);
-	free(ipvt);
-} /*** lm_minimize. ***/
-
+//only for testing
 int main()
 {
-	int countDat = 3;
-	int countParam = 3;
-	double y[3] = { 2, 5, 2 }; //countDat
-	//if index is equivalent to x-coord. (x[3] = { 0, 1, 2 }) then result: param[3] = { -3, 6, 2 }
-	//if not then use
-	// double x[3] = { -1, 1, 2 }; //countDat
-	// double y[3] = { -7, 5, 2 }; //countDat
-	//and add x to lm_minimize, ...
-	double param[3] = { 1, 1, 1 }; //countParam //starting value (any value, but not { 0, 0 ,0 } (?))
+	int countData = 3;
+	DATATYPE data[3] = { 2, 5, 2 }; //if index is equivalent to x-coord. (-> xdata[3] = { 0, 1, 2 }) then result should be: param[3] = { -3, 6, 2 }
+	struct fitData result;
+	
+#ifdef CUDA
+	DATATYPE* d_data;
+	cudaMalloc((void**)&d_data, sizeof(float) * countData);
+	cudaMemcpy(d_data, data, sizeof(float) * countData, cudaMemcpyHostToDevice);
+	
+	struct fitData* d_result;
+	cudaMalloc((void**)&d_result, sizeof(struct fitData));
+	cudaMemcpy(d_result, &result, sizeof(struct fitData), cudaMemcpyHostToDevice);
+	
+	kernel<<<1, 1>>>(countData, d_data, d_result);
 
-	lm_minimize(countDat, countParam, param, y, 100);
+	cudaMemcpy(&result, d_result, sizeof(struct fitData), cudaMemcpyDeviceToHost);
 
-	printf("f: y = %f * t^2 + %f * t + %f\n", param[0], param[1], param[2]);
+	cudaFree(d_data);
+	cudaFree(d_result); 
+#else
+	kernel(countData, data, &result);
+#endif
 
-	printf("min/max - x: %f\n", fitFunctionExtremum(param));
-	printf("min/max - y: %f\n", fitFunction(fitFunctionExtremum(param), param));
+	printf("f: y = %f * t ^ 2 + %f * t + %f\n", result.param[0], result.param[1], result.param[2]);
+	//printf("f: %f * e ^ (%f * (x + %f) ^ 2) + %f\n", result.param[0], result.param[1], result.param[2], result.param[3]);
+	printf("min/max - x: %f\n", result.extremumPos);
+	printf("min/max - y: %f\n", result.extremumValue);
 
 	return 0;
 }
