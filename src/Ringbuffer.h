@@ -13,10 +13,10 @@ private:
 public:
     Ringbuffer();
     ~Ringbuffer();
-    Type* reserveHead(unsigned int count);
-    int freeHead(Type* data, unsigned int count);
-    Type* reserveTail(unsigned int count);
-    int freeTail(Type* gpu_data, unsigned int count);
+    Type* reserveHead();
+    int freeHead(Type* data);
+    Type* reserveTail();
+    int freeTail(Type* gpu_data);
 };
 
 template <class Type, unsigned int size>
@@ -32,7 +32,7 @@ Ringbuffer<Type, size>::~Ringbuffer() {
 }
 
 template <class Type, unsigned int size>
-Type* Ringbuffer<Type, size>::reserveHead(unsigned int count) {
+Type* Ringbuffer<Type, size>::reserveHead() {
 	sem_wait(&empty);
 	int value;
 	sem_getvalue(&empty, &value);
@@ -40,13 +40,13 @@ Type* Ringbuffer<Type, size>::reserveHead(unsigned int count) {
 }
 
 template <class Type, unsigned int size>
-int Ringbuffer<Type, size>::freeHead(Type* data, unsigned int count) {
+int Ringbuffer<Type, size>::freeHead(Type* data) {
 	sem_post(&full);
 	return 0;
 }
 
 template <class Type, unsigned int size>
-Type* Ringbuffer<Type, size>::reserveTail(unsigned int count) {
+Type* Ringbuffer<Type, size>::reserveTail() {
 	sem_wait(&full);
 	int value;
 	sem_getvalue(&full, &value);
@@ -54,7 +54,7 @@ Type* Ringbuffer<Type, size>::reserveTail(unsigned int count) {
 }
 
 template <class Type, unsigned int size>
-int Ringbuffer<Type, size>::freeTail(Type* gpu_data, unsigned int count) {
+int Ringbuffer<Type, size>::freeTail(Type* gpu_data) {
 	sem_post(&empty);
 	return 0;
 }
