@@ -11,6 +11,12 @@ Node::Node(int deviceIdentifier, InputBuffer* input) :
 }
 
 void Node::run() {
+	
+	/* 
+	 * Example for Texture usage found here
+	 * http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf
+	 */
+	
 	/* Initialise device */
 	cudaSetDevice(deviceIdentifier);
 	
