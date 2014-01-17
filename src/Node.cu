@@ -53,6 +53,25 @@ void Node::run() {
 		
 	}
 	
+	/* Empty the the iBuffer */
+	while(!iBuffer->isEmpty()) {
+		/* Take a chunk from ringbuffer and copy to GPU */
+			/* Block ringbuffer */
+			SampleChunk *c = iBuffer->reserveTail();
+			/* Copy to device */
+			cudaMemcpyToArray(texArray, 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice);
+			/* Free ringbuffer */
+			iBuffer->freeTail(c);
+		/* Start kernel */
+		
+		/* Get result */
+		//cudaMemcpy(...)
+		
+
+		
+		/* Push result to output buffer */
+	}
+	
 	/* Free GPU Memory*/
 	cudaUnbindTexture(sampleData);
 	cudaFreeArray(texArray);

@@ -17,6 +17,7 @@ public:
     int freeHead(Type* data);
     Type* reserveTail();
     int freeTail(Type* gpu_data);
+    bool isEmpty();
 };
 
 template <class Type, unsigned int size>
@@ -57,6 +58,14 @@ template <class Type, unsigned int size>
 int Ringbuffer<Type, size>::freeTail(Type* gpu_data) {
 	sem_post(&empty);
 	return 0;
+}
+
+template <class Type, unsigned int size>
+bool Ringbuffer<Type, size>::isEmpty() {
+	int full_value, empty_value;
+	sem_getvalue(&full, &full_value);
+	sem_getvalue(&empty, &empty_value);
+	return (full_value == 0) && (empty_value == size);
 }
 
 #endif
