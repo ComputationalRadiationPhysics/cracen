@@ -1,16 +1,16 @@
-#ifndef TEST_RINGBUFFERWF_H
-#define TEST_RINGBUFFERWF_H
+#ifndef TEST_Ringbuffer_H
+#define TEST_Ringbuffer_H
 
 #include <pthread.h>
 #include <iostream>
 #include <cstdlib>      // for 'exit'
 #include <unistd.h>     // for 'sleep'
 #include "Types.h"
-#include "RingbufferWf.h"
+#include "Ringbuffer.h"
 
 #define BSIZE 1000000
 
-typedef RingbufferWf<wform_t> InputBufferWf;
+typedef Ringbuffer<wform_t> InputBufferWf;
 
 int test_InputBufferWf_creation()
 {
@@ -100,7 +100,7 @@ int test_InputBufferWf_twoThreads()
               << "\tcreated, executed and ended without exception.\n";
 }
 
-int tests_RingbufferWf()
+int tests_Ringbuffer()
 {
     std::cout << "Testing InputBufferWf...\n------------\n";
 

@@ -1,71 +1,156 @@
-#ifndef RINGBUFFER_H
-#define RINGEBUGGER_H
+#ifndef Ringbuffer_H
+#define Ringbuffer_H
 
+#include <vector>
+#include <iostream>
 #include <semaphore.h>
 
-template <class Type, unsigned int size>
+template <class Type>
 class Ringbuffer {
+    /*  Ringbuffer for data of type Type
+     *  Data is put to head of buffer and read from tail of buffer.
+     *
+     *  To enable reading to devices like graphic cards the tail of the 
+     *  buffer can be reserved. In the reserved state copy operations can
+     *  be performed externally. After copying the head needs to be 
+     *  freed.
+     */
+
 private:
-	sem_t mtx;
-	sem_t full, empty;
-	Type buffer[size];
-	
+    sem_t mtx;
+    sem_t usage, space;
+    std::vector<Type> buffer;
+    unsigned int bufferSize;
+    unsigned int head, tail;
+
 public:
-    Ringbuffer();
+    Ringbuffer(unsigned int bSize);
     ~Ringbuffer();
+    int writeFromHost(Type *inputOnHost);
+    int copyToHost(Type *outputOnHost);
     Type* reserveHead();
-    int freeHead(Type* data);
+    int freeHead();
     Type* reserveTail();
-    int freeTail(Type* gpu_data);
+    int freeTail();
     bool isEmpty();
 };
 
-template <class Type, unsigned int size>
-Ringbuffer<Type, size>::Ringbuffer() {
-	sem_init(&full,0,0);
-	sem_init(&empty,0,size);
-
-}
-template <class Type, unsigned int size>
-Ringbuffer<Type, size>::~Ringbuffer() {
-	sem_destroy(&full);
-	sem_destroy(&empty);
-}
-
-template <class Type, unsigned int size>
-Type* Ringbuffer<Type, size>::reserveHead() {
-	sem_wait(&empty);
-	int value;
-	sem_getvalue(&empty, &value);
-	return &buffer[size-value]; //Hier bin ich mir nicht sicher
+template <class Type>
+Ringbuffer<Type>::Ringbuffer(unsigned int bSize)
+{
+    buffer.reserve(bSize);
+    std::cout << "Reserved buffer of size " << bSize << "\n";
+    sem_init(&mtx, 0, 1);
+    sem_init(&usage, 0, 0);
+    sem_init(&space, 0, bSize);
+    bufferSize = bSize;
+    head = 0;   // We write new data to this position
+    tail = 0;   // We read stored data from this position
 }
 
-template <class Type, unsigned int size>
-int Ringbuffer<Type, size>::freeHead(Type* data) {
-	sem_post(&full);
+template <class Type>
+Ringbuffer<Type>::~Ringbuffer()
+{
+    sem_destroy(&mtx);
+    sem_destroy(&usage);
+    sem_destroy(&space);
+}
+
+template <class Type>
+int Ringbuffer<Type>::writeFromHost(Type *inputOnHost)
+// Put data on buffer. InputOnHost needs to be on host memory.
+{
+    sem_wait(&space);   // is there space in buffer?
+    sem_wait(&mtx);     // lock buffer
+    
+    buffer[head] = *inputOnHost;
+    head = ++head % bufferSize;     // move head
+
+    sem_post(&mtx);     // unlock buffer
+    sem_post(&usage);   // tell them that there is something in buffer
+    
+    int buffer_usage;
+    sem_getvalue(&usage, &buffer_usage);
+    //std::cout << "Usage after write:" << buffer_usage << std::endl;
+	
 	return 0;
 }
 
-template <class Type, unsigned int size>
-Type* Ringbuffer<Type, size>::reserveTail() {
-	sem_wait(&full);
-	int value;
-	sem_getvalue(&full, &value);
-	return &buffer[size-value]; //Hier bin ich mir nicht sicher
+template <class Type>
+int Ringbuffer<Type>::copyToHost(Type *outputOnHost)
+// Get data from buffer. OutputOnHost needs to be on host memory.
+{
+    sem_wait(&usage);   // is there some data in buffer?
+    sem_wait(&mtx);     // lock buffer
+    
+    *outputOnHost = buffer[tail];
+    tail = ++tail % bufferSize;     // move tail
+    
+    sem_post(&mtx);     // unlock buffer
+    sem_post(&space);   // tell them that there is space in buffer
+    
+    //int buffer_usage;
+    //sem_getvalue(&usage, &buffer_usage);
+    //std::cout << "Usage after read:" << buffer_usage << std::endl;
+    
+    return 0;
 }
 
-template <class Type, unsigned int size>
-int Ringbuffer<Type, size>::freeTail(Type* gpu_data) {
-	sem_post(&empty);
-	return 0;
+template <class Type>
+Type* Ringbuffer<Type>::reserveHead()
+// Lock head position of buffer to perform write operations externally.
+// Buffer is blocked until freeHead is called.
+{
+    sem_wait(&space);
+    sem_wait(&mtx);
+    return &buffer[head];
 }
 
-template <class Type, unsigned int size>
-bool Ringbuffer<Type, size>::isEmpty() {
+template <class Type>
+int Ringbuffer<Type>::freeHead()
+// Free head position after external operation finished.
+{
+    head = ++head % bufferSize;
+    sem_post(&mtx);
+    sem_post(&usage);
+    return 0;
+}
+
+template <class Type>
+Type* Ringbuffer<Type>::reserveTail()
+// Lock tail position of buffer to perform read/copy operation 
+// externally.
+// Buffer is blocked until freeTail is called.
+{
+    sem_wait(&usage);
+    sem_wait(&mtx);
+    return &buffer[tail];
+}
+
+template <class Type>
+int Ringbuffer<Type>::freeTail()
+// Free tail position after external operation finished.
+{
+    tail = ++ tail % bufferSize;
+    sem_post(&mtx);
+    sem_post(&space);
+    return 0;
+}
+
+template <class Type>
+void fill_wform(Type wform, short int fill_value)
+{
+    for (int i=0; i<SAMPLE_COUNT; i++) {
+        wform[i] = fill_value;
+    }
+}
+
+template <class Type>
+bool Ringbuffer<Type>::isEmpty() {
 	int full_value, empty_value;
-	sem_getvalue(&full, &full_value);
-	sem_getvalue(&empty, &empty_value);
-	return (full_value == 0) && (empty_value == size);
+	sem_getvalue(&usage, &full_value);
+	sem_getvalue(&space, &empty_value);
+	return (full_value == 0) && (empty_value == bufferSize);
 }
 
 #endif

@@ -11,11 +11,6 @@ all: $(OBJECTS)
 test_DSP: $(TESTOBJECTS)
 	$(CXX) $(CFLAGS) $(LFLAGS) -o test_DSP $(TESTOBJECTS)
 
-# tests.o: test_DataReader.h test_RingbufferWf.h
-
-%.o: %.cpp
-	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
-
 %.o: %.cu
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
 	
@@ -27,5 +22,6 @@ run: all
 tests: test_DSP
 
 .PHONY: clean
+clean:
 	@rm -f *.o
 	@rm -f *~

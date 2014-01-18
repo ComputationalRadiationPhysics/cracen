@@ -7,9 +7,9 @@
 #include <pthread.h>
 #include "Types.h"
 #include "Constants.h"
-#include "RingbufferWf.h"
+#include "Ringbuffer.h"
 
-typedef RingbufferWf<wform_t> InputBufferWf;
+typedef Ringbuffer<wform_t> InputBufferWf;
 
 class DataReader {
     /*  DataReader is meant as a producer for the Ringbuffer class. It 

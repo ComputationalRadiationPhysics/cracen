@@ -18,4 +18,5 @@ const std::string FILENAME_TESTFILE = "../data/Al_25keV-259.cdb";
 const unsigned int SAMPLE_COUNT_TESTFILE = 1000;
 const unsigned int SEGMENT_COUNT_TESTFILE = 1;
 const unsigned int WAVEFORM_COUNT_TESTFILE = 100000;
+
 #endif

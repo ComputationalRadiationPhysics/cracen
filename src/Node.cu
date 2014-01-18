@@ -41,7 +41,7 @@ void Node::run() {
 			/* Copy to device */
 			cudaMemcpyToArray(texArray, 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice);
 			/* Free ringbuffer */
-			iBuffer->freeTail(c);
+			iBuffer->freeTail();
 		/* Start kernel */
 		
 		/* Get result */
@@ -61,7 +61,7 @@ void Node::run() {
 			/* Copy to device */
 			cudaMemcpyToArray(texArray, 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice);
 			/* Free ringbuffer */
-			iBuffer->freeTail(c);
+			iBuffer->freeTail();
 		/* Start kernel */
 		
 		/* Get result */

@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Node.h"
+#include "Constants.h"
 
 int main(int argc, char* argv[]) {
 	
@@ -18,7 +19,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	/* Initialise input buffer */
-	InputBuffer inputBuffer;
+	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT);
 	
 	
 	
