@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Node.h"
+#include "OutputStream.h"
 #include "Constants.h"
 
 int main(int argc, char* argv[]) {
@@ -18,15 +19,19 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	
-	/* Initialise input buffer */
+	std::string filename = "Results.txt";
+	if(argc >= 1) {
+		filename = argv[1];	
+	}
+	
+	/* Initialise buffer */
 	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT);
-	
-	
+	OutputStream os(filename);
 	
 	std::vector<Node> devices;
 	for(int i = 0; i < numberOfDevices; i++) {
 		/* Start threads to handle Nodes */
-		devices.push_back(Node(i, &inputBuffer));
+		devices.push_back(Node(i, &inputBuffer, os.getBuffer()));
 	}
 	
 	return 0;

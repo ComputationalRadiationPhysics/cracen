@@ -137,6 +137,7 @@ int Ringbuffer<Type>::freeTail()
     return 0;
 }
 
+/* TODO: BAUSTELLE
 template <class Type>
 void fill_wform(Type wform, short int fill_value)
 {
@@ -144,7 +145,7 @@ void fill_wform(Type wform, short int fill_value)
         wform[i] = fill_value;
     }
 }
-
+*/
 template <class Type>
 bool Ringbuffer<Type>::isEmpty() {
 	int full_value, empty_value;

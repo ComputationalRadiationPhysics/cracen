@@ -36,26 +36,8 @@ Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
           corrections, comments, wrappers, hosting).
 */
 
-
-//--- USER DEFINITIONS ---
-
-#define CUDA //defined: runs on GPU, otherwise on CPU (useful for debugging)
-
-//#define MAXCOUNTDATA 2450 //for compute capability 2.0 or higher - currently ca. 2450 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 48 kB (= max. shared memory)
-#define MAXCOUNTDATA 800 //for compute capability 1.x - currently ca. 800 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 16 kB (= max. shared memory)
-
-#define DATATYPE float //if data texture is used, can not be changed to integer types
-#define MAXCALL 100
-#define COUNTPARAM 3
-#define PARAMSTARTVALUE { 1, 1, 1 } //any value, but not { 0, 0, 0 } (count = COUNTPARAM)
-
-#define FITVALUETHRESHOLD 0.0 //0.5 //threshold between min (0.0) and max (1.0) value to define the data using interval to calculate the fit function
-#define STARTENDPROPORTION 0.01 //proportion of countData for calculating the average of start/end value (e. g. 0.1 means average of the first 10% of data for start value and the last 10% for end value)
-
-//------------------------
-
 #ifdef CUDA
-texture<DATATYPE, 2, cudaReadModeElementType> dataTexture; //-> GLOBAL DEFINITION
+
 #define GETSAMPLE(I, INDEXDATASET) tex2D(dataTexture, (I) + 0.5, (INDEXDATASET) + 0.5)
 #else
 DATATYPE *data;
@@ -64,14 +46,6 @@ DATATYPE *data;
 
 //--- GLOBAL DEFINITIONS ---
 
-struct fitData {
-	float param[COUNTPARAM];
-	float startValue;
-	float endValue;
-	float extremumPos;
-	float extremumValue;
-	int status;
-};
 const char *statusMessage[] = { //indexed by fitData.status
 /* 0 */	"fatal coding error (improper input parameters)",
 /* 1 */	"success (the relative error in the sum of squares is at most tol)",
@@ -90,6 +64,8 @@ const char *statusMessage[] = { //indexed by fitData.status
 #include <math.h>
 #include <float.h>
 #include <stdio.h>
+#include "Types.h"
+#include "Textures.h"
 
 #ifdef CUDA
 #define GLOBAL __global__
@@ -867,7 +843,7 @@ GLOBAL void kernel(int countData, struct fitData *result)
 	result[indexDataset].status = info;
 }
 
-
+/*
 //example data, only for testing
 int main()
 {
@@ -923,4 +899,5 @@ int main()
 	}
 
 	return 0;
-}
+}#
+*/

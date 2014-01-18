@@ -13,7 +13,7 @@
 class OutputStream {
 private:
 	std::ofstream file;
-	Ringbuffer<Output, CHUNK_BUFFER_COUNT> oBuffer;
+	Ringbuffer<Output> oBuffer;
 	bool done;
 	
 	void run();
@@ -31,10 +31,10 @@ public:
 	 *
 	 *  \param Filename of the output file.
 	 */
-	OutputStream(std::string file);
+	OutputStream(const std::string& file);
 	
 	//! Returns a reference of the buffer.
-	Ringbuffer& getBuffer();
+	Ringbuffer<Output>* getBuffer();
 	
 	//! Signals, that no new data will be written into the buffer.
 	/*!
@@ -42,6 +42,6 @@ public:
 	 * elements in the buffer are written into the output file
 	 */
 	void finish();
-}
+};
 
 #endif
