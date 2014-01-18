@@ -1,14 +1,12 @@
 /*
 TODO (see also Pflichtenheft.pdf)
- (1) data array -> texture memory
- (2) calculation of start and end values (maybe averaged)
- (3) maybe other fit-function* (e. g. a*e^(b*(x+c)^2)+d, b < 0) (before (2)) or trim data (after (2))
- (4) return a boolean (successful / not successful) in the result (no lm_infmsg)
- (5) maybe use shared memory with dynamic size (depending on countData and COUNTPARAM) instead of MAXCOUNTDATA
- (6) optimizing to use less memory -> higher MAXCOUNTDATA is possible
- (7) maybe kernel with sub-kernels (parallelization)
-
- * (3) Note: e-function with 4 parameters needs a good starting value, e. g. { 10000, -1, -500, -31000 } -> it would be necessary to check the data before
+ (1) maybe other fit-function (e. g. a*e^(b*(x+c)^2)+d (b < 0))
+     -> a calculation of start and end values with this function is possible (instead of averaged data)
+     Note: e-function with 4 parameters needs a good starting value, e. g. { 10000, -1, -500, -31000 } (first wave in Al_25keV-1.cdb)
+	       -> it would be necessary to check the data before
+ (2) maybe use shared memory with dynamic size (depending on countData and COUNTPARAM) instead of MAXCOUNTDATA
+ (3) optimizing to use less memory -> higher MAXCOUNTDATA will be possible
+ (4) maybe simultaneous calculations in one dataset (more than one thread per block)
 
 CHANGES (already done)
  - horrible goto-instructions replaced
@@ -19,10 +17,11 @@ CHANGES (already done)
  - example data for testing
  - reduced to uniform distribution of x-coord. -> 1 array (instead of 2)
  - extremum calculation
- - double -> DATATYPE (= short int) (pertains measured data)
  - cuda kernel etc.
  - return the fit function result
- 
+ - calculation of start and end values (averaged)
+ - data array -> texture memory
+
  Note: Some original comments were not updated after code changes.
 */
 
@@ -45,10 +44,45 @@ Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 //#define MAXCOUNTDATA 2450 //for compute capability 2.0 or higher - currently ca. 2450 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 48 kB (= max. shared memory)
 #define MAXCOUNTDATA 800 //for compute capability 1.x - currently ca. 800 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 16 kB (= max. shared memory)
 
-#define DATATYPE short int
+#define DATATYPE float //if data texture is used, can not be changed to integer types
 #define MAXCALL 100
 #define COUNTPARAM 3
 #define PARAMSTARTVALUE { 1, 1, 1 } //any value, but not { 0, 0, 0 } (count = COUNTPARAM)
+
+#define FITVALUETHRESHOLD 0.0 //0.5 //threshold between min (0.0) and max (1.0) value to define the data using interval to calculate the fit function
+#define STARTENDPROPORTION 0.01 //proportion of countData for calculating the average of start/end value (e. g. 0.1 means average of the first 10% of data for start value and the last 10% for end value)
+
+//------------------------
+
+#ifdef CUDA
+texture<DATATYPE, 2, cudaReadModeElementType> dataTexture; //-> GLOBAL DEFINITION
+#define GETSAMPLE(I, INDEXDATASET) tex2D(dataTexture, (I) + 0.5, (INDEXDATASET) + 0.5)
+#else
+DATATYPE *data;
+#define GETSAMPLE(I, INDEXDATASET) data[I] //INDEXDATASET has no effect (only for CUDA)
+#endif
+
+//--- GLOBAL DEFINITIONS ---
+
+struct fitData {
+	float param[COUNTPARAM];
+	float startValue;
+	float endValue;
+	float extremumPos;
+	float extremumValue;
+	int status;
+};
+const char *statusMessage[] = { //indexed by fitData.status
+/* 0 */	"fatal coding error (improper input parameters)",
+/* 1 */	"success (the relative error in the sum of squares is at most tol)",
+/* 2 */	"success (the relative error between x and the solution is at most tol)",
+/* 3 */	"success (the relative errors in the sum of squares and between x and the solution are at most tol)",
+/* 4 */	"trapped by degeneracy (fvec is orthogonal to the columns of the jacobian)",
+/* 5 */	"timeout (number of calls to fcn has reached maxcall*(n+1))",
+/* 6 */	"failure (ftol<tol: cannot reduce sum of squares any further)",
+/* 7 */	"failure (xtol<tol: cannot improve approximate solution any further)",
+/* 8 */	"failure (gtol<tol: cannot improve approximate solution any further)"
+};
 
 //------------------------
 
@@ -56,14 +90,6 @@ Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 #include <math.h>
 #include <float.h>
 #include <stdio.h>
-
-struct fitData {
-	float param[COUNTPARAM];
-	float startValue;
-	float endValue;
-	float extremumPos; //or replace to timestamp
-	float extremumValue;
-};
 
 #ifdef CUDA
 #define GLOBAL __global__
@@ -82,31 +108,19 @@ struct fitData {
 #define LM_SQRT_GIANT sqrt(FLT_MAX) //square should not overflow
 #define LM_USERTOL    30*LM_MACHEP  //users are recommened to require this
 
-//following messages are indexed by the variable info
-const char *lm_infmsg[] = {
-	"fatal coding error (improper input parameters)",
-	"success (the relative error in the sum of squares is at most tol)",
-	"success (the relative error between x and the solution is at most tol)",
-	"success (both errors are at most tol)",
-	"trapped by degeneracy (fvec is orthogonal to the columns of the jacobian)"
-	"timeout (number of calls to fcn has reached maxcall*(n+1))",
-	"failure (ftol<tol: cannot reduce sum of squares any further)",
-	"failure (xtol<tol: cannot improve approximate solution any further)",
-	"failure (gtol<tol: cannot improve approximate solution any further)",
-	"exception (not enough memory)"
-};
+#define MIN(A, B) (((A) <= (B)) ? (A) : (B))
+#define MAX(A, B) (((A) >= (B)) ? (A) : (B))
+#define SQR(X)    ((X) * (X))
 
-#define MIN(a,b) (((a)<=(b)) ? (a) : (b))
-#define MAX(a,b) (((a)>=(b)) ? (a) : (b))
-#define SQR(x)   (x)*(x)
+//--- USER DEFINITIONS ---
 
-DEVICE void fitFunction(float x, float* param, float* y) //get y(x)
+DEVICE inline void fitFunction(float x, float *param, float *y) //get y(x)
 {
-	*y = param[0] * x * x + param[1] * x + param[2];
+	*y = param[0] * SQR(x) + param[1] * x + param[2];
 	//*y = param[0] * exp(param[1] * (x + param[2]) * (x + param[2])) + param[3];
 }
 
-DEVICE void fitFunctionExtremum(float* param, float* x) //get x
+DEVICE inline void fitFunctionExtremum(float *param, float *x) //get x
 {
 	//f': y = 2 * param[0] * x + param[1] and y = 0
 	if (param[0] == 0)
@@ -115,25 +129,27 @@ DEVICE void fitFunctionExtremum(float* param, float* x) //get x
 		*x = -param[1] / (2 * param[0]);
 }
 
-DEVICE void lm_evaluate(float *param, int countData, float *fvec, DATATYPE *data)
+//------------------------
+
+DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset)
 {
 	int i;
 	float y;
 
 	for (i = 0; i < countData; i++) {
-		fitFunction(i, param, &y); //fitFunction(xdata[i], param, &y); //if i is not equivalent to x-coord. (add parameter xdata)
-		fvec[i] = data[i] - y;
+		fitFunction(i + xOffset, param, &y);
+		fvec[i] = GETSAMPLE(i, indexDataset) - y;
 	}
 }
 
-DEVICE void lm_qrsolv(int n, float *r, int ldr, int *ipvt, float *diag,
+DEVICE void qrSolve(int n, float *r, int ldr, int *ipvt, float *diag,
 			   float *qtb, float *x, float *sdiag, float *wa)
 {
 	int i, kk, j, k, nsing;
 	float qtbpj, sum, temp;
 	float _sin, _cos, _tan, _cot; /* local variables, not functions */
 
-	/*** qrsolv: copy r and (q transpose)*b to preserve input and initialize s.
+	/*** qrSolve: copy r and (q transpose)*b to preserve input and initialize s.
 	in particular, save the diagonal elements of r in x. ***/
 
 	for (j = 0; j < n; j++) {
@@ -143,11 +159,11 @@ DEVICE void lm_qrsolv(int n, float *r, int ldr, int *ipvt, float *diag,
 		wa[j] = qtb[j];
 	}
 
-	/*** qrsolv: eliminate the diagonal matrix d using a givens rotation. ***/
+	/*** qrSolve: eliminate the diagonal matrix d using a givens rotation. ***/
 
 	for (j = 0; j < n; j++) {
 
-		/*** qrsolv: prepare the row of d to be eliminated, locating the
+		/*** qrSolve: prepare the row of d to be eliminated, locating the
 		diagonal element using p from the qr factorization. ***/
 
 		if (diag[ipvt[j]] != 0.)
@@ -156,7 +172,7 @@ DEVICE void lm_qrsolv(int n, float *r, int ldr, int *ipvt, float *diag,
 				sdiag[k] = 0.;
 			sdiag[j] = diag[ipvt[j]];
 
-			/*** qrsolv: the transformations to eliminate the row of d modify only 
+			/*** qrSolve: the transformations to eliminate the row of d modify only 
 			a single element of (q transpose)*b beyond the first n, which is
 			initially 0.. ***/
 
@@ -204,7 +220,7 @@ DEVICE void lm_qrsolv(int n, float *r, int ldr, int *ipvt, float *diag,
 		r[j * ldr + j] = x[j];
 	}
 
-	/*** qrsolv: solve the triangular system for z. if the system is
+	/*** qrSolve: solve the triangular system for z. if the system is
 	singular, then obtain a least squares solution. ***/
 
 	nsing = n;
@@ -222,13 +238,13 @@ DEVICE void lm_qrsolv(int n, float *r, int ldr, int *ipvt, float *diag,
 		wa[j] = (wa[j] - sum) / sdiag[j];
 	}
 
-	/*** qrsolv: permute the components of z back to components of x. ***/
+	/*** qrSolve: permute the components of z back to components of x. ***/
 
 	for (j = 0; j < n; j++)
 		x[ipvt[j]] = wa[j];
 }
 
-DEVICE void lm_enorm(int n, float *x, float* result)
+DEVICE void euclidNorm(int n, float *x, float* result)
 {
 	int i;
 	float agiant, s1, s2, s3, xabs, x1max, x3max, temp;
@@ -289,7 +305,7 @@ DEVICE void lm_enorm(int n, float *x, float* result)
 
 }
 
-DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
+DEVICE void lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 			  float *qtb, float delta, float *par, float *x,
 			  float *sdiag, float *wa1, float *wa2)
 {
@@ -325,7 +341,7 @@ DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 	iter = 0;
 	for (j = 0; j < n; j++)
 		wa2[j] = diag[j] * x[j];
-	lm_enorm(n, wa2, &dxnorm);
+	euclidNorm(n, wa2, &dxnorm);
 	fp = dxnorm - delta;
 	if (fp <= 0.1 * delta) {
 		*par = 0;
@@ -347,7 +363,7 @@ DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 				sum += r[j * ldr + i] * wa1[i];
 			wa1[j] = (wa1[j] - sum) / r[j + ldr * j];
 		}
-		lm_enorm(n, wa1, &temp);
+		euclidNorm(n, wa1, &temp);
 		parl = fp / delta / temp / temp;
 	}
 
@@ -359,7 +375,7 @@ DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 			sum += r[j * ldr + i] * qtb[i];
 		wa1[j] = sum / diag[ipvt[j]];
 	}
-	lm_enorm(n, wa1, &gnorm);
+	euclidNorm(n, wa1, &gnorm);
 	paru = gnorm / delta;
 	if (paru == 0.)
 		paru = LM_DWARF / MIN(delta, 0.1);
@@ -383,10 +399,10 @@ DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 		temp = sqrt(*par);
 		for (j = 0; j < n; j++)
 			wa1[j] = temp * diag[j];
-		lm_qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
+		qrSolve(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
 		for (j = 0; j < n; j++)
 			wa2[j] = diag[j] * x[j];
-		lm_enorm(n, wa2, &dxnorm);
+		euclidNorm(n, wa2, &dxnorm);
 		fp_old = fp;
 		fp = dxnorm - delta;
 
@@ -409,7 +425,7 @@ DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 			for (i = j + 1; i < n; i++)
 				wa1[i] -= r[j * ldr + i] * wa1[j];
 		}
-		lm_enorm(n, wa1, &temp);
+		euclidNorm(n, wa1, &temp);
 		parc = fp / delta / temp / temp;
 
 		/** depending on the sign of the function, update parl or paru. **/
@@ -426,7 +442,7 @@ DEVICE void lm_lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 	}
 }
 
-DEVICE void lm_qrfac(int m, int n, float *a, int pivot, int *ipvt,
+DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt,
 			  float *rdiag, float *acnorm, float *wa)
 {
 	int i, j, k, kmax, minmn;
@@ -435,7 +451,7 @@ DEVICE void lm_qrfac(int m, int n, float *a, int pivot, int *ipvt,
 	/*** qrfac: compute initial column norms and initialize several arrays. ***/
 
 	for (j = 0; j < n; j++) {
-		lm_enorm(m, &a[j * m], &acnorm[j]);
+		euclidNorm(m, &a[j * m], &acnorm[j]);
 		rdiag[j] = acnorm[j];
 		wa[j] = rdiag[j];
 		if (pivot)
@@ -474,7 +490,7 @@ DEVICE void lm_qrfac(int m, int n, float *a, int pivot, int *ipvt,
 		/** compute the Householder transformation to reduce the
 		j-th column of a to a multiple of the j-th unit vector. **/
 
-		lm_enorm(m - j, &a[j * m + j], &ajnorm);
+		euclidNorm(m - j, &a[j * m + j], &ajnorm);
 		if (ajnorm == 0.) {
 			rdiag[j] = 0;
 			continue;
@@ -506,7 +522,7 @@ DEVICE void lm_qrfac(int m, int n, float *a, int pivot, int *ipvt,
 				rdiag[k] *= sqrt(temp);
 				temp = rdiag[k] / wa[k];
 				if (0.05 * SQR(temp) <= LM_MACHEP) {
-					lm_enorm(m - j - 1, &a[m * k + j + 1], &rdiag[k]);
+					euclidNorm(m - j - 1, &a[m * k + j + 1], &rdiag[k]);
 					wa[k] = rdiag[k];
 				}
 			}
@@ -516,12 +532,12 @@ DEVICE void lm_qrfac(int m, int n, float *a, int pivot, int *ipvt,
 	}
 }
 
-DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
+DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol,
 			  float xtol, float gtol, int maxfev, float epsfcn,
 			  float *diag, int mode, float factor, int *info, int *nfev,
 			  float *fjac, int *ipvt, float *qtf, float *wa1,
 			  float *wa2, float *wa3, float *wa4,
-			  DATATYPE *data)
+			  int indexDataset, int xOffset)
 {
 	int i, iter, j;
 	float actred, delta, dirder, eps, fnorm, fnorm1, gnorm, par, pnorm,
@@ -554,9 +570,9 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 	/*** lmdif: evaluate function at starting point and calculate norm. ***/
 
 	*info = 0;
-	lm_evaluate(x, m, fvec, data);
+	evaluate(x, m, fvec, indexDataset, xOffset);
 	++(*nfev);
-	lm_enorm(m, fvec, &fnorm);
+	euclidNorm(m, fvec, &fnorm);
 
 	/*** lmdif: the outer loop. ***/
 
@@ -571,7 +587,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 				step = eps;
 			x[j] = temp + step;
 			*info = 0;
-			lm_evaluate(x, m, wa4, data);
+			evaluate(x, m, wa4, indexDataset, xOffset);
 			for (i = 0; i < m; i++) /* changed in 2.3, Mark Bydder */
 				fjac[j * m + i] = (wa4[i] - fvec[i]) / (x[j] - temp);
 			x[j] = temp;
@@ -579,7 +595,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 
 		/*** outer: compute the qr factorization of the jacobian. ***/
 
-		lm_qrfac(m, n, fjac, 1, ipvt, wa1, wa2, wa3);
+		qrFactorization(m, n, fjac, 1, ipvt, wa1, wa2, wa3);
 
 		if (iter == 1) { /* first iteration */
 			if (mode != 2) {
@@ -593,7 +609,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 			/* use diag to scale x, then calculate the norm */
 			for (j = 0; j < n; j++)
 				wa3[j] = diag[j] * x[j];
-			lm_enorm(n, wa3, &xnorm);
+			euclidNorm(n, wa3, &xnorm);
 			/* initialize the step bound delta. */
 			delta = factor * xnorm;
 			if (delta == 0.)
@@ -650,7 +666,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 		do {
 			/*** inner: determine the levenberg-marquardt parameter. ***/
 
-			lm_lmpar(n, fjac, m, ipvt, diag, qtf, delta, &par,
+			lmpar(n, fjac, m, ipvt, diag, qtf, delta, &par,
 				wa1, wa2, wa3, wa4);
 
 			/*** inner: store the direction p and x + p; calculate the norm of p. ***/
@@ -660,7 +676,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 				wa2[j] = x[j] + wa1[j];
 				wa3[j] = diag[j] * wa1[j];
 			}
-			lm_enorm(n, wa3, &pnorm);
+			euclidNorm(n, wa3, &pnorm);
 
 			/*** inner: on the first iteration, adjust the initial step bound. ***/
 
@@ -670,10 +686,10 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 			/* evaluate the function at x + p and calculate its norm. */
 
 			*info = 0;
-			lm_evaluate(wa2, m, wa4, data);
+			evaluate(wa2, m, wa4, indexDataset, xOffset);
 			++(*nfev);
 
-			lm_enorm(m, wa4, &fnorm1);
+			euclidNorm(m, wa4, &fnorm1);
 
 			/*** inner: compute the scaled actual reduction. ***/
 
@@ -690,7 +706,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 				for (i = 0; i <= j; i++)
 					wa3[i] += fjac[j * m + i] * wa1[ipvt[j]];
 			}
-			lm_enorm(n, wa3, &temp1);
+			euclidNorm(n, wa3, &temp1);
 			temp1 /= fnorm;
 			temp2 = sqrt(par) * pnorm / fnorm;
 			prered = SQR(temp1) + 2 * SQR(temp2);
@@ -726,7 +742,7 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 				}
 				for (i = 0; i < m; i++)
 					fvec[i] = wa4[i];
-				lm_enorm(n, wa2, &xnorm);
+				euclidNorm(n, wa2, &xnorm);
 				fnorm = fnorm1;
 				iter++;
 			}
@@ -765,12 +781,64 @@ DEVICE void lm_lmdif(int m, int n, float *x, float *fvec, float ftol,
 
 }
 
-GLOBAL void kernel(int countData, DATATYPE *data, struct fitData *result)
+DEVICE void maxValue(int countData, int indexDataset, int *x, DATATYPE *y)
 {
+	int i;
+	*x = 0;
+	*y = GETSAMPLE(0, indexDataset);
+	for (i = 0; i < countData; i++)
+		if (GETSAMPLE(i, indexDataset) > *y) {
+			*y = GETSAMPLE(i, indexDataset);
+			*x = i;
+		}
+}
+
+DEVICE void averageValue(int start, int count, int indexDataset, float *y)
+{
+	int i;
+	float sum = 0;
+
+	for (i = start; i < start + count; i++)
+		sum += GETSAMPLE(i, indexDataset);
+	*y = sum / count;
+}
+
+DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x)
+{
+	int i;
+	*x = -1;
+	if (fromDirection == 'l') {
+		for (i = 0; i < countData; i++)
+			if (GETSAMPLE(i, indexDataset) >= minValue) {
+				*x = i;
+				break;
+			}
+	}
+	else if (fromDirection == 'r')
+		for (i = countData - 1; i >= 0; i--)
+			if (GETSAMPLE(i, indexDataset) >= minValue) {
+				*x = i;
+				break;
+			}
+}
+
+GLOBAL void kernel(int countData, struct fitData *result)
+{
+#ifdef CUDA
+	int indexDataset = blockIdx.x + blockIdx.y * gridDim.x + blockIdx.z * gridDim.x * gridDim.y;
+
+	if (threadIdx.x > 0 || threadIdx.y > 0 || threadIdx.z > 0)
+		return; //currently, the number of threads per block must be 1 (in the future used for simultaneous calculations in one dataset)
+#else
+	int indexDataset = 0;
+#endif
+
 	float param[COUNTPARAM] = PARAMSTARTVALUE;
 	int nfev = 0, info = 0, i;
 
-	//TODO IMPORTANT: check if only one thread per shared memory runs the following code
+	int maxX, firstValue, lastValue, countAverage;
+	DATATYPE maxY;
+
 	SHARED float fvec[MAXCOUNTDATA];
 	SHARED float fjac[COUNTPARAM * MAXCOUNTDATA];
 	SHARED float wa4[MAXCOUNTDATA];
@@ -779,49 +847,80 @@ GLOBAL void kernel(int countData, DATATYPE *data, struct fitData *result)
 	float wa1[COUNTPARAM], wa2[COUNTPARAM], wa3[COUNTPARAM];
 	int ipvt[COUNTPARAM];
 
-	lm_lmdif(countData, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
+	maxValue(countData, indexDataset, &maxX, &maxY);
+	xOfValue(countData, indexDataset, 'l', (maxY - GETSAMPLE(0, indexDataset)) * FITVALUETHRESHOLD + GETSAMPLE(0, indexDataset), &firstValue);
+	xOfValue(countData, indexDataset, 'r', (maxY - GETSAMPLE(countData - 1, indexDataset)) * FITVALUETHRESHOLD + GETSAMPLE(countData - 1, indexDataset), &lastValue);
+
+	lmdif(lastValue - firstValue + 1, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
 		MAXCALL * (COUNTPARAM + 1), LM_USERTOL, diag, 1, 100, &info,
-		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, data);
+		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, indexDataset, firstValue);
 
 	for (i = 0; i < COUNTPARAM; i++)
-		result->param[i] = param[i];
-	//result->startValue = ... coming soon, see TODO (2) and (3)
-	//result->endValue = ...
-	fitFunctionExtremum(param, &result->extremumPos);
-	fitFunction(result->extremumPos, param, &result->extremumValue);
+		result[indexDataset].param[i] = param[i];
+	countAverage = countData * STARTENDPROPORTION;
+	if (countData > 0 && countAverage == 0)
+		countAverage = 1;
+	averageValue(0, countAverage, indexDataset, &result[indexDataset].startValue);
+	averageValue(countData - countAverage, countAverage, indexDataset, &result[indexDataset].endValue);
+	fitFunctionExtremum(param, &result[indexDataset].extremumPos);
+	fitFunction(result[indexDataset].extremumPos, param, &result[indexDataset].extremumValue);
+	result[indexDataset].status = info;
 }
 
 
-//only for testing
+//example data, only for testing
 int main()
 {
-	int countData = 3;
-	DATATYPE data[3] = { 2, 5, 2 }; //if index is equivalent to x-coord. (-> xdata[3] = { 0, 1, 2 }) then result should be: param[3] = { -3, 6, 2 }
-	struct fitData result;
-	
 #ifdef CUDA
-	DATATYPE* d_data;
-	cudaMalloc((void**)&d_data, sizeof(float) * countData);
-	cudaMemcpy(d_data, data, sizeof(float) * countData, cudaMemcpyHostToDevice);
-	
+	int countData = 3;
+	int countDatasets = 2;
+	DATATYPE testData[2][3] = { { 2, 5, 2 }, { 1, 4, 1 } };
+	struct fitData result[2];
+
 	struct fitData* d_result;
-	cudaMalloc((void**)&d_result, sizeof(struct fitData));
-	cudaMemcpy(d_result, &result, sizeof(struct fitData), cudaMemcpyHostToDevice);
-	
-	kernel<<<1, 1>>>(countData, d_data, d_result);
+	cudaMalloc((void**)&d_result, sizeof(struct fitData) * countDatasets);
+	cudaMemcpy(d_result, result, sizeof(struct fitData) * countDatasets, cudaMemcpyHostToDevice);
 
-	cudaMemcpy(&result, d_result, sizeof(struct fitData), cudaMemcpyDeviceToHost);
+	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<DATATYPE>();
+	cudaArray *dataArray;
+	cudaMallocArray(&dataArray, &channelDesc, countData, countDatasets);
+	cudaMemcpyToArray(dataArray, 0, 0, testData, sizeof(DATATYPE) * countData * countDatasets, cudaMemcpyHostToDevice);
 
-	cudaFree(d_data);
-	cudaFree(d_result); 
+	dataTexture.normalized = 0;
+	dataTexture.filterMode = cudaFilterModeLinear;
+	dataTexture.addressMode[0] = cudaAddressModeClamp;
+	dataTexture.addressMode[1] = cudaAddressModeClamp;
+
+	cudaBindTextureToArray(dataTexture, dataArray);
+
+	dim3 grid(countDatasets, 1, 1); //number of blocks (in all dimensions) = number of datasets
+	//currently, the number of threads per block must be 1 (in the future used for simultaneous calculations in one dataset)
+	kernel<<<grid, 1>>>(countData, d_result);
+
+	cudaMemcpy(result, d_result, sizeof(struct fitData) * countDatasets, cudaMemcpyDeviceToHost);
+
+	cudaUnbindTexture(dataTexture);
+	cudaFreeArray(dataArray);
+	cudaFree(d_result);
 #else
-	kernel(countData, data, &result);
+	int countData = 3;
+	int countDatasets = 1;
+	DATATYPE testData[3] = { 2, 5, 2 };
+	struct fitData result[1];
+
+	data = testData;
+	kernel(countData, result);
 #endif
 
-	printf("f: y = %f * t ^ 2 + %f * t + %f\n", result.param[0], result.param[1], result.param[2]);
-	//printf("f: %f * e ^ (%f * (x + %f) ^ 2) + %f\n", result.param[0], result.param[1], result.param[2], result.param[3]);
-	printf("min/max - x: %f\n", result.extremumPos);
-	printf("min/max - y: %f\n", result.extremumValue);
+	for (int i = 0; i < countDatasets; i++) {
+		printf("f: y = %f * t ^ 2 + %f * t + %f\n", result[i].param[0], result[i].param[1], result[i].param[2]);
+		//printf("f: %f * e ^ (%f * (x + %f) ^ 2) + %f\n", result[i].param[0], result[i].param[1], result[i].param[2], result[i].param[3]);
+		printf("min/max - x: %f\n", result[i].extremumPos);
+		printf("min/max - y: %f\n", result[i].extremumValue);
+		printf("start - y: %f\n", result[i].startValue);
+		printf("end - y: %f\n", result[i].endValue);
+		printf("status: %d: %s\n", result[i].status, statusMessage[result[i].status]);
+	}
 
 	return 0;
 }
