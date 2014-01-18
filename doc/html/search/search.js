@@ -7,14 +7,16 @@
 
 var indexSectionsWithContent =
 {
-  0: "d",
-  1: "d"
+  0: "fgnor",
+  1: "nor",
+  2: "fgo"
 };
 
 var indexSectionNames =
 {
   0: "all",
-  1: "pages"
+  1: "classes",
+  2: "functions"
 };
 
 function convertToId(search)
