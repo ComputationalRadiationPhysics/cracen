@@ -61,6 +61,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -68,7 +69,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -91,32 +92,39 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define TYPES_H</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor"></span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;ostream&gt;</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;Constants.h&quot;</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;Ringbuffer.h&quot;</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">short</span> <span class="keywordtype">int</span> Precision;</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">typedef</span> Precision Sample[SAMPLE_COUNT];</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">typedef</span> Sample SampleChunk[CHUNK_COUNT];</div>
-<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="structOutput.html">   11</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    Precision p1,p2,p3;</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;} <a class="code" href="structOutput.html">Output</a>;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">/* defines how the output is written into the output file */</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;std::ostream&amp; operator&lt;&lt;(std::ostream&amp; lhs, <span class="keyword">const</span> <a class="code" href="structOutput.html">Output</a>&amp; rhs) {</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    lhs &lt;&lt; <span class="stringliteral">&quot;{p1=&quot;</span> &lt;&lt; rhs.p1 &lt;&lt; <span class="stringliteral">&quot;,p2=&quot;</span> &lt;&lt; rhs.p2 &lt;&lt; <span class="stringliteral">&quot;,p3=&quot;</span> &lt;&lt; rhs.p3 &lt;&lt; <span class="stringliteral">&quot;}&quot;</span>;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordflow">return</span> lhs;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;}</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;SampleChunk, CHUNK_BUFFER_COUNT&gt;</a> <a class="code" href="classRingbuffer.html">InputBuffer</a>;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;Output, CHUNK_BUFFER_COUNT&gt;</a> <a class="code" href="classRingbuffer.html">OutputBuffer</a>;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="structOutput_html"><div class="ttname"><a href="structOutput.html">Output</a></div><div class="ttdef"><b>Definition:</b> Types.h:11</div></div>
-<div class="ttc" id="classRingbuffer_html"><div class="ttname"><a href="classRingbuffer.html">Ringbuffer</a></div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:7</div></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Constants_8h.html">Constants.h</a>&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;Ringbuffer.h&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">short</span> <span class="keywordtype">int</span> Precision;</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">typedef</span> Precision Sample[<a class="code" href="Constants_8h.html#a2d7ef1a20e62c8311c9351dae8dd5a53">SAMPLE_COUNT</a>];</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">typedef</span> Sample SampleChunk[<a class="code" href="Constants_8h.html#aa1fd9fa96f35a4a8f85ca789fb51e1d6">CHUNK_COUNT</a>];</div>
+<div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="structfitData.html">   12</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structfitData.html">fitData</a> {</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keywordtype">float</span> param[COUNTPARAM];</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keywordtype">float</span> startValue;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keywordtype">float</span> endValue;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">float</span> extremumPos;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordtype">float</span> extremumValue;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordtype">int</span> status;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;};</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">typedef</span> <a class="code" href="structfitData.html">fitData</a> <a class="code" href="structfitData.html">Output</a>;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">// a waveform consisting of SAMPLE_COUNT samples is of type: wform_t</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">typedef</span> std::vector&lt;short int&gt; wform_t;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;SampleChunk&gt;</a> <a class="code" href="classRingbuffer.html">InputBuffer</a>;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;Output&gt;</a> <a class="code" href="classRingbuffer.html">OutputBuffer</a>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="structfitData_html"><div class="ttname"><a href="structfitData.html">fitData</a></div><div class="ttdef"><b>Definition:</b> Types.h:12</div></div>
+<div class="ttc" id="classRingbuffer_html"><div class="ttname"><a href="classRingbuffer.html">Ringbuffer</a></div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:9</div></div>
+<div class="ttc" id="Constants_8h_html"><div class="ttname"><a href="Constants_8h.html">Constants.h</a></div><div class="ttdoc">This File holds all configurations and constants. </div></div>
+<div class="ttc" id="Constants_8h_html_aa1fd9fa96f35a4a8f85ca789fb51e1d6"><div class="ttname"><a href="Constants_8h.html#aa1fd9fa96f35a4a8f85ca789fb51e1d6">CHUNK_COUNT</a></div><div class="ttdeci">const unsigned int CHUNK_COUNT</div><div class="ttdoc">Number of events copied to the GPU in one step. </div><div class="ttdef"><b>Definition:</b> Constants.h:16</div></div>
+<div class="ttc" id="Constants_8h_html_a2d7ef1a20e62c8311c9351dae8dd5a53"><div class="ttname"><a href="Constants_8h.html#a2d7ef1a20e62c8311c9351dae8dd5a53">SAMPLE_COUNT</a></div><div class="ttdeci">const unsigned int SAMPLE_COUNT</div><div class="ttdoc">Number of samples per event. </div><div class="ttdef"><b>Definition:</b> Constants.h:13</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jan 17 2014 17:29:47 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 14:51:27 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

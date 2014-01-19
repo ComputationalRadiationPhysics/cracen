@@ -29,7 +29,7 @@ public:
 	 *  the thread, which takes elements from the buffers and writes them into 
 	 *  the file.
 	 *
-	 *  \param Filename of the output file.
+	 *  \param file Filename of the output file.
 	 */
 	OutputStream(const std::string& file);
 	

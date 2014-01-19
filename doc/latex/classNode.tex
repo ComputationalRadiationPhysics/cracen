@@ -1,16 +1,62 @@
 \hypertarget{classNode}{\section{Node Class Reference}
 \label{classNode}\index{Node@{Node}}
 }
+
+
+{\ttfamily \#include $<$Node.\-h$>$}
+
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hypertarget{classNode_aa29cbc0bd8ad0632f939c49602f7ea36}{{\bfseries Node} (int device\-Identifier, \hyperlink{classRingbuffer}{Input\-Buffer} $\ast$input)}\label{classNode_aa29cbc0bd8ad0632f939c49602f7ea36}
+\hyperlink{classNode_a92525bdf79b65cee6f47ce90b8afa83c}{Node} (int device\-Identifier, \hyperlink{classRingbuffer}{Input\-Buffer} $\ast$input, \hyperlink{classRingbuffer}{Output\-Buffer} $\ast$output)
+\begin{DoxyCompactList}\small\item\em Basic constructor. \end{DoxyCompactList}\item 
+int \hyperlink{classNode_abdbd0dda21b0fd0ab2aa84e91099ef38}{stop} ()
+\begin{DoxyCompactList}\small\item\em Signals, that no new data will be written into the buffer. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
-\item 
-\hypertarget{classNode_abdbd0dda21b0fd0ab2aa84e91099ef38}{int {\bfseries stop} ()}\label{classNode_abdbd0dda21b0fd0ab2aa84e91099ef38}
 
-\end{DoxyCompactItemize}
+\subsection{Detailed Description}
+Each installed device should be handled by its own thread. This class provides all functions to create a thread, copy data to and from the device and start the kernel on the device. 
 
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classNode_a92525bdf79b65cee6f47ce90b8afa83c}{\index{Node@{Node}!Node@{Node}}
+\index{Node@{Node}!Node@{Node}}
+\subsubsection[{Node}]{\setlength{\rightskip}{0pt plus 5cm}Node\-::\-Node (
+\begin{DoxyParamCaption}
+\item[{int}]{device\-Identifier, }
+\item[{{\bf Input\-Buffer} $\ast$}]{input, }
+\item[{{\bf Output\-Buffer} $\ast$}]{output}
+\end{DoxyParamCaption}
+)}}\label{classNode_a92525bdf79b65cee6f47ce90b8afa83c}
+
+
+Basic constructor. 
+
+Stats a new Thread. The new Thread reads data from the input buffer, copies them to the gpu and copy the result back to the output buffer.
+
+
+\begin{DoxyParams}{Parameters}
+{\em device\-Identifier} & Number of the Device \\
+\hline
+{\em input} & Buffer which provides the raw input data. \\
+\hline
+{\em output} & Buffer which will be filled with the result data. \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classNode_abdbd0dda21b0fd0ab2aa84e91099ef38}{\index{Node@{Node}!stop@{stop}}
+\index{stop@{stop}!Node@{Node}}
+\subsubsection[{stop}]{\setlength{\rightskip}{0pt plus 5cm}int Node\-::stop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classNode_abdbd0dda21b0fd0ab2aa84e91099ef38}
+
+
+Signals, that no new data will be written into the buffer. 
+
+This function will make the \hyperlink{classNode}{Node} Thread stop, after all remaining elements in the buffer are written into the output file 
 
 The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
 \item 

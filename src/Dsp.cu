@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	
-	std::string filename = "Results.txt";
+	std::string filename = FILENAME_TESTFILE;
 	if(argc > 1) {
 		filename = argv[1];	
 	}

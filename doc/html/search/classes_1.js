@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['output',['Output',['../structOutput.html',1,'']]],
-  ['outputstream',['OutputStream',['../classOutputStream.html',1,'']]]
+  ['fitdata',['fitData',['../structfitData.html',1,'']]]
 ];

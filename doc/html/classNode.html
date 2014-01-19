@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -88,23 +88,90 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Node Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="Node_8h_source.html">Node.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa29cbc0bd8ad0632f939c49602f7ea36"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa29cbc0bd8ad0632f939c49602f7ea36"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Node</b> (int deviceIdentifier, <a class="el" href="classRingbuffer.html">InputBuffer</a> *input)</td></tr>
-<tr class="separator:aa29cbc0bd8ad0632f939c49602f7ea36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdbd0dda21b0fd0ab2aa84e91099ef38"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abdbd0dda21b0fd0ab2aa84e91099ef38"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>stop</b> ()</td></tr>
+<tr class="memitem:a92525bdf79b65cee6f47ce90b8afa83c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNode.html#a92525bdf79b65cee6f47ce90b8afa83c">Node</a> (int deviceIdentifier, <a class="el" href="classRingbuffer.html">InputBuffer</a> *input, <a class="el" href="classRingbuffer.html">OutputBuffer</a> *output)</td></tr>
+<tr class="memdesc:a92525bdf79b65cee6f47ce90b8afa83c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic constructor.  <a href="#a92525bdf79b65cee6f47ce90b8afa83c">More...</a><br/></td></tr>
+<tr class="separator:a92525bdf79b65cee6f47ce90b8afa83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdbd0dda21b0fd0ab2aa84e91099ef38"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNode.html#abdbd0dda21b0fd0ab2aa84e91099ef38">stop</a> ()</td></tr>
+<tr class="memdesc:abdbd0dda21b0fd0ab2aa84e91099ef38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signals, that no new data will be written into the buffer.  <a href="#abdbd0dda21b0fd0ab2aa84e91099ef38">More...</a><br/></td></tr>
 <tr class="separator:abdbd0dda21b0fd0ab2aa84e91099ef38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Each installed device should be handled by its own thread. This class provides all functions to create a thread, copy data to and from the device and start the kernel on the device. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a92525bdf79b65cee6f47ce90b8afa83c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Node::Node </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>deviceIdentifier</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classRingbuffer.html">InputBuffer</a> *&#160;</td>
+          <td class="paramname"><em>input</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classRingbuffer.html">OutputBuffer</a> *&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Basic constructor. </p>
+<p>Stats a new Thread. The new Thread reads data from the input buffer, copies them to the gpu and copy the result back to the output buffer.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">deviceIdentifier</td><td>Number of the Device </td></tr>
+    <tr><td class="paramname">input</td><td>Buffer which provides the raw input data. </td></tr>
+    <tr><td class="paramname">output</td><td>Buffer which will be filled with the result data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="abdbd0dda21b0fd0ab2aa84e91099ef38"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Node::stop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Signals, that no new data will be written into the buffer. </p>
+<p>This function will make the <a class="el" href="classNode.html">Node</a> Thread stop, after all remaining elements in the buffer are written into the output file </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/fabian/DSP/src/<a class="el" href="Node_8h_source.html">Node.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jan 17 2014 17:29:47 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 14:51:27 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

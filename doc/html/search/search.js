@@ -7,16 +7,20 @@
 
 var indexSectionsWithContent =
 {
-  0: "fgnor",
-  1: "nor",
-  2: "fgo"
+  0: "cdfgnors",
+  1: "dfnor",
+  2: "c",
+  3: "fgnos",
+  4: "cfs"
 };
 
 var indexSectionNames =
 {
   0: "all",
   1: "classes",
-  2: "functions"
+  2: "files",
+  3: "functions",
+  4: "variables"
 };
 
 function convertToId(search)

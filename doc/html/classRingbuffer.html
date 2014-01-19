@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Digital Signal Processing using CUDA: Ringbuffer&lt; Type, size &gt; Class Template Reference</title>
+<title>Digital Signal Processing using CUDA: Ringbuffer&lt; Type &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -85,27 +85,36 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classRingbuffer-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Ringbuffer&lt; Type, size &gt; Class Template Reference</div>  </div>
+<div class="title">Ringbuffer&lt; Type &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7f0978d6c11cb12b9883caa69dfc71d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7f0978d6c11cb12b9883caa69dfc71d0"></a>
+<tr class="memitem:a958802766ae9d4003db4fbbb251b45a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a958802766ae9d4003db4fbbb251b45a1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Ringbuffer</b> (unsigned int bSize)</td></tr>
+<tr class="separator:a958802766ae9d4003db4fbbb251b45a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8b2973f3ab190cf778535c394ba980d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8b2973f3ab190cf778535c394ba980d"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>writeFromHost</b> (Type *inputOnHost)</td></tr>
+<tr class="separator:ac8b2973f3ab190cf778535c394ba980d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97f008c10065843bbab49579c8ce3ce4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97f008c10065843bbab49579c8ce3ce4"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>copyToHost</b> (Type *outputOnHost)</td></tr>
+<tr class="separator:a97f008c10065843bbab49579c8ce3ce4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf64a0c3c16f208dd1191130b0d18b33"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf64a0c3c16f208dd1191130b0d18b33"></a>
 Type *&#160;</td><td class="memItemRight" valign="bottom"><b>reserveHead</b> ()</td></tr>
-<tr class="separator:a7f0978d6c11cb12b9883caa69dfc71d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a827be94f98570108e7efaaf2862ba82a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a827be94f98570108e7efaaf2862ba82a"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>freeHead</b> (Type *data)</td></tr>
-<tr class="separator:a827be94f98570108e7efaaf2862ba82a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6511837e275852eee89b8d2048ba9a1e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6511837e275852eee89b8d2048ba9a1e"></a>
+<tr class="separator:acf64a0c3c16f208dd1191130b0d18b33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d8b62be3d51a00930e7b06d1ad2df53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d8b62be3d51a00930e7b06d1ad2df53"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>freeHead</b> ()</td></tr>
+<tr class="separator:a1d8b62be3d51a00930e7b06d1ad2df53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3aadf9953f637b327125d96fa6d2c65c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3aadf9953f637b327125d96fa6d2c65c"></a>
 Type *&#160;</td><td class="memItemRight" valign="bottom"><b>reserveTail</b> ()</td></tr>
-<tr class="separator:a6511837e275852eee89b8d2048ba9a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e3617e49887a146de380aebdafe6296"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e3617e49887a146de380aebdafe6296"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>freeTail</b> (Type *gpu_data)</td></tr>
-<tr class="separator:a2e3617e49887a146de380aebdafe6296"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56a66fd5dd6d0f64448663f37313ea4d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56a66fd5dd6d0f64448663f37313ea4d"></a>
+<tr class="separator:a3aadf9953f637b327125d96fa6d2c65c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66193754bca336ed8b8f2d5a9a89995c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66193754bca336ed8b8f2d5a9a89995c"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>freeTail</b> ()</td></tr>
+<tr class="separator:a66193754bca336ed8b8f2d5a9a89995c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af746d95cfff3115957d01181484be191"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af746d95cfff3115957d01181484be191"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmpty</b> ()</td></tr>
-<tr class="separator:a56a66fd5dd6d0f64448663f37313ea4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:af746d95cfff3115957d01181484be191"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/fabian/DSP/src/<a class="el" href="Ringbuffer_8h_source.html">Ringbuffer.h</a></li>
@@ -113,7 +122,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmpty</b> ()</td></
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jan 17 2014 17:29:47 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 14:51:27 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

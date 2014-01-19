@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['getbuffer',['getBuffer',['../classOutputStream.html#a2b73b1601e6032c38639e12c82c9fac8',1,'OutputStream']]]
+  ['getbuffer',['getBuffer',['../classOutputStream.html#a0e0bc9c5542c5e56e7b331e19c31890d',1,'OutputStream']]]
 ];

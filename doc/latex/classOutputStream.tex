@@ -8,9 +8,9 @@
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{classOutputStream_a6428b7d4766c90e1068d22b412d36aee}{Output\-Stream} (std\-::string file)
+\hyperlink{classOutputStream_ab97193a7507f0c869503c94d823d24e7}{Output\-Stream} (const std\-::string \&file)
 \begin{DoxyCompactList}\small\item\em Basic constructor. \end{DoxyCompactList}\item 
-\hypertarget{classOutputStream_a2b73b1601e6032c38639e12c82c9fac8}{\hyperlink{classRingbuffer}{Ringbuffer} \& \hyperlink{classOutputStream_a2b73b1601e6032c38639e12c82c9fac8}{get\-Buffer} ()}\label{classOutputStream_a2b73b1601e6032c38639e12c82c9fac8}
+\hypertarget{classOutputStream_a0e0bc9c5542c5e56e7b331e19c31890d}{\hyperlink{classRingbuffer}{Ringbuffer}$<$ \hyperlink{structfitData}{Output} $>$ $\ast$ \hyperlink{classOutputStream_a0e0bc9c5542c5e56e7b331e19c31890d}{get\-Buffer} ()}\label{classOutputStream_a0e0bc9c5542c5e56e7b331e19c31890d}
 
 \begin{DoxyCompactList}\small\item\em Returns a reference of the buffer. \end{DoxyCompactList}\item 
 void \hyperlink{classOutputStream_a745f5ac06041a45658853aef664de0fd}{finish} ()
@@ -21,13 +21,13 @@ void \hyperlink{classOutputStream_a745f5ac06041a45658853aef664de0fd}{finish} ()
 Class that provides all functions to write the results of the computation into a file. 
 
 \subsection{Constructor \& Destructor Documentation}
-\hypertarget{classOutputStream_a6428b7d4766c90e1068d22b412d36aee}{\index{Output\-Stream@{Output\-Stream}!Output\-Stream@{Output\-Stream}}
+\hypertarget{classOutputStream_ab97193a7507f0c869503c94d823d24e7}{\index{Output\-Stream@{Output\-Stream}!Output\-Stream@{Output\-Stream}}
 \index{Output\-Stream@{Output\-Stream}!OutputStream@{Output\-Stream}}
 \subsubsection[{Output\-Stream}]{\setlength{\rightskip}{0pt plus 5cm}Output\-Stream\-::\-Output\-Stream (
 \begin{DoxyParamCaption}
-\item[{std\-::string}]{file}
+\item[{const std\-::string \&}]{file}
 \end{DoxyParamCaption}
-)}}\label{classOutputStream_a6428b7d4766c90e1068d22b412d36aee}
+)}}\label{classOutputStream_ab97193a7507f0c869503c94d823d24e7}
 
 
 Basic constructor. 
@@ -36,7 +36,7 @@ Constructor opens a filestream, initialise the output buffer and start the threa
 
 
 \begin{DoxyParams}{Parameters}
-{\em Filename} & of the output file. \\
+{\em file} & Filename of the output file. \\
 \hline
 \end{DoxyParams}
 

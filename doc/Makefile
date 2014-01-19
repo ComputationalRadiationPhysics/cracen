@@ -1,7 +1,7 @@
 .PHONY: doc
 doc:
-	@doxygen Doxygen.conf
-	@$(MAKE) -C doc/latex all
-	@mv doc/latex/refman.pdf doc/Code_Documentation.pdf
-	@$(MAKE) -C doc/latex clean
+	@doxygen Doxygen.ini
+	@$(MAKE) -C latex all
+	@mv latex/refman.pdf Code_Documentation.pdf
+	@$(MAKE) -C latex clean
 	@echo "Complete."

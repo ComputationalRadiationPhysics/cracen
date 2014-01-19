@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -93,13 +93,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a6428b7d4766c90e1068d22b412d36aee"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#a6428b7d4766c90e1068d22b412d36aee">OutputStream</a> (std::string file)</td></tr>
-<tr class="memdesc:a6428b7d4766c90e1068d22b412d36aee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic constructor.  <a href="#a6428b7d4766c90e1068d22b412d36aee">More...</a><br/></td></tr>
-<tr class="separator:a6428b7d4766c90e1068d22b412d36aee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b73b1601e6032c38639e12c82c9fac8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b73b1601e6032c38639e12c82c9fac8"></a>
-<a class="el" href="classRingbuffer.html">Ringbuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#a2b73b1601e6032c38639e12c82c9fac8">getBuffer</a> ()</td></tr>
-<tr class="memdesc:a2b73b1601e6032c38639e12c82c9fac8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a reference of the buffer. <br/></td></tr>
-<tr class="separator:a2b73b1601e6032c38639e12c82c9fac8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab97193a7507f0c869503c94d823d24e7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#ab97193a7507f0c869503c94d823d24e7">OutputStream</a> (const std::string &amp;file)</td></tr>
+<tr class="memdesc:ab97193a7507f0c869503c94d823d24e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic constructor.  <a href="#ab97193a7507f0c869503c94d823d24e7">More...</a><br/></td></tr>
+<tr class="separator:ab97193a7507f0c869503c94d823d24e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e0bc9c5542c5e56e7b331e19c31890d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e0bc9c5542c5e56e7b331e19c31890d"></a>
+<a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; <a class="el" href="structfitData.html">Output</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#a0e0bc9c5542c5e56e7b331e19c31890d">getBuffer</a> ()</td></tr>
+<tr class="memdesc:a0e0bc9c5542c5e56e7b331e19c31890d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a reference of the buffer. <br/></td></tr>
+<tr class="separator:a0e0bc9c5542c5e56e7b331e19c31890d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a745f5ac06041a45658853aef664de0fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#a745f5ac06041a45658853aef664de0fd">finish</a> ()</td></tr>
 <tr class="memdesc:a745f5ac06041a45658853aef664de0fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signals, that no new data will be written into the buffer.  <a href="#a745f5ac06041a45658853aef664de0fd">More...</a><br/></td></tr>
 <tr class="separator:a745f5ac06041a45658853aef664de0fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -107,14 +107,14 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that provides all functions to write the results of the computation into a file. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a6428b7d4766c90e1068d22b412d36aee"></a>
+<a class="anchor" id="ab97193a7507f0c869503c94d823d24e7"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">OutputStream::OutputStream </td>
           <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>file</em></td><td>)</td>
           <td></td>
         </tr>
@@ -125,7 +125,7 @@ Public Member Functions</h2></td></tr>
 <p>Constructor opens a filestream, initialise the output buffer and start the thread, which takes elements from the buffers and writes them into the file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">Filename</td><td>of the output file. </td></tr>
+    <tr><td class="paramname">file</td><td>Filename of the output file. </td></tr>
   </table>
   </dd>
 </dl>
@@ -157,7 +157,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jan 17 2014 17:29:47 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 14:51:27 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
