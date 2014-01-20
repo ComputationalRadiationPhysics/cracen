@@ -36,57 +36,7 @@ Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
           corrections, comments, wrappers, hosting).
 */
 
-#ifdef CUDA
-
-#define GETSAMPLE(I, INDEXDATASET) tex2D(dataTexture, (I) + 0.5, (INDEXDATASET) + 0.5)
-#else
-DATATYPE *data;
-#define GETSAMPLE(I, INDEXDATASET) data[I] //INDEXDATASET has no effect (only for CUDA)
-#endif
-
-//--- GLOBAL DEFINITIONS ---
-
-const char *statusMessage[] = { //indexed by fitData.status
-/* 0 */	"fatal coding error (improper input parameters)",
-/* 1 */	"success (the relative error in the sum of squares is at most tol)",
-/* 2 */	"success (the relative error between x and the solution is at most tol)",
-/* 3 */	"success (the relative errors in the sum of squares and between x and the solution are at most tol)",
-/* 4 */	"trapped by degeneracy (fvec is orthogonal to the columns of the jacobian)",
-/* 5 */	"timeout (number of calls to fcn has reached maxcall*(n+1))",
-/* 6 */	"failure (ftol<tol: cannot reduce sum of squares any further)",
-/* 7 */	"failure (xtol<tol: cannot improve approximate solution any further)",
-/* 8 */	"failure (gtol<tol: cannot improve approximate solution any further)"
-};
-
-//------------------------
-
-#include <stdlib.h>
-#include <math.h>
-#include <float.h>
-#include <stdio.h>
-#include "Types.h"
-#include "Textures.h"
-
-#ifdef CUDA
-#define GLOBAL __global__
-#define DEVICE __device__
-#define SHARED __shared__
-#else
-#define GLOBAL
-#define DEVICE
-#define SHARED
-#endif
-
-//machine-dependent constants from float.h
-#define LM_MACHEP     FLT_EPSILON   //resolution of arithmetic
-#define LM_DWARF      FLT_MIN       //smallest nonzero number
-#define LM_SQRT_DWARF sqrt(FLT_MIN) //square should not underflow
-#define LM_SQRT_GIANT sqrt(FLT_MAX) //square should not overflow
-#define LM_USERTOL    30*LM_MACHEP  //users are recommened to require this
-
-#define MIN(A, B) (((A) <= (B)) ? (A) : (B))
-#define MAX(A, B) (((A) >= (B)) ? (A) : (B))
-#define SQR(X)    ((X) * (X))
+#include "LevMarq.h"
 
 //--- USER DEFINITIONS ---
 
@@ -843,7 +793,7 @@ GLOBAL void kernel(int countData, struct fitData *result)
 	result[indexDataset].status = info;
 }
 
-/*
+
 //example data, only for testing
 int main()
 {
@@ -899,5 +849,4 @@ int main()
 	}
 
 	return 0;
-}#
-*/
+}
