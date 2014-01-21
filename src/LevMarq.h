@@ -5,8 +5,6 @@
 #include <math.h>
 #include <float.h>
 #include <stdio.h>
-#include "Types.h"
-#include "Constants.h"
 #include "Textures.h"
 
 #define PARAMSTARTVALUE { 1, 1, 1 } //any value, but not { 0, 0, 0 } (count = COUNTPARAM)
@@ -20,18 +18,6 @@
 DATATYPE *data;
 #define GETSAMPLE(I, INDEXDATASET) data[I] //INDEXDATASET has no effect (only for CUDA)
 #endif
-
-const char *statusMessage[] = { //indexed by fitData.status
-/* 0 */	"fatal coding error (improper input parameters)",
-/* 1 */	"success (the relative error in the sum of squares is at most tol)",
-/* 2 */	"success (the relative error between x and the solution is at most tol)",
-/* 3 */	"success (the relative errors in the sum of squares and between x and the solution are at most tol)",
-/* 4 */	"trapped by degeneracy (fvec is orthogonal to the columns of the jacobian)",
-/* 5 */	"timeout (number of calls to fcn has reached maxcall*(n+1))",
-/* 6 */	"failure (ftol<tol: cannot reduce sum of squares any further)",
-/* 7 */	"failure (xtol<tol: cannot improve approximate solution any further)",
-/* 8 */	"failure (gtol<tol: cannot improve approximate solution any further)"
-};
 
 #ifdef CUDA
 #define GLOBAL __global__

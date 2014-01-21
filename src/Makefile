@@ -1,7 +1,7 @@
 CXX = nvcc
 CFLAGS = -g
 LFLAGS = -lpthread
-OBJECTS = Node.o Dsp.o OutputStream.o
+OBJECTS = Node.o Dsp.o OutputStream.o LevMarq.o
 TESTOBJECTS = DataReader.o tests.o
 
 
@@ -11,7 +11,10 @@ all: $(OBJECTS)
 test_DSP: $(TESTOBJECTS)
 	$(CXX) $(CFLAGS) $(LFLAGS) -o test_DSP $(TESTOBJECTS)
 
-%.o: %.cu
+Dsp.o: Dsp.cu
+	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Dsp.o Dsp.cu
+	
+%.o: %.cu %.h
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
 	
 .PHONY: run

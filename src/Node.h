@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include "Types.h"
+#include "LevMarq.h"
 
 /*! 
  *  Each installed device should be handled by its own thread. This class provides 
