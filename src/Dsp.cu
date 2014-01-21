@@ -30,9 +30,12 @@ int main(int argc, char* argv[]) {
 		output_filename = argv[2];
 	}
 	
+	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
 	/* Initialise buffer */
 	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT);
 	OutputStream os(output_filename);
+	
+	std::cout << "Buffer created." << std::endl;
 	
 	std::vector<Node> devices;
 	for(int i = 0; i < numberOfDevices; i++) {
@@ -40,7 +43,10 @@ int main(int argc, char* argv[]) {
 		devices.push_back(Node(i, &inputBuffer, os.getBuffer()));
 	}
 	
+	std::cout << "Nodes created." << std::endl;
+	
 	DataReader reader(input_filename, &inputBuffer);
+	reader._checkFileHeader();
 	reader.readToBufferAsync();
 	
 	return 0;

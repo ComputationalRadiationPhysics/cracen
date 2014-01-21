@@ -104,6 +104,7 @@ void DataReader::readToBufferAsync()
             	rb->freeHead();
             	
             	j = 0;
+            	std::cout << "Chunk written to input buffer" << std::endl;
             }
         }
         

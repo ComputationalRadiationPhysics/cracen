@@ -27,7 +27,7 @@ OutputStream::OutputStream(const std::string& file) :
 	oBuffer(CHUNK_BUFFER_COUNT),
 	done(false)
 {
-	run_helper(this);
+	pthread_create(&thread_tid, NULL, run_helper, this);
 }
 
 Ringbuffer<Output>* OutputStream::getBuffer() {

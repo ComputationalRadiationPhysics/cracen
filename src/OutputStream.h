@@ -15,6 +15,7 @@ private:
 	std::ofstream file;
 	Ringbuffer<Output> oBuffer;
 	bool done;
+	pthread_t thread_tid;
 	
 	void run();
 	static void* run_helper(void* This) { 

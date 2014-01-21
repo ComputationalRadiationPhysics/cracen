@@ -33,8 +33,8 @@ const unsigned int WAVEFORM_COUNT_TESTFILE = 100000;
  * \var MAXCOUNTDATA
  * \brief max. number of samples per event for compute capability 2.0 or higher - currently ca. 2450 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 48 kB (= max. shared memory); for compute capability 1.x - currently ca. 800 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 16 kB (= max. shared memory)
 */
-const unsigned int MAXCOUNTDATA = 800; //1000 //2450
-
+//const unsigned int MAXCOUNTDATA = 800; //1000 //2450
+const unsigned int MAXCOUNTDATA = 2450;
 /*!
  * \var MAXCALL
  * \brief max. calls for Levenberg Marquardt until stops
