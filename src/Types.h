@@ -25,4 +25,9 @@ typedef std::vector<short int> wform_t;
 typedef Ringbuffer<SampleChunk> InputBuffer;
 typedef Ringbuffer<Output> OutputBuffer;
 
+/*!
+ * \brief input data datatype for Levenberg Marquardt (if data texture is used, can not be changed to integer types)
+*/
+typedef float DATATYPE;
+
 #endif
