@@ -2,10 +2,11 @@
 
 DataReader::DataReader(const std::string& filename, InputBuffer* buffer) :
     inputFilename(filename),
-    nSamp(-1), nSeg(-1), nWf(-1)
+    nSamp(-1), nSeg(-1), nWf(-1),
+    rb(buffer)
 {
     channelBuffer.reserve(2*SAMPLE_COUNT);
-    this->_checkFileHeader();
+    _checkFileHeader();
 }
 
 DataReader::~DataReader()
@@ -91,7 +92,7 @@ void DataReader::readToBufferAsync()
             }
 			j += 2;
             
-            if(j > CHUNK_COUNT) {
+            if(j >= CHUNK_COUNT) {
             	//Copy data to ring buffer
     			//TODO : Replace the copy thing with a nice function
             	//rb->writeFromHost(&temp); //This can work because of missing copy constructors
@@ -102,9 +103,7 @@ void DataReader::readToBufferAsync()
 		        	}
 		        }
             	rb->freeHead();
-            	
             	j = 0;
-            	std::cout << "Chunk written to input buffer" << std::endl;
             }
         }
         

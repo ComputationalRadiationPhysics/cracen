@@ -32,7 +32,13 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	/* Get result */
 	cudaMemcpy(result, d_result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost);
 	/* Push result to output buffer */
-	//TODO!
+	
+	for(int i = 0; i < SAMPLE_COUNT; i++) {
+		if(true) { //TODO: Check for fit quality
+			oBuffer->writeFromHost(&result[i]);
+		}
+	}
+	
 	
 	return 0;
 }

@@ -45,9 +45,11 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Nodes created." << std::endl;
 	
-	DataReader reader(input_filename, &inputBuffer);
-	reader._checkFileHeader();
+	DataReader reader(input_filename, &inputBuffer);	
+	std::cout << "DataReader created" << std::endl;
+	
 	reader.readToBufferAsync();
+	std::cout << "Data read." << std::endl;
 	
 	return 0;
 }
