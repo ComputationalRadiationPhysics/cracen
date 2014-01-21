@@ -35,6 +35,7 @@ const unsigned int WAVEFORM_COUNT_TESTFILE = 100000;
 */
 //const unsigned int MAXCOUNTDATA = 800; //1000 //2450
 const unsigned int MAXCOUNTDATA = 1000;
+
 /*!
  * \var MAXCALL
  * \brief max. calls for Levenberg Marquardt until stops

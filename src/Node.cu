@@ -2,7 +2,6 @@
 #include "Constants.h"
 #include "Textures.h"
 
-
 Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
 	deviceIdentifier(deviceIdentifier),
 	finish(false),
@@ -14,7 +13,7 @@ Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
 
 int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	
-	fitData result[SAMPLE_COUNT];
+	fitData result[CHUNK_COUNT];
 		
 	/* Take a chunk from ringbuffer and copy to GPU */
 	/* Block ringbuffer */
@@ -24,16 +23,15 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	/* Free ringbuffer */
 	iBuffer->freeTail();
 	std::cout << "Chunk taken from input bufffer" << std::endl;
-		cudaMemcpy(d_result, result, sizeof(struct fitData) * SAMPLE_COUNT, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_result, result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Start kernel */
 
 	kernel<<<SAMPLE_COUNT, 1>>>(SAMPLE_COUNT, d_result);
-	
 	/* Get result */
 	cudaMemcpy(result, d_result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost);
 	/* Push result to output buffer */
 	
-	for(int i = 0; i < SAMPLE_COUNT; i++) {
+	for(int i = 0; i < CHUNK_COUNT; i++) {
 		if(true) { //TODO: Check for fit quality
 			oBuffer->writeFromHost(&result[i]);
 		}
