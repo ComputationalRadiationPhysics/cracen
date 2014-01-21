@@ -6,7 +6,7 @@
 #include "Constants.h"
 #include "Ringbuffer.h"
 
-typedef short int Precision;
+typedef float Precision;
 typedef Precision Sample[SAMPLE_COUNT];
 typedef Sample SampleChunk[CHUNK_COUNT];
 struct fitData {

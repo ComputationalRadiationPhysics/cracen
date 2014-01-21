@@ -21,6 +21,7 @@ const unsigned int CHUNK_BUFFER_COUNT = 1024;
  *  \brief  Interpolation mode */
 const cudaTextureFilterMode FILTER_MODE = cudaFilterModeLinear;
 
+const std::string OUTPUT_FILENAME = "results.txt";
 const std::string FILENAME_TESTFILE = "../data/Al_25keV-259.cdb";
 const unsigned int SAMPLE_COUNT_TESTFILE = 1000;
 const unsigned int SEGMENT_COUNT_TESTFILE = 1;

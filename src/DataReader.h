@@ -19,9 +19,8 @@ class DataReader {
 
 private:
     std::string inputFilename;
-    InputBufferWf* rb;
-    wform_t wfCh1;
-    wform_t wfCh2;
+    InputBuffer* rb;
+    SampleChunk temp;
     std::vector<short int> channelBuffer;
 
     int nSamp;
@@ -30,7 +29,7 @@ private:
     pthread_t readthread;
 
 public:
-    DataReader(std::string filename, InputBufferWf* buffer);
+    DataReader(const std::string& filename, InputBuffer* buffer);
     ~DataReader();
     int _checkFileHeader();
     void readToBufferAsync();

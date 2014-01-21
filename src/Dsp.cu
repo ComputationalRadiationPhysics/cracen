@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "OutputStream.h"
 #include "Constants.h"
+#include "DataReader.h"
 
 int main(int argc, char* argv[]) {
 	
@@ -19,20 +20,28 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	
-	std::string filename = FILENAME_TESTFILE;
+	std::string input_filename = FILENAME_TESTFILE;
+	std::string output_filename =  OUTPUT_FILENAME;
+	
 	if(argc > 1) {
-		filename = argv[1];	
+		input_filename = argv[1];	
+	}
+	if(argc > 2) {
+		output_filename = argv[2];
 	}
 	
 	/* Initialise buffer */
 	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT);
-	OutputStream os(filename);
+	OutputStream os(output_filename);
 	
 	std::vector<Node> devices;
 	for(int i = 0; i < numberOfDevices; i++) {
 		/* Start threads to handle Nodes */
 		devices.push_back(Node(i, &inputBuffer, os.getBuffer()));
 	}
+	
+	DataReader reader(input_filename, &inputBuffer);
+	reader.readToBufferAsync();
 	
 	return 0;
 }

@@ -1,7 +1,7 @@
 CXX = nvcc
 CFLAGS = -g
 LFLAGS = -lpthread
-OBJECTS = Node.o Dsp.o OutputStream.o LevMarq.o
+OBJECTS = Node.o Dsp.o OutputStream.o LevMarq.o DataReader.o
 TESTOBJECTS = DataReader.o tests.o
 
 

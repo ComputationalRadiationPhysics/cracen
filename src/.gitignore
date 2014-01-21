@@ -1,4 +1,5 @@
 *.o
+results.txt
 Results.txt
 DSP
 test_DSP

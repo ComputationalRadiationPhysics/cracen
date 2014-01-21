@@ -69,8 +69,8 @@ int Ringbuffer<Type>::writeFromHost(Type *inputOnHost)
     sem_post(&mtx);     // unlock buffer
     sem_post(&usage);   // tell them that there is something in buffer
     
-    int buffer_usage;
-    sem_getvalue(&usage, &buffer_usage);
+    //int buffer_usage;
+    //sem_getvalue(&usage, &buffer_usage);
     //std::cout << "Usage after write:" << buffer_usage << std::endl;
 	
 	return 0;
