@@ -1,6 +1,5 @@
 #include "Node.h"
-#include "Constants.h"
-#include "Textures.h"
+#include "LevMarq.h"
 
 Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
 	deviceIdentifier(deviceIdentifier),
