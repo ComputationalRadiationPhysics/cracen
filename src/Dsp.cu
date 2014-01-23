@@ -37,10 +37,10 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Buffer created." << std::endl;
 	
-	std::vector<Node> devices;
+	std::vector<Node*> devices;
 	for(int i = 0; i < numberOfDevices; i++) {
 		/* Start threads to handle Nodes */
-		devices.push_back(Node(i, &inputBuffer, os.getBuffer()));
+		devices.push_back(new Node(i, &inputBuffer, os.getBuffer()));
 	}
 	
 	std::cout << "Nodes created." << std::endl;

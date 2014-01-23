@@ -7,10 +7,7 @@ Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
 	iBuffer(input),
 	oBuffer(output)
 {
-	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-	pthread_mutex_lock( &mutex );
-	pthread_create(&thread_tid, NULL, run_helper, this); //Race Cond.
-	pthread_mutex_unlock( &mutex );
+	pthread_create(&thread_tid, NULL, run_helper, this); 
 }
 
 int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
@@ -24,7 +21,7 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	cudaMemcpyToArray(texArray, 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Free ringbuffer */
 	iBuffer->freeTail();
-	std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << ")" << std::endl;
+	std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 	cudaMemcpy(d_result, result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Start kernel */
 

@@ -32,6 +32,7 @@ public:
     int freeHead();
     Type* reserveTail();
     int freeTail();
+    int getSize();
     bool isEmpty();
 };
 
@@ -146,6 +147,14 @@ void fill_wform(Type wform, short int fill_value)
     }
 }
 */
+template <class Type>
+int Ringbuffer<Type>::getSize() {
+	int full_value;
+	sem_getvalue(&usage, &full_value);
+	return full_value;
+}
+
+
 template <class Type>
 bool Ringbuffer<Type>::isEmpty() {
 	int full_value, empty_value;
