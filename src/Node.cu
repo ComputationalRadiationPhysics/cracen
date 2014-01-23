@@ -44,10 +44,10 @@ void Node::run() {
 	/* 
 	 * Example for Texture usage found here
 	 * http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf
-	 */
-	
+	*/
 	/* Initialise device */
 	cudaSetDevice(deviceIdentifier);
+	std::cout << "Device " << deviceIdentifier << " initialised." << std::endl;
 	
 	/* Allocate memory */
 	cudaArray *texArray;
