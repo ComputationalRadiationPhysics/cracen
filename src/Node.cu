@@ -7,7 +7,10 @@ Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
 	iBuffer(input),
 	oBuffer(output)
 {
-	pthread_create(&thread_tid, NULL, run_helper, this);
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_lock( &mutex );
+	pthread_create(&thread_tid, NULL, run_helper, this); //Race Cond.
+	pthread_mutex_unlock( &mutex );
 }
 
 int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
