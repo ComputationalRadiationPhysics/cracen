@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
 	/* Initialise buffer */
-	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT);
-	OutputStream os(output_filename);
+	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
+	OutputStream os(output_filename, 4);
 	
 	std::cout << "Buffer created." << std::endl;
 	
@@ -50,6 +50,9 @@ int main(int argc, char* argv[]) {
 	
 	reader.readToBufferAsync();
 	std::cout << "Data read." << std::endl;
+	
+	//Make sure all results are written back
+	os.join();
 	
 	return 0;
 }

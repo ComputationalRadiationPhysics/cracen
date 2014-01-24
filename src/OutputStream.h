@@ -32,17 +32,13 @@ public:
 	 *
 	 *  \param file Filename of the output file.
 	 */
-	OutputStream(const std::string& file);
+	OutputStream(const std::string& file, int producer);
 	
 	//! Returns a reference of the buffer.
 	Ringbuffer<Output>* getBuffer();
 	
-	//! Signals, that no new data will be written into the buffer.
-	/*!
-	 * This function will make the Writeback Thread stop, after all remaining
-	 * elements in the buffer are written into the output file
-	 */
-	void finish();
+	//! Waits until the writing thread to stops
+	void join();
 };
 
 #endif

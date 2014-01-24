@@ -36,7 +36,7 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 		}
 	}
 	
-	
+	iBuffer->producerQuit();
 	return 0;
 }
 void Node::run() {
@@ -66,22 +66,13 @@ void Node::run() {
 	fitData* d_result;
 	cudaMalloc((void**)&d_result, sizeof(struct fitData) * SAMPLE_COUNT);
 
-	while(!finish) {
+	while(!iBuffer->isFinished()) {
 		copyChunk(texArray,  d_result);		
-	}
-	
-	/* Empty the the iBuffer */
-	while(!iBuffer->isEmpty()) {
-		copyChunk(texArray,  d_result);	
 	}
 	
 	cudaUnbindTexture(dataTexture);
 	cudaFreeArray(texArray);
 	cudaFree(d_result);
-}
-
-int Node::stop() {
-	/* Called by main thread if all sample data is transfered to the devices */
-	finish = true;
-	return 0;
+	
+	oBuffer->producerQuit();
 }

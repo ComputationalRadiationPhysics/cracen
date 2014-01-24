@@ -22,9 +22,10 @@ private:
     std::vector<Type> buffer;
     unsigned int bufferSize;
     unsigned int head, tail;
+    int producer;
 
 public:
-    Ringbuffer(unsigned int bSize);
+    Ringbuffer(unsigned int bSize, int producer);
     ~Ringbuffer();
     int writeFromHost(Type *inputOnHost);
     int copyToHost(Type *outputOnHost);
@@ -34,19 +35,22 @@ public:
     int freeTail();
     int getSize();
     bool isEmpty();
+    bool isFinished();
+    void producerQuit();
 };
 
 template <class Type>
-Ringbuffer<Type>::Ringbuffer(unsigned int bSize)
+Ringbuffer<Type>::Ringbuffer(unsigned int bSize, int producer) :
+	head(0),// We write new data to this position
+	tail(0),// We read stored data from this position
+	producer(producer)
 {
     buffer.reserve(bSize);
     std::cout << "Reserved buffer of size " << bSize << "\n";
     sem_init(&mtx, 0, 1);
     sem_init(&usage, 0, 0);
     sem_init(&space, 0, bSize);
-    bufferSize = bSize;
-    head = 0;   // We write new data to this position
-    tail = 0;   // We read stored data from this position
+    bufferSize = bSize; 
 }
 
 template <class Type>
@@ -163,4 +167,15 @@ bool Ringbuffer<Type>::isEmpty() {
 	return (full_value == 0) && (empty_value == bufferSize);
 }
 
+template <class Type>
+bool Ringbuffer<Type>::isFinished() {
+	int full_value, empty_value;
+	sem_getvalue(&usage, &full_value);
+	sem_getvalue(&space, &empty_value);
+	return (producer==0) && (full_value == 0) && (empty_value == bufferSize);
+}
+template <class Type>
+void Ringbuffer<Type>::producerQuit() {
+	__sync_sub_and_fetch(&producer,1);
+}
 #endif

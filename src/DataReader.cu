@@ -129,7 +129,7 @@ void DataReader::readToBufferAsync()
     } else {
         std::cout << "Failed to open file." << std::endl;
     }
-
+	rb->producerQuit();
     if (fs.is_open()) {
         fs.close();
     }

@@ -40,13 +40,6 @@ public:
 	 *  \param output Buffer which will be filled with the result data.
 	 */
 	Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output);
-	
-	//! Signals, that no new data will be written into the buffer.
-	/*!
-	 * This function will make the Node Thread stop, after all remaining
-	 * elements in the buffer are written into the output file
-	 */
-	int stop();
 };
 
 #endif
