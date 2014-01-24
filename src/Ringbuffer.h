@@ -169,10 +169,9 @@ bool Ringbuffer<Type>::isEmpty() {
 
 template <class Type>
 bool Ringbuffer<Type>::isFinished() {
-	int full_value, empty_value;
+	int full_value;
 	sem_getvalue(&usage, &full_value);
-	sem_getvalue(&space, &empty_value);
-	return (producer==0) && (full_value == 0) && (empty_value == bufferSize);
+	return (producer==0) && (full_value == 0);
 }
 template <class Type>
 void Ringbuffer<Type>::producerQuit() {

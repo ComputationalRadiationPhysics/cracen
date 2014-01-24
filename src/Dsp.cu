@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
 	/* Initialise buffer */
 	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
-	OutputStream os(output_filename, 4);
+	OutputStream os(output_filename, numberOfDevices);
 	
 	std::cout << "Buffer created." << std::endl;
 	
