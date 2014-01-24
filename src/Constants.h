@@ -16,7 +16,7 @@ const unsigned int SAMPLE_COUNT = 1000;
 const unsigned int CHUNK_COUNT = 100;
 /*! \var CHUNK_BUFFER_COUNT
  *  \brief  Number of chunks in the input buffer */
-const unsigned int CHUNK_BUFFER_COUNT = 1024;
+const unsigned int CHUNK_BUFFER_COUNT = 2048;
 /*! \var FILTER_MODE
  *  \brief  Interpolation mode */
 const cudaTextureFilterMode FILTER_MODE = cudaFilterModeLinear;

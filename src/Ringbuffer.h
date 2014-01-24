@@ -175,6 +175,6 @@ bool Ringbuffer<Type>::isFinished() {
 }
 template <class Type>
 void Ringbuffer<Type>::producerQuit() {
-	__sync_sub_and_fetch(&producer,1);
+	std::cout << __sync_sub_and_fetch(&producer,1) << " producers left." << std::endl;
 }
 #endif

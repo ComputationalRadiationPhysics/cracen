@@ -36,7 +36,6 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 		}
 	}
 	
-	iBuffer->producerQuit();
 	return 0;
 }
 void Node::run() {

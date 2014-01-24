@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 	
 	reader.readToBufferAsync();
 	std::cout << "Data read." << std::endl;
-	
+
 	//Make sure all results are written back
 	os.join();
 	
