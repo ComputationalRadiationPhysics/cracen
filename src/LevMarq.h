@@ -1,3 +1,5 @@
+//! \file
+
 #ifndef LEVMARQ_H
 #define LEVMARQ_H
 

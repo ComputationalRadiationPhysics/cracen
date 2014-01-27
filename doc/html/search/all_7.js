@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['sample_5fcount',['SAMPLE_COUNT',['../Constants_8h.html#a2d7ef1a20e62c8311c9351dae8dd5a53',1,'Constants.h']]],
-  ['stop',['stop',['../classNode.html#abdbd0dda21b0fd0ab2aa84e91099ef38',1,'Node']]]
+  ['kernel',['kernel',['../LevMarq_8h.html#a14a00442d7bb39cccd9c8aa5122b9a25',1,'LevMarq.h']]]
 ];

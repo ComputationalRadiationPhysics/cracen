@@ -8,26 +8,28 @@
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{classOutputStream_ab97193a7507f0c869503c94d823d24e7}{Output\-Stream} (const std\-::string \&file)
+\hyperlink{classOutputStream_ab581ff3d5e6cbc31c5f84eea52c298e1}{Output\-Stream} (const std\-::string \&file, int producer)
 \begin{DoxyCompactList}\small\item\em Basic constructor. \end{DoxyCompactList}\item 
 \hypertarget{classOutputStream_a0e0bc9c5542c5e56e7b331e19c31890d}{\hyperlink{classRingbuffer}{Ringbuffer}$<$ \hyperlink{structfitData}{Output} $>$ $\ast$ \hyperlink{classOutputStream_a0e0bc9c5542c5e56e7b331e19c31890d}{get\-Buffer} ()}\label{classOutputStream_a0e0bc9c5542c5e56e7b331e19c31890d}
 
 \begin{DoxyCompactList}\small\item\em Returns a reference of the buffer. \end{DoxyCompactList}\item 
-void \hyperlink{classOutputStream_a745f5ac06041a45658853aef664de0fd}{finish} ()
-\begin{DoxyCompactList}\small\item\em Signals, that no new data will be written into the buffer. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\hypertarget{classOutputStream_ae8481e9bef46ca1522da5312c32d4bba}{void \hyperlink{classOutputStream_ae8481e9bef46ca1522da5312c32d4bba}{join} ()}\label{classOutputStream_ae8481e9bef46ca1522da5312c32d4bba}
+
+\begin{DoxyCompactList}\small\item\em Waits until the writing thread to stops. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
 Class that provides all functions to write the results of the computation into a file. 
 
 \subsection{Constructor \& Destructor Documentation}
-\hypertarget{classOutputStream_ab97193a7507f0c869503c94d823d24e7}{\index{Output\-Stream@{Output\-Stream}!Output\-Stream@{Output\-Stream}}
+\hypertarget{classOutputStream_ab581ff3d5e6cbc31c5f84eea52c298e1}{\index{Output\-Stream@{Output\-Stream}!Output\-Stream@{Output\-Stream}}
 \index{Output\-Stream@{Output\-Stream}!OutputStream@{Output\-Stream}}
 \subsubsection[{Output\-Stream}]{\setlength{\rightskip}{0pt plus 5cm}Output\-Stream\-::\-Output\-Stream (
 \begin{DoxyParamCaption}
-\item[{const std\-::string \&}]{file}
+\item[{const std\-::string \&}]{file, }
+\item[{int}]{producer}
 \end{DoxyParamCaption}
-)}}\label{classOutputStream_ab97193a7507f0c869503c94d823d24e7}
+)}}\label{classOutputStream_ab581ff3d5e6cbc31c5f84eea52c298e1}
 
 
 Basic constructor. 
@@ -40,20 +42,6 @@ Constructor opens a filestream, initialise the output buffer and start the threa
 \hline
 \end{DoxyParams}
 
-
-\subsection{Member Function Documentation}
-\hypertarget{classOutputStream_a745f5ac06041a45658853aef664de0fd}{\index{Output\-Stream@{Output\-Stream}!finish@{finish}}
-\index{finish@{finish}!OutputStream@{Output\-Stream}}
-\subsubsection[{finish}]{\setlength{\rightskip}{0pt plus 5cm}void Output\-Stream\-::finish (
-\begin{DoxyParamCaption}
-{}
-\end{DoxyParamCaption}
-)}}\label{classOutputStream_a745f5ac06041a45658853aef664de0fd}
-
-
-Signals, that no new data will be written into the buffer. 
-
-This function will make the Writeback Thread stop, after all remaining elements in the buffer are written into the output file 
 
 The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
 \item 

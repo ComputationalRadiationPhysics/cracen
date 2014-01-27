@@ -4,7 +4,7 @@
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hypertarget{classRingbuffer_a958802766ae9d4003db4fbbb251b45a1}{{\bfseries Ringbuffer} (unsigned int b\-Size)}\label{classRingbuffer_a958802766ae9d4003db4fbbb251b45a1}
+\hypertarget{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}{{\bfseries Ringbuffer} (unsigned int b\-Size, int producer)}\label{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}
 
 \item 
 \hypertarget{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}{int {\bfseries write\-From\-Host} (Type $\ast$input\-On\-Host)}\label{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}
@@ -25,7 +25,16 @@
 \hypertarget{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}{int {\bfseries free\-Tail} ()}\label{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}
 
 \item 
+\hypertarget{classRingbuffer_aefca234ed766de811794f6ab91e86d17}{int {\bfseries get\-Size} ()}\label{classRingbuffer_aefca234ed766de811794f6ab91e86d17}
+
+\item 
 \hypertarget{classRingbuffer_af746d95cfff3115957d01181484be191}{bool {\bfseries is\-Empty} ()}\label{classRingbuffer_af746d95cfff3115957d01181484be191}
+
+\item 
+\hypertarget{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}{bool {\bfseries is\-Finished} ()}\label{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}
+
+\item 
+\hypertarget{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}{void {\bfseries producer\-Quit} ()}\label{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}
 
 \end{DoxyCompactItemize}
 

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['finish',['finish',['../classOutputStream.html#a745f5ac06041a45658853aef664de0fd',1,'OutputStream']]]
+  ['averagevalue',['averageValue',['../LevMarq_8h.html#a424a5df06a8a7f00096f4164e32e37ce',1,'LevMarq.h']]]
 ];

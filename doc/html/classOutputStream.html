@@ -93,21 +93,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab97193a7507f0c869503c94d823d24e7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#ab97193a7507f0c869503c94d823d24e7">OutputStream</a> (const std::string &amp;file)</td></tr>
-<tr class="memdesc:ab97193a7507f0c869503c94d823d24e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic constructor.  <a href="#ab97193a7507f0c869503c94d823d24e7">More...</a><br/></td></tr>
-<tr class="separator:ab97193a7507f0c869503c94d823d24e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab581ff3d5e6cbc31c5f84eea52c298e1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#ab581ff3d5e6cbc31c5f84eea52c298e1">OutputStream</a> (const std::string &amp;file, int producer)</td></tr>
+<tr class="memdesc:ab581ff3d5e6cbc31c5f84eea52c298e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic constructor.  <a href="#ab581ff3d5e6cbc31c5f84eea52c298e1">More...</a><br/></td></tr>
+<tr class="separator:ab581ff3d5e6cbc31c5f84eea52c298e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e0bc9c5542c5e56e7b331e19c31890d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e0bc9c5542c5e56e7b331e19c31890d"></a>
 <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; <a class="el" href="structfitData.html">Output</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#a0e0bc9c5542c5e56e7b331e19c31890d">getBuffer</a> ()</td></tr>
 <tr class="memdesc:a0e0bc9c5542c5e56e7b331e19c31890d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a reference of the buffer. <br/></td></tr>
 <tr class="separator:a0e0bc9c5542c5e56e7b331e19c31890d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a745f5ac06041a45658853aef664de0fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#a745f5ac06041a45658853aef664de0fd">finish</a> ()</td></tr>
-<tr class="memdesc:a745f5ac06041a45658853aef664de0fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signals, that no new data will be written into the buffer.  <a href="#a745f5ac06041a45658853aef664de0fd">More...</a><br/></td></tr>
-<tr class="separator:a745f5ac06041a45658853aef664de0fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8481e9bef46ca1522da5312c32d4bba"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae8481e9bef46ca1522da5312c32d4bba"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOutputStream.html#ae8481e9bef46ca1522da5312c32d4bba">join</a> ()</td></tr>
+<tr class="memdesc:ae8481e9bef46ca1522da5312c32d4bba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits until the writing thread to stops. <br/></td></tr>
+<tr class="separator:ae8481e9bef46ca1522da5312c32d4bba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that provides all functions to write the results of the computation into a file. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="ab97193a7507f0c869503c94d823d24e7"></a>
+<a class="anchor" id="ab581ff3d5e6cbc31c5f84eea52c298e1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -115,8 +116,18 @@ Public Member Functions</h2></td></tr>
           <td class="memname">OutputStream::OutputStream </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>file</em></td><td>)</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>producer</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -132,32 +143,13 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a745f5ac06041a45658853aef664de0fd"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void OutputStream::finish </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Signals, that no new data will be written into the buffer. </p>
-<p>This function will make the Writeback Thread stop, after all remaining elements in the buffer are written into the output file </p>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/fabian/DSP/src/<a class="el" href="OutputStream_8h_source.html">OutputStream.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 14:51:27 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

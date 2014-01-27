@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['getbuffer',['getBuffer',['../classOutputStream.html#a0e0bc9c5542c5e56e7b331e19c31890d',1,'OutputStream']]]
+  ['euclidnorm',['euclidNorm',['../LevMarq_8h.html#ad811b4e3f21363f3411fb5bcf40f039f',1,'LevMarq.h']]]
 ];

@@ -91,9 +91,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a958802766ae9d4003db4fbbb251b45a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a958802766ae9d4003db4fbbb251b45a1"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Ringbuffer</b> (unsigned int bSize)</td></tr>
-<tr class="separator:a958802766ae9d4003db4fbbb251b45a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2ff732b1a9a88f95d57ce27330c00ad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2ff732b1a9a88f95d57ce27330c00ad"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Ringbuffer</b> (unsigned int bSize, int producer)</td></tr>
+<tr class="separator:ae2ff732b1a9a88f95d57ce27330c00ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8b2973f3ab190cf778535c394ba980d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8b2973f3ab190cf778535c394ba980d"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>writeFromHost</b> (Type *inputOnHost)</td></tr>
 <tr class="separator:ac8b2973f3ab190cf778535c394ba980d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,9 +112,18 @@ Type *&#160;</td><td class="memItemRight" valign="bottom"><b>reserveTail</b> ()<
 <tr class="memitem:a66193754bca336ed8b8f2d5a9a89995c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66193754bca336ed8b8f2d5a9a89995c"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>freeTail</b> ()</td></tr>
 <tr class="separator:a66193754bca336ed8b8f2d5a9a89995c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefca234ed766de811794f6ab91e86d17"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefca234ed766de811794f6ab91e86d17"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> ()</td></tr>
+<tr class="separator:aefca234ed766de811794f6ab91e86d17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af746d95cfff3115957d01181484be191"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af746d95cfff3115957d01181484be191"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmpty</b> ()</td></tr>
 <tr class="separator:af746d95cfff3115957d01181484be191"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac43a1bbfa6c41dd0aba33c70248425a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac43a1bbfa6c41dd0aba33c70248425a6"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isFinished</b> ()</td></tr>
+<tr class="separator:ac43a1bbfa6c41dd0aba33c70248425a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae40e43d8729f0cfdcb97675cda52b05f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae40e43d8729f0cfdcb97675cda52b05f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>producerQuit</b> ()</td></tr>
+<tr class="separator:ae40e43d8729f0cfdcb97675cda52b05f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/fabian/DSP/src/<a class="el" href="Ringbuffer_8h_source.html">Ringbuffer.h</a></li>
@@ -122,7 +131,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmpty</b> ()</td></
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 14:51:27 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
