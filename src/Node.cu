@@ -26,7 +26,7 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	cudaMemcpy(d_result, result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Start kernel */
 
-	kernel<<<SAMPLE_COUNT, 1>>>(SAMPLE_COUNT, 10, d_result);
+	kernel<<<SAMPLE_COUNT, 1>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result);
 	/* Get result */
 	cudaMemcpy(result, d_result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost);
 	/* Push result to output buffer */
