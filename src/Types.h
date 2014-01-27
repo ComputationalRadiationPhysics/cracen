@@ -15,6 +15,8 @@ struct fitData {
 	float endValue;
 	float extremumPos;
 	float extremumValue;
+	float euclidNormResidues;
+	float averageAbsResidues;
 	int status;
 };
 typedef fitData Output;

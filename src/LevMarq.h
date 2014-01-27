@@ -7,16 +7,14 @@
 #include <stdio.h>
 #include "Types.h"
 
-#define PARAMSTARTVALUE { 1, 1, 1 } //any value, but not { 0, 0, 0 } (count = COUNTPARAM)
-
 #define CUDA //defined: runs on GPU, otherwise on CPU (useful for debugging)
 
 #ifdef CUDA
-//texture<DATATYPE, 2, cudaReadModeElementType> dataTexture; //-> see Textures.h
+texture<DATATYPE, 2, cudaReadModeElementType> dataTexture;
 #define GETSAMPLE(I, INDEXDATASET) tex2D(dataTexture, (I) + 0.5, (INDEXDATASET) + 0.5)
 #else
 DATATYPE *data;
-#define GETSAMPLE(I, INDEXDATASET) data[I] //INDEXDATASET has no effect (only for CUDA)
+#define GETSAMPLE(I, INDEXDATASET) data[(int)(I)] //INDEXDATASET has no effect (only for CUDA)
 #endif
 
 #ifdef CUDA
@@ -40,27 +38,18 @@ DATATYPE *data;
 #define MAX(A, B) (((A) >= (B)) ? (A) : (B))
 #define SQR(X)    ((X) * (X))
 
-texture<Precision , 2, cudaReadModeElementType> dataTexture;
-
-
 DEVICE inline void fitFunction(float x, float *param, float *y);
 DEVICE inline void fitFunctionExtremum(float *param, float *x);
 
-DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset);
-DEVICE void qrSolve(int n, float *r, int ldr, int *ipvt, float *diag,
-			   float *qtb, float *x, float *sdiag, float *wa);
+DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset, float xStep);
+DEVICE void qrSolve(int n, float *r, int ldr, int *ipvt, float *diag, float *qtb, float *x, float *sdiag, float *wa);
 DEVICE void euclidNorm(int n, float *x, float* result);
-DEVICE void lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
-			  float *qtb, float delta, float *par, float *x,
+DEVICE void lmpar(int n, float *r, int ldr, int *ipvt, float *diag, float *qtb, float delta, float *par, float *x,
 			  float *sdiag, float *wa1, float *wa2);
-DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt,
-			  float *rdiag, float *acnorm, float *wa);
-DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol,
-			  float xtol, float gtol, int maxfev, float epsfcn,
-			  float *diag, int mode, float factor, int *info, int *nfev,
-			  float *fjac, int *ipvt, float *qtf, float *wa1,
-			  float *wa2, float *wa3, float *wa4,
-			  int indexDataset, int xOffset);
+DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt, float *rdiag, float *acnorm, float *wa);
+DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn,
+			  float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1,
+			  float *wa2, float *wa3, float *wa4, int indexDataset, int xOffset);
 DEVICE void maxValue(int countData, int indexDataset, int *x, DATATYPE *y);
 DEVICE void averageValue(int start, int count, int indexDataset, float *y);
 DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x);
@@ -105,7 +94,7 @@ Authors:  Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
           corrections, comments, wrappers, hosting).
 */
 
-#include "LevMarq.h"
+//#include "LevMarq.h"
 
 const char *statusMessage[] = { //indexed by fitData.status
 /* 0 */	"fatal coding error (improper input parameters)",
@@ -120,6 +109,31 @@ const char *statusMessage[] = { //indexed by fitData.status
 };
 
 //--- USER DEFINITIONS ---
+
+/*!
+ * \brief paramStartValue returns the parameter start values for the fit-function calculation
+ * \param firstValue first value of the data used for fit-function
+ * \param lastValue last value of the data used for fit-function
+ * \param indexDataset index of the current dataset (GPU mode) or not used (CPU mode)
+ * \param param the returned parameter start values
+*/
+DEVICE void paramStartValue(int firstValue, int lastValue, int indexDataset, float *param)
+{
+	long long int x1, y1, x2, y2, x3, y3, dv;
+
+	x1 = firstValue;
+	x2 = (lastValue - firstValue) / 2 + firstValue;
+	x3 = lastValue;
+	y1 = GETSAMPLE(x1, indexDataset);
+	y2 = GETSAMPLE(x2, indexDataset);
+	y3 = GETSAMPLE(x3, indexDataset);
+
+	//any value, but not { 0, 0, 0 }
+	dv = (x2-x1)*(x3-x1)*(x2-x3);
+	param[0] = (-x1*y2+x1*y3+x2*y1-x2*y3-x3*y1+x3*y2)/dv;
+	param[1] = (x1*x1*y2-x1*x1*y3-x2*x2*y1+x2*x2*y3+x3*x3*y1-x3*x3*y2)/dv;
+	param[2] = (x1*x1*x2*y3+x1*x1*-x3*y2-x1*x2*x2*y3+x1*x3*x3*y2+x2*x2*x3*y1-x2*x3*x3*y1)/dv;
+}
 
 /*!
  * \brief fitFunction returns the y of a given x
@@ -149,14 +163,14 @@ DEVICE inline void fitFunctionExtremum(float *param, float *x) //get x
 
 //------------------------
 
-DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset)
+DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset, float xStep)
 {
 	int i;
 	float y;
 
 	for (i = 0; i < countData; i++) {
-		fitFunction(i + xOffset, param, &y);
-		fvec[i] = GETSAMPLE(i, indexDataset) - y;
+		fitFunction(i * xStep + xOffset, param, &y);
+		fvec[i] = GETSAMPLE(i * xStep + xOffset, indexDataset) - y;
 	}
 }
 
@@ -536,12 +550,9 @@ DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt,
 	}
 }
 
-DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol,
-			  float xtol, float gtol, int maxfev, float epsfcn,
-			  float *diag, int mode, float factor, int *info, int *nfev,
-			  float *fjac, int *ipvt, float *qtf, float *wa1,
-			  float *wa2, float *wa3, float *wa4,
-			  int indexDataset, int xOffset)
+DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn,
+			  float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1,
+			  float *wa2, float *wa3, float *wa4, int indexDataset, int xOffset, float xStep)
 {
 	int i, iter, j;
 	float actred, delta, dirder, eps, fnorm, fnorm1, gnorm, par, pnorm,
@@ -574,7 +585,7 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol,
 	//evaluate function at starting point and calculate norm
 
 	*info = 0;
-	evaluate(x, m, fvec, indexDataset, xOffset);
+	evaluate(x, m, fvec, indexDataset, xOffset, xStep);
 	++(*nfev);
 	euclidNorm(m, fvec, &fnorm);
 
@@ -589,7 +600,7 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol,
 				step = eps;
 			x[j] = temp + step;
 			*info = 0;
-			evaluate(x, m, wa4, indexDataset, xOffset);
+			evaluate(x, m, wa4, indexDataset, xOffset, xStep);
 			for (i = 0; i < m; i++) //changed in 2.3, Mark Bydder
 				fjac[j * m + i] = (wa4[i] - fvec[i]) / (x[j] - temp);
 			x[j] = temp;
@@ -687,7 +698,7 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol,
 			//evaluate the function at x + p and calculate its norm
 
 			*info = 0;
-			evaluate(wa2, m, wa4, indexDataset, xOffset);
+			evaluate(wa2, m, wa4, indexDataset, xOffset, xStep);
 			++(*nfev);
 
 			euclidNorm(m, wa4, &fnorm1);
@@ -839,12 +850,22 @@ DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATY
 			}
 }
 
+DEVICE void averageAbsResidues(int countResidues, float *residues, float *average)
+{
+	int i;
+	float sum = 0;
+
+	for (i = 0; i < countResidues; i++)
+		sum += fabs(residues[i]);
+	*average = sum / countResidues;
+}
+
 /*!
  * \brief kernel is the start method for calculation (you have to set the dataTexture (GPU mode) or data variable (CPU mode) before calling this method)
  * \param countData number of samples
  * \param result fit-function and other parameters, defined in fitData struct
 */
-GLOBAL void kernel(int countData, struct fitData *result)
+GLOBAL void kernel(int countData, float step, struct fitData *result)
 {
 #ifdef CUDA
 	int indexDataset = blockIdx.x + blockIdx.y * gridDim.x + blockIdx.z * gridDim.x * gridDim.y;
@@ -854,28 +875,32 @@ GLOBAL void kernel(int countData, struct fitData *result)
 #else
 	int indexDataset = 0;
 #endif
-
-	float param[COUNTPARAM] = PARAMSTARTVALUE;
 	int nfev = 0, info = 0, i;
-
 	int maxX, firstValue, lastValue, countAverage;
 	DATATYPE maxY;
+
+	SHARED float param[COUNTPARAM];
 
 	SHARED float fvec[MAXCOUNTDATA];
 	SHARED float fjac[COUNTPARAM * MAXCOUNTDATA];
 	SHARED float wa4[MAXCOUNTDATA];
 
-	float diag[COUNTPARAM], qtf[COUNTPARAM];
-	float wa1[COUNTPARAM], wa2[COUNTPARAM], wa3[COUNTPARAM];
-	int ipvt[COUNTPARAM];
+	SHARED float diag[COUNTPARAM], qtf[COUNTPARAM];
+	SHARED float wa1[COUNTPARAM], wa2[COUNTPARAM], wa3[COUNTPARAM];
+	SHARED int ipvt[COUNTPARAM];
 
 	maxValue(countData, indexDataset, &maxX, &maxY);
 	xOfValue(countData, indexDataset, 'l', (maxY - GETSAMPLE(0, indexDataset)) * FITVALUETHRESHOLD + GETSAMPLE(0, indexDataset), &firstValue);
 	xOfValue(countData, indexDataset, 'r', (maxY - GETSAMPLE(countData - 1, indexDataset)) * FITVALUETHRESHOLD + GETSAMPLE(countData - 1, indexDataset), &lastValue);
 
-	lmdif(lastValue - firstValue + 1, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
+	paramStartValue(firstValue, lastValue, indexDataset, param);
+
+	lmdif((int)((lastValue - firstValue) / step) + 1, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
 		MAXCALL * (COUNTPARAM + 1), LM_USERTOL, diag, 1, 100, &info,
-		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, indexDataset, firstValue);
+		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, indexDataset, firstValue, step);
+
+	euclidNorm((int)((lastValue - firstValue) / step) + 1, fvec, &result[indexDataset].euclidNormResidues);
+	averageAbsResidues((int)((lastValue - firstValue) / step) + 1, fvec, &result[indexDataset].averageAbsResidues);
 
 	for (i = 0; i < COUNTPARAM; i++)
 		result[indexDataset].param[i] = param[i];
@@ -889,15 +914,22 @@ GLOBAL void kernel(int countData, struct fitData *result)
 	result[indexDataset].status = info;
 }
 
-/*
+
+
 //example data, only for testing
-int main()
+/*int main()
 {
 #ifdef CUDA
-	int countData = 3;
-	int countDatasets = 2;
-	DATATYPE testData[2][3] = { { 2, 5, 2 }, { 1, 4, 1 } };
-	struct fitData result[2];
+	int countData = 1000;
+	int countDatasets = 1;
+	//DATATYPE testData[2][3] = { { 2, 5, 2 }, { 1, 4, 1 } };
+	DATATYPE testData[1][1000] = { { -31576, -31560, -31552, -31544, -31560, -31576, -31552, -31560, -31552, -31576, -31560, -31576, -31568, -31576, -31552, -31560, -31568, -31552, -31552, -31576, -31552, -31576, -31568, -31576, -31552, -31552, -31536, -31536, -31536, -31552, -31568, -31560, -31544, -31568, -31552, -31560, -31552, -31528, -31568, -31560, -31544, -31568, -31560, -31576, -31576, -31560, -31552, -31552, -31568, -31568, -31584, -31560, -31568, -31560, -31576, -31552, -31576, -31560, -31592, -31568, -31568, -31568, -31552, -31560, -31544, -31552, -31576, -31560, -31560, -31552, -31568, -31536, -31560, -31560, -31560, -31544, -31544, -31576, -31568, -31544, -31528, -31552, -31568, -31552, -31560, -31552, -31560, -31552, -31560, -31552, -31568, -31544, -31552, -31544, -31544, -31568, -31544, -31560, -31536, -31560, -31568, -31568, -31552, -31560, -31544, -31560, -31552, -31568, -31560, -31576, -31568, -31576, -31544, -31568, -31560, -31528, -31560, -31544, -31544, -31560, -31552, -31544, -31520, -31560, -31552, -31552, -31568, -31544, -31544, -31552, -31544, -31552, -31544, -31568, -31560, -31560, -31568, -31544, -31552, -31552, -31560, -31536, -31560, -31552, -31568, -31552, -31552, -31568, -31568, -31552, -31552, -31544, -31568, -31584, -31560, -31552, -31536, -31544, -31536, -31552, -31552, -31552, -31552, -31512, -31560, -31536, -31544, -31544, -31536, -31552, -31560, -31552, -31552, -31536, -31544, -31560, -31568, -31560, -31552, -31552, -31568, -31560, -31568, -31592, -31576, -31544, -31568, -31560, -31568, -31552, -31544, -31576, -31568, -31544, -31552, -31560, -31576, -31552, -31568, -31560, -31560, -31544, -31552, -31568, -31552, -31552, -31536, -31544, -31560, -31552, -31544, -31544, -31544, -31528, -31544, -31560, -31576, -31568, -31576, -31552, -31544, -31544, -31560, -31552, -31536, -31576, -31552, -31560, -31560, -31560, -31560, -31560, -31568, -31568, -31544, -31584, -31560, -31568, -31544, -31552, -31568, -31536, -31536, -31520, -31544, -31536, -31552, -31552, -31552, -31544, -31536, -31512, -31504, -31536, -31528, -31528, -31528, -31512, -31504, -31520, -31496, -31520, -31488, -31504, -31512, -31496, -31488, -31496, -31496, -31496, -31504, -31472, -31480, -31456, -31456, -31472, -31472, -31472, -31456, -31456, -31424, -31440, -31424, -31432, -31376, -31408, -31384, -31384, -31368, -31368, -31336, -31336, -31320, -31304, -31312, -31280, -31248, -31256, -31264, -31216, -31248, -31200, -31192, -31128, -31136, -31144, -31120, -31096, -31088, -31080, -31048, -31016, -30992, -30968, -30976, -30952, -30920, -30904, -30872, -30856, -30840, -30800, -30768, -30728, -30704, -30680, -30648, -30648, -30600, -30560, -30528, -30496, -30456, -30416, -30368, -30336, -30304, -30264, -30232, -30192, -30128, -30104, -30048, -30000, -29960, -29904, -29872, -29816, -29760, -29720, -29656, -29632, -29576, -29488, -29440, -29400, -29344, -29288, -29232, -29176, -29112, -29048, -28984, -28896, -28872, -28824, -28728, -28680, -28568, -28504, -28464, -28368, -28312, -28248, -28176, -28088, -28016, -27936, -27848, -27792, -27696, -27624, -27528, -27456, -27368, -27272, -27192, -27112, -26992, -26920, -26816, -26720, -26648, -26536, -26448, -26344, -26280, -26168, -26080, -25992, -25872, -25776, -25680, -25576, -25480, -25368, -25240, -25168, -25048, -24944, -24824, -24720, -24600, -24520, -24408, -24280, -24176, -24096, -23936, -23832, -23704, -23616, -23488, -23408, -23256, -23144, -23000, -22912, -22776, -22632, -22544, -22400, -22272, -22160, -22056, -21904, -21776, -21664, -21512, -21408, -21288, -21144, -21056, -20888, -20784, -20656, -20536, -20416, -20280, -20144, -20032, -19896, -19776, -19640, -19512, -19392, -19240, -19144, -19008, -18864, -18720, -18624, -18488, -18344, -18248, -18088, -17976, -17840, -17704, -17576, -17464, -17328, -17200, -17064, -16944, -16832, -16688, -16552, -16448, -16312, -16176, -16072, -15944, -15832, -15704, -15576, -15448, -15352, -15200, -15080, -14976, -14816, -14736, -14616, -14512, -14384, -14280, -14176, -14056, -13936, -13808, -13696, -13608, -13480, -13376, -13256, -13160, -13056, -12936, -12816, -12744, -12632, -12528, -12416, -12336, -12208, -12136, -12048, -11928, -11824, -11752, -11640, -11536, -11456, -11384, -11288, -11176, -11104, -11016, -10952, -10864, -10776, -10688, -10616, -10544, -10480, -10392, -10304, -10264, -10176, -10080, -10032, -9944, -9896, -9840, -9776, -9704, -9656, -9592, -9528, -9480, -9424, -9360, -9288, -9272, -9192, -9152, -9096, -9072, -9016, -8984, -8952, -8912, -8880, -8816, -8792, -8760, -8688, -8672, -8640, -8632, -8584, -8576, -8560, -8512, -8512, -8504, -8456, -8440, -8424, -8408, -8408, -8416, -8392, -8392, -8360, -8392, -8368, -8392, -8376, -8368, -8384, -8376, -8392, -8392, -8392, -8392, -8408, -8440, -8440, -8448, -8480, -8504, -8488, -8528, -8560, -8560, -8592, -8640, -8664, -8672, -8696, -8720, -8744, -8816, -8824, -8864, -8888, -8928, -8976, -9008, -9064, -9104, -9128, -9208, -9232, -9296, -9336, -9392, -9464, -9496, -9560, -9616, -9680, -9736, -9776, -9856, -9896, -9984, -10024, -10080, -10152, -10224, -10280, -10352, -10440, -10512, -10552, -10648, -10688, -10784, -10856, -10920, -10984, -11072, -11136, -11224, -11304, -11384, -11440, -11536, -11624, -11696, -11768, -11840, -11920, -12032, -12128, -12208, -12288, -12408, -12472, -12568, -12640, -12752, -12824, -12912, -13000, -13088, -13184, -13288, -13384, -13488, -13576, -13680, -13776, -13856, -13968, -14040, -14144, -14264, -14344, -14432, -14544, -14640, -14752, -14848, -14928, -15016, -15136, -15232, -15304, -15448, -15544, -15664, -15744, -15824, -15944, -16032, -16160, -16256, -16352, -16448, -16552, -16648, -16768, -16856, -16976, -17056, -17184, -17280, -17392, -17496, -17608, -17704, -17784, -17880, -17976, -18096, -18216, -18304, -18416, -18512, -18640, -18712, -18816, -18912, -19016, -19136, -19232, -19344, -19432, -19544, -19640, -19736, -19824, -19928, -20000, -20136, -20240, -20328, -20416, -20520, -20592, -20680, -20832, -20896, -20992, -21096, -21192, -21296, -21392, -21496, -21600, -21656, -21760, -21872, -21952, -22048, -22152, -22232, -22328, -22400, -22496, -22584, -22680, -22768, -22872, -22936, -23024, -23128, -23192, -23312, -23384, -23472, -23560, -23632, -23712, -23792, -23872, -23976, -24040, -24112, -24176, -24320, -24368, -24464, -24552, -24608, -24664, -24784, -24840, -24888, -24992, -25072, -25152, -25240, -25288, -25352, -25424, -25496, -25584, -25656, -25752, -25816, -25888, -25944, -25984, -26048, -26152, -26224, -26280, -26336, -26400, -26488, -26544, -26584, -26656, -26720, -26760, -26864, -26904, -26952, -27032, -27096, -27128, -27208, -27240, -27304, -27368, -27424, -27480, -27520, -27600, -27640, -27720, -27760, -27808, -27848, -27912, -27944, -27992, -28080, -28096, -28168, -28208, -28232, -28320, -28360, -28392, -28416, -28496, -28544, -28576, -28632, -28672, -28720, -28736, -28808, -28840, -28880, -28912, -28960, -28960, -29040, -29048, -29120, -29136, -29192, -29200, -29240, -29272, -29296, -29312, -29368, -29416, -29448, -29480, -29520, -29552, -29592, -29608, -29648, -29664, -29720, -29712, -29752, -29808, -29816, -29856, -29896, -29912, -29920, -29968, -30008, -30032, -30072, -30080, -30104, -30128, -30152, -30176, -30224, -30224, -30240, -30264, -30264, -30320, -30320, -30360, -30360, -30392, -30424, -30408, -30464, -30456, -30504, -30496, -30520, -30544, -30544, -30576, -30560, -30600, -30640, -30632, -30656, -30664, -30688, -30680, -30720, -30736, -30768, -30800, -30776, -30776, -30800, -30816, -30832, -30848, -30872, -30848, -30872, -30912, -30928, -30936, -30912, -30968, -30952, -30944, -30952, -30968, -30992, -31008, -30984, -31016, -31008, -31032, -31040, -31048, -31080, -31080, -31056, -31088, -31088, -31104, -31120, -31112, -31120, -31152, -31128, -31168, -31144, -31160, -31168, -31168, -31176, -31176, -31184, -31208, -31208, -31232, -31232, -31232, -31240, -31216, -31224, -31248, -31264, -31280 } };
+	struct fitData result[1];
+
+	cudaEvent_t start, stop;
+	float time;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
 
 	struct fitData* d_result;
 	cudaMalloc((void**)&d_result, sizeof(struct fitData) * countDatasets);
@@ -917,21 +949,32 @@ int main()
 
 	dim3 grid(countDatasets, 1, 1); //number of blocks (in all dimensions) = number of datasets
 	//currently, the number of threads per block must be 1 (in the future used for simultaneous calculations in one dataset)
-	kernel<<<grid, 1>>>(countData, d_result);
+	
+	cudaEventRecord(start, 0);
+	kernel<<<grid, 1>>>(countData, 1, d_result);
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&time, start, stop);
 
 	cudaMemcpy(result, d_result, sizeof(struct fitData) * countDatasets, cudaMemcpyDeviceToHost);
 
 	cudaUnbindTexture(dataTexture);
 	cudaFreeArray(dataArray);
 	cudaFree(d_result);
+
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+
+	printf("calculation time: %f ms\n", time);
 #else
-	int countData = 3;
+	int countData = 1000;
 	int countDatasets = 1;
-	DATATYPE testData[3] = { 2, 5, 2 };
+	//DATATYPE testData[5] = { 2, 4.3, 5, 4.3, 2 };
+	DATATYPE testData[1000] = { -31576, -31560, -31552, -31544, -31560, -31576, -31552, -31560, -31552, -31576, -31560, -31576, -31568, -31576, -31552, -31560, -31568, -31552, -31552, -31576, -31552, -31576, -31568, -31576, -31552, -31552, -31536, -31536, -31536, -31552, -31568, -31560, -31544, -31568, -31552, -31560, -31552, -31528, -31568, -31560, -31544, -31568, -31560, -31576, -31576, -31560, -31552, -31552, -31568, -31568, -31584, -31560, -31568, -31560, -31576, -31552, -31576, -31560, -31592, -31568, -31568, -31568, -31552, -31560, -31544, -31552, -31576, -31560, -31560, -31552, -31568, -31536, -31560, -31560, -31560, -31544, -31544, -31576, -31568, -31544, -31528, -31552, -31568, -31552, -31560, -31552, -31560, -31552, -31560, -31552, -31568, -31544, -31552, -31544, -31544, -31568, -31544, -31560, -31536, -31560, -31568, -31568, -31552, -31560, -31544, -31560, -31552, -31568, -31560, -31576, -31568, -31576, -31544, -31568, -31560, -31528, -31560, -31544, -31544, -31560, -31552, -31544, -31520, -31560, -31552, -31552, -31568, -31544, -31544, -31552, -31544, -31552, -31544, -31568, -31560, -31560, -31568, -31544, -31552, -31552, -31560, -31536, -31560, -31552, -31568, -31552, -31552, -31568, -31568, -31552, -31552, -31544, -31568, -31584, -31560, -31552, -31536, -31544, -31536, -31552, -31552, -31552, -31552, -31512, -31560, -31536, -31544, -31544, -31536, -31552, -31560, -31552, -31552, -31536, -31544, -31560, -31568, -31560, -31552, -31552, -31568, -31560, -31568, -31592, -31576, -31544, -31568, -31560, -31568, -31552, -31544, -31576, -31568, -31544, -31552, -31560, -31576, -31552, -31568, -31560, -31560, -31544, -31552, -31568, -31552, -31552, -31536, -31544, -31560, -31552, -31544, -31544, -31544, -31528, -31544, -31560, -31576, -31568, -31576, -31552, -31544, -31544, -31560, -31552, -31536, -31576, -31552, -31560, -31560, -31560, -31560, -31560, -31568, -31568, -31544, -31584, -31560, -31568, -31544, -31552, -31568, -31536, -31536, -31520, -31544, -31536, -31552, -31552, -31552, -31544, -31536, -31512, -31504, -31536, -31528, -31528, -31528, -31512, -31504, -31520, -31496, -31520, -31488, -31504, -31512, -31496, -31488, -31496, -31496, -31496, -31504, -31472, -31480, -31456, -31456, -31472, -31472, -31472, -31456, -31456, -31424, -31440, -31424, -31432, -31376, -31408, -31384, -31384, -31368, -31368, -31336, -31336, -31320, -31304, -31312, -31280, -31248, -31256, -31264, -31216, -31248, -31200, -31192, -31128, -31136, -31144, -31120, -31096, -31088, -31080, -31048, -31016, -30992, -30968, -30976, -30952, -30920, -30904, -30872, -30856, -30840, -30800, -30768, -30728, -30704, -30680, -30648, -30648, -30600, -30560, -30528, -30496, -30456, -30416, -30368, -30336, -30304, -30264, -30232, -30192, -30128, -30104, -30048, -30000, -29960, -29904, -29872, -29816, -29760, -29720, -29656, -29632, -29576, -29488, -29440, -29400, -29344, -29288, -29232, -29176, -29112, -29048, -28984, -28896, -28872, -28824, -28728, -28680, -28568, -28504, -28464, -28368, -28312, -28248, -28176, -28088, -28016, -27936, -27848, -27792, -27696, -27624, -27528, -27456, -27368, -27272, -27192, -27112, -26992, -26920, -26816, -26720, -26648, -26536, -26448, -26344, -26280, -26168, -26080, -25992, -25872, -25776, -25680, -25576, -25480, -25368, -25240, -25168, -25048, -24944, -24824, -24720, -24600, -24520, -24408, -24280, -24176, -24096, -23936, -23832, -23704, -23616, -23488, -23408, -23256, -23144, -23000, -22912, -22776, -22632, -22544, -22400, -22272, -22160, -22056, -21904, -21776, -21664, -21512, -21408, -21288, -21144, -21056, -20888, -20784, -20656, -20536, -20416, -20280, -20144, -20032, -19896, -19776, -19640, -19512, -19392, -19240, -19144, -19008, -18864, -18720, -18624, -18488, -18344, -18248, -18088, -17976, -17840, -17704, -17576, -17464, -17328, -17200, -17064, -16944, -16832, -16688, -16552, -16448, -16312, -16176, -16072, -15944, -15832, -15704, -15576, -15448, -15352, -15200, -15080, -14976, -14816, -14736, -14616, -14512, -14384, -14280, -14176, -14056, -13936, -13808, -13696, -13608, -13480, -13376, -13256, -13160, -13056, -12936, -12816, -12744, -12632, -12528, -12416, -12336, -12208, -12136, -12048, -11928, -11824, -11752, -11640, -11536, -11456, -11384, -11288, -11176, -11104, -11016, -10952, -10864, -10776, -10688, -10616, -10544, -10480, -10392, -10304, -10264, -10176, -10080, -10032, -9944, -9896, -9840, -9776, -9704, -9656, -9592, -9528, -9480, -9424, -9360, -9288, -9272, -9192, -9152, -9096, -9072, -9016, -8984, -8952, -8912, -8880, -8816, -8792, -8760, -8688, -8672, -8640, -8632, -8584, -8576, -8560, -8512, -8512, -8504, -8456, -8440, -8424, -8408, -8408, -8416, -8392, -8392, -8360, -8392, -8368, -8392, -8376, -8368, -8384, -8376, -8392, -8392, -8392, -8392, -8408, -8440, -8440, -8448, -8480, -8504, -8488, -8528, -8560, -8560, -8592, -8640, -8664, -8672, -8696, -8720, -8744, -8816, -8824, -8864, -8888, -8928, -8976, -9008, -9064, -9104, -9128, -9208, -9232, -9296, -9336, -9392, -9464, -9496, -9560, -9616, -9680, -9736, -9776, -9856, -9896, -9984, -10024, -10080, -10152, -10224, -10280, -10352, -10440, -10512, -10552, -10648, -10688, -10784, -10856, -10920, -10984, -11072, -11136, -11224, -11304, -11384, -11440, -11536, -11624, -11696, -11768, -11840, -11920, -12032, -12128, -12208, -12288, -12408, -12472, -12568, -12640, -12752, -12824, -12912, -13000, -13088, -13184, -13288, -13384, -13488, -13576, -13680, -13776, -13856, -13968, -14040, -14144, -14264, -14344, -14432, -14544, -14640, -14752, -14848, -14928, -15016, -15136, -15232, -15304, -15448, -15544, -15664, -15744, -15824, -15944, -16032, -16160, -16256, -16352, -16448, -16552, -16648, -16768, -16856, -16976, -17056, -17184, -17280, -17392, -17496, -17608, -17704, -17784, -17880, -17976, -18096, -18216, -18304, -18416, -18512, -18640, -18712, -18816, -18912, -19016, -19136, -19232, -19344, -19432, -19544, -19640, -19736, -19824, -19928, -20000, -20136, -20240, -20328, -20416, -20520, -20592, -20680, -20832, -20896, -20992, -21096, -21192, -21296, -21392, -21496, -21600, -21656, -21760, -21872, -21952, -22048, -22152, -22232, -22328, -22400, -22496, -22584, -22680, -22768, -22872, -22936, -23024, -23128, -23192, -23312, -23384, -23472, -23560, -23632, -23712, -23792, -23872, -23976, -24040, -24112, -24176, -24320, -24368, -24464, -24552, -24608, -24664, -24784, -24840, -24888, -24992, -25072, -25152, -25240, -25288, -25352, -25424, -25496, -25584, -25656, -25752, -25816, -25888, -25944, -25984, -26048, -26152, -26224, -26280, -26336, -26400, -26488, -26544, -26584, -26656, -26720, -26760, -26864, -26904, -26952, -27032, -27096, -27128, -27208, -27240, -27304, -27368, -27424, -27480, -27520, -27600, -27640, -27720, -27760, -27808, -27848, -27912, -27944, -27992, -28080, -28096, -28168, -28208, -28232, -28320, -28360, -28392, -28416, -28496, -28544, -28576, -28632, -28672, -28720, -28736, -28808, -28840, -28880, -28912, -28960, -28960, -29040, -29048, -29120, -29136, -29192, -29200, -29240, -29272, -29296, -29312, -29368, -29416, -29448, -29480, -29520, -29552, -29592, -29608, -29648, -29664, -29720, -29712, -29752, -29808, -29816, -29856, -29896, -29912, -29920, -29968, -30008, -30032, -30072, -30080, -30104, -30128, -30152, -30176, -30224, -30224, -30240, -30264, -30264, -30320, -30320, -30360, -30360, -30392, -30424, -30408, -30464, -30456, -30504, -30496, -30520, -30544, -30544, -30576, -30560, -30600, -30640, -30632, -30656, -30664, -30688, -30680, -30720, -30736, -30768, -30800, -30776, -30776, -30800, -30816, -30832, -30848, -30872, -30848, -30872, -30912, -30928, -30936, -30912, -30968, -30952, -30944, -30952, -30968, -30992, -31008, -30984, -31016, -31008, -31032, -31040, -31048, -31080, -31080, -31056, -31088, -31088, -31104, -31120, -31112, -31120, -31152, -31128, -31168, -31144, -31160, -31168, -31168, -31176, -31176, -31184, -31208, -31208, -31232, -31232, -31232, -31240, -31216, -31224, -31248, -31264, -31280 };
 	struct fitData result[1];
 
 	data = testData;
-	kernel(countData, result);
+	kernel(countData, 1, result);
 #endif
 
 	for (int i = 0; i < countDatasets; i++) {
@@ -941,6 +984,8 @@ int main()
 		printf("min/max - y: %f\n", result[i].extremumValue);
 		printf("start - y: %f\n", result[i].startValue);
 		printf("end - y: %f\n", result[i].endValue);
+		printf("euclidean norm: %f\n", result[i].euclidNormResidues);
+		printf("average: %f\n", result[i].averageAbsResidues);
 		printf("status: %d: %s\n", result[i].status, statusMessage[result[i].status]);
 	}
 
