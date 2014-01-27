@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Exit." << std::endl;
 		return 1;
 	}
-	
+
 	std::string input_filename = FILENAME_TESTFILE;
 	std::string output_filename =  OUTPUT_FILENAME;
 	

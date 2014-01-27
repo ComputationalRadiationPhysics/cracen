@@ -31,7 +31,7 @@ const unsigned int WAVEFORM_COUNT_TESTFILE = 100000;
  * \var INTERPOLATION_COUNT
  * \brief Number of points that are averaged to on Datapoint. Higher Value decrease the resolution and increase the speed of the programm.
  */
-const unsigned int INTERPOLATION_COUNT = 10;
+const unsigned int INTERPOLATION_COUNT = 20;
 
 
 /*!
@@ -51,7 +51,7 @@ const unsigned int MAXCALL = 100;
  * \var FITVALUETHRESHOLD
  * \brief threshold between min (0.0) and max (1.0) value to define the data using interval to calculate the fit function
 */
-const float FITVALUETHRESHOLD = 0.0; //0.5
+const float FITVALUETHRESHOLD = 0.5;
 
 /*!
  * \var STARTENDPROPORTION

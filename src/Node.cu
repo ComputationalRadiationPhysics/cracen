@@ -22,11 +22,11 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	cudaMemcpyToArray(texArray, 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Free ringbuffer */
 	iBuffer->freeTail();
-	std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
+	//std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 	cudaMemcpy(d_result, result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Start kernel */
 
-	kernel<<<SAMPLE_COUNT, 1>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result);
+	kernel<<<CHUNK_COUNT, 1>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result);
 	/* Get result */
 	cudaMemcpy(result, d_result, sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost);
 	/* Push result to output buffer */
