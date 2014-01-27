@@ -127,7 +127,9 @@ Type* Ringbuffer<Type>::reserveTail()
 // externally.
 // Buffer is blocked until freeTail is called.
 {
-    sem_wait(&usage);
+    if(sem_trywait(&usage) != 0) {
+    	return NULL;
+    }
     sem_wait(&mtx);
     return &buffer[tail];
 }
@@ -175,6 +177,6 @@ bool Ringbuffer<Type>::isFinished() {
 }
 template <class Type>
 void Ringbuffer<Type>::producerQuit() {
-	std::cout << __sync_sub_and_fetch(&producer,1) << " producers left." << std::endl;
+	__sync_sub_and_fetch(&producer,1);
 }
 #endif

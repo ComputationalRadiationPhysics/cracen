@@ -18,6 +18,7 @@ int Node::copyChunk(cudaArray *texArray, fitData* d_result) {
 	/* Block ringbuffer */
 	SampleChunk *c = iBuffer->reserveTail();
 	/* Copy to device */
+	if(c == NULL) return 1;
 	cudaMemcpyToArray(texArray, 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice);
 	/* Free ringbuffer */
 	iBuffer->freeTail();

@@ -2,15 +2,18 @@
 
 /* defines how the output is written into the output file */
 std::ostream& operator<<(std::ostream& lhs, const Output& rhs) {
-	lhs << "{status=" << rhs.status << ",startValue=" << rhs.startValue << ",endValue=" << rhs.endValue << ",extremumPos=" << rhs.extremumPos  << ",extremumValue=" << rhs.extremumValue << "}";
+	lhs << rhs.status << "	" << rhs.startValue << "	" << rhs.endValue << "	" << rhs.extremumPos  << "	" << rhs.extremumValue;
 	return lhs;
 }
 
 void OutputStream::run() {
+	file << "status	startValue	endValue	extremumPos	extremumValue" << std::endl;
 	while(!oBuffer.isFinished()) {
 		Output* o = oBuffer.reserveTail();
-		file << (*o) << std::endl;
-		oBuffer.freeTail();
+		if(o != NULL) {
+			file << (*o) << std::endl;
+			oBuffer.freeTail();
+		}
 	}
 	/* Close Filestream */
 	file.close();
