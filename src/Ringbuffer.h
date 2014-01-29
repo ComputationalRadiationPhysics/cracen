@@ -5,16 +5,22 @@
 #include <iostream>
 #include <semaphore.h>
 
+/*! Ringbuffer
+ *  @brief A ringbuffer template supporting non-host consumers/producers.
+ *
+ *  Data is written to the head of the buffer and read from the tail.
+ *  To enable reading to devices like graphic cards the tail of the 
+ *  buffer can be reserved. In the reserved state copy operations can
+ *  be performed externally. After copying the head needs to be 
+ *  freed.
+ *  The same mechanism is available for writing to the buffer from other
+ *  devices.
+ *  For data reading/writing from host to host classic write/read methods
+ *  are available.
+ */
+
 template <class Type>
 class Ringbuffer {
-    /*  Ringbuffer for data of type Type
-     *  Data is put to head of buffer and read from tail of buffer.
-     *
-     *  To enable reading to devices like graphic cards the tail of the 
-     *  buffer can be reserved. In the reserved state copy operations can
-     *  be performed externally. After copying the head needs to be 
-     *  freed.
-     */
 
 private:
     sem_t mtx;
@@ -31,7 +37,7 @@ public:
     int copyToHost(Type *outputOnHost);
     Type* reserveHead();
     int freeHead();
-    Type* reserveTail();
+    Type* reserveTailTry();
     int freeTail();
     int getSize();
     bool isEmpty();
@@ -39,6 +45,14 @@ public:
     void producerQuit();
 };
 
+/**
+ * Basic Constructor.
+ *
+ * Reserves buffer memory.
+ *
+ * \param bSize buffer size in items of 'Type'
+ * \param producer Number of producers feeding the buffer. 
+ */
 template <class Type>
 Ringbuffer<Type>::Ringbuffer(unsigned int bSize, int producer) :
 	head(0),// We write new data to this position
@@ -61,9 +75,16 @@ Ringbuffer<Type>::~Ringbuffer()
     sem_destroy(&space);
 }
 
+/**
+ * Write data to the buffer from the host.
+ *
+ * The call blocks if there is no space available on the buffer or if the 
+ * buffer is already used by another thread.
+ *
+ * \param inputOnHost Needs to be on host memory.
+ */
 template <class Type>
 int Ringbuffer<Type>::writeFromHost(Type *inputOnHost)
-// Put data on buffer. InputOnHost needs to be on host memory.
 {
     sem_wait(&space);   // is there space in buffer?
     sem_wait(&mtx);     // lock buffer
@@ -74,16 +95,20 @@ int Ringbuffer<Type>::writeFromHost(Type *inputOnHost)
     sem_post(&mtx);     // unlock buffer
     sem_post(&usage);   // tell them that there is something in buffer
     
-    //int buffer_usage;
-    //sem_getvalue(&usage, &buffer_usage);
-    //std::cout << "Usage after write:" << buffer_usage << std::endl;
-	
 	return 0;
 }
 
+/**
+ * Read data from the buffer to the host.
+ *
+ * The call blocks until there is data available in the buffer. The call
+ * blocks if the buffer is already used by another thread.
+ *
+ * \param outputOnHost Pointer to host memory where buffer data is to be
+ *        written.
+ */
 template <class Type>
 int Ringbuffer<Type>::copyToHost(Type *outputOnHost)
-// Get data from buffer. OutputOnHost needs to be on host memory.
 {
     sem_wait(&usage);   // is there some data in buffer?
     sem_wait(&mtx);     // lock buffer
@@ -94,26 +119,34 @@ int Ringbuffer<Type>::copyToHost(Type *outputOnHost)
     sem_post(&mtx);     // unlock buffer
     sem_post(&space);   // tell them that there is space in buffer
     
-    //int buffer_usage;
-    //sem_getvalue(&usage, &buffer_usage);
-    //std::cout << "Usage after read:" << buffer_usage << std::endl;
-    
     return 0;
 }
 
+/** 
+ * Lock head position of buffer to perform write operations externally.
+ *
+ * The call blocks until there is space available in the buffer.
+ *
+ * Buffer is blocked until freeHead() is called.
+ * \return Pointer to the head of the ringbuffer. One item of <Type> can
+ *         be written here.
+ */
 template <class Type>
 Type* Ringbuffer<Type>::reserveHead()
-// Lock head position of buffer to perform write operations externally.
-// Buffer is blocked until freeHead is called.
 {
     sem_wait(&space);
     sem_wait(&mtx);
     return &buffer[head];
 }
 
+/** Unlock buffer after external write operation (using reserveHead) 
+ * finished. All other calls to the buffer will block until freeHead() is 
+ * called. 
+ * Calling freeHead() wakes up other threads trying to read from an empty 
+ * buffer.
+ */
 template <class Type>
 int Ringbuffer<Type>::freeHead()
-// Free head position after external operation finished.
 {
     head = ++head % bufferSize;
     sem_post(&mtx);
@@ -121,11 +154,17 @@ int Ringbuffer<Type>::freeHead()
     return 0;
 }
 
+/* Lock tail position of buffer to perform read/copy operation externally.
+ * 
+ * If there is no data in the buffer it returns NULL. The call blocks if
+ * another thread is using the buffer.
+ *
+ * The buffer will block any other threads until freeTail() is called.
+ *
+ * \return Pointer to data to be read or NULL if buffer is empty.
+ */
 template <class Type>
-Type* Ringbuffer<Type>::reserveTail()
-// Lock tail position of buffer to perform read/copy operation 
-// externally.
-// Buffer is blocked until freeTail is called.
+Type* Ringbuffer<Type>::reserveTailTry()
 {
     if(sem_trywait(&usage) != 0) {
     	return NULL;
@@ -134,25 +173,23 @@ Type* Ringbuffer<Type>::reserveTail()
     return &buffer[tail];
 }
 
+/**Unlock buffer after external read operation (using reserveTail())
+ * finished. All other calls to the buffer will block until freeTail() is
+ * called.
+ * Calling freeTail() wakes up other blocking threads trying to write to a 
+ * full buffer.
+ */
 template <class Type>
 int Ringbuffer<Type>::freeTail()
-// Free tail position after external operation finished.
 {
     tail = ++ tail % bufferSize;
     sem_post(&mtx);
     sem_post(&space);
     return 0;
 }
-
-/* TODO: BAUSTELLE
-template <class Type>
-void fill_wform(Type wform, short int fill_value)
-{
-    for (int i=0; i<SAMPLE_COUNT; i++) {
-        wform[i] = fill_value;
-    }
-}
-*/
+/** Get amount of items stored in buffer.
+ * \return Number of items in buffer
+ */
 template <class Type>
 int Ringbuffer<Type>::getSize() {
 	int full_value;
@@ -160,7 +197,9 @@ int Ringbuffer<Type>::getSize() {
 	return full_value;
 }
 
-
+/** Tell if buffer is empty.
+ * \return True if no elements are in buffer. False otherwise.
+ */
 template <class Type>
 bool Ringbuffer<Type>::isEmpty() {
 	int full_value, empty_value;
@@ -169,12 +208,21 @@ bool Ringbuffer<Type>::isEmpty() {
 	return (full_value == 0) && (empty_value == bufferSize);
 }
 
+/** Tell if buffer is empty and will stay empty.
+ * \return True if there are no elements in buffer and all producers 
+ * announced that they stopped adding elements. False otherwise.
+ */
 template <class Type>
 bool Ringbuffer<Type>::isFinished() {
 	int full_value;
 	sem_getvalue(&usage, &full_value);
 	return (producer==0) && (full_value == 0);
 }
+
+/** Lets a producer announce that it is adding no more elements to the 
+ *  buffer.
+ *  To be called only once per producer. This is not checked.
+ */
 template <class Type>
 void Ringbuffer<Type>::producerQuit() {
 	__sync_sub_and_fetch(&producer,1);

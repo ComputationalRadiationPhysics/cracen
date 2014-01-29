@@ -69,7 +69,7 @@ void Node::run() {
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
 		/* Block ringbuffer */
-		SampleChunk *c = iBuffer->reserveTail();
+		SampleChunk *c = iBuffer->reserveTailTry();
 		/* Copy to device */
 
 		if(c != NULL) {

@@ -1,44 +1,172 @@
 \hypertarget{classRingbuffer}{\section{Ringbuffer$<$ Type $>$ Class Template Reference}
 \label{classRingbuffer}\index{Ringbuffer$<$ Type $>$@{Ringbuffer$<$ Type $>$}}
 }
+
+
+A ringbuffer template supporting non-\/host consumers/producers.  
+
+
+
+
+{\ttfamily \#include $<$Ringbuffer.\-h$>$}
+
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hypertarget{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}{{\bfseries Ringbuffer} (unsigned int b\-Size, int producer)}\label{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}
+\hyperlink{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}{Ringbuffer} (unsigned int b\-Size, int producer)
+\item 
+int \hyperlink{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}{write\-From\-Host} (Type $\ast$input\-On\-Host)
+\item 
+int \hyperlink{classRingbuffer_a97f008c10065843bbab49579c8ce3ce4}{copy\-To\-Host} (Type $\ast$output\-On\-Host)
+\item 
+Type $\ast$ \hyperlink{classRingbuffer_acf64a0c3c16f208dd1191130b0d18b33}{reserve\-Head} ()
+\item 
+int \hyperlink{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}{free\-Head} ()
+\item 
+\hypertarget{classRingbuffer_ae706d005e224e970c7b53115a9d5e5af}{Type $\ast$ {\bfseries reserve\-Tail\-\_\-try} ()}\label{classRingbuffer_ae706d005e224e970c7b53115a9d5e5af}
 
 \item 
-\hypertarget{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}{int {\bfseries write\-From\-Host} (Type $\ast$input\-On\-Host)}\label{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}
-
+int \hyperlink{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}{free\-Tail} ()
 \item 
-\hypertarget{classRingbuffer_a97f008c10065843bbab49579c8ce3ce4}{int {\bfseries copy\-To\-Host} (Type $\ast$output\-On\-Host)}\label{classRingbuffer_a97f008c10065843bbab49579c8ce3ce4}
-
+int \hyperlink{classRingbuffer_aefca234ed766de811794f6ab91e86d17}{get\-Size} ()
 \item 
-\hypertarget{classRingbuffer_acf64a0c3c16f208dd1191130b0d18b33}{Type $\ast$ {\bfseries reserve\-Head} ()}\label{classRingbuffer_acf64a0c3c16f208dd1191130b0d18b33}
-
+bool \hyperlink{classRingbuffer_af746d95cfff3115957d01181484be191}{is\-Empty} ()
 \item 
-\hypertarget{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}{int {\bfseries free\-Head} ()}\label{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}
-
+bool \hyperlink{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}{is\-Finished} ()
 \item 
-\hypertarget{classRingbuffer_a3aadf9953f637b327125d96fa6d2c65c}{Type $\ast$ {\bfseries reserve\-Tail} ()}\label{classRingbuffer_a3aadf9953f637b327125d96fa6d2c65c}
-
-\item 
-\hypertarget{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}{int {\bfseries free\-Tail} ()}\label{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}
-
-\item 
-\hypertarget{classRingbuffer_aefca234ed766de811794f6ab91e86d17}{int {\bfseries get\-Size} ()}\label{classRingbuffer_aefca234ed766de811794f6ab91e86d17}
-
-\item 
-\hypertarget{classRingbuffer_af746d95cfff3115957d01181484be191}{bool {\bfseries is\-Empty} ()}\label{classRingbuffer_af746d95cfff3115957d01181484be191}
-
-\item 
-\hypertarget{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}{bool {\bfseries is\-Finished} ()}\label{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}
-
-\item 
-\hypertarget{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}{void {\bfseries producer\-Quit} ()}\label{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}
-
+void \hyperlink{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}{producer\-Quit} ()
 \end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$class Type$>$class Ringbuffer$<$ Type $>$}
+
+A ringbuffer template supporting non-\/host consumers/producers. 
+
+\hyperlink{classRingbuffer}{Ringbuffer} Data is written to the head of the buffer and read from the tail. To enable reading to devices like graphic cards the tail of the buffer can be reserved. In the reserved state copy operations can be performed externally. After copying the head needs to be freed. The same mechanism is available for writing to the buffer from other devices. For data reading/writing from host to host classic write/read methods are available. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}{\index{Ringbuffer@{Ringbuffer}!Ringbuffer@{Ringbuffer}}
+\index{Ringbuffer@{Ringbuffer}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{Ringbuffer}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ {\bf Ringbuffer}$<$ Type $>$\-::{\bf Ringbuffer} (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{b\-Size, }
+\item[{int}]{producer}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_ae2ff732b1a9a88f95d57ce27330c00ad}
+Basic Constructor.
+
+Reserves buffer memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em b\-Size} & buffer size in items of 'Type' \\
+\hline
+{\em producer} & Number of producers feeding the buffer. \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classRingbuffer_a97f008c10065843bbab49579c8ce3ce4}{\index{Ringbuffer@{Ringbuffer}!copy\-To\-Host@{copy\-To\-Host}}
+\index{copy\-To\-Host@{copy\-To\-Host}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{copy\-To\-Host}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type$>$ int {\bf Ringbuffer}$<$ Type $>$\-::copy\-To\-Host (
+\begin{DoxyParamCaption}
+\item[{Type $\ast$}]{output\-On\-Host}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_a97f008c10065843bbab49579c8ce3ce4}
+Read data from the buffer to the host.
+
+The call blocks until there is data available in the buffer. The call blocks if the buffer is already used by another thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em output\-On\-Host} & Pointer to host memory where buffer data is to be written. \\
+\hline
+\end{DoxyParams}
+\hypertarget{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}{\index{Ringbuffer@{Ringbuffer}!free\-Head@{free\-Head}}
+\index{free\-Head@{free\-Head}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{free\-Head}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ int {\bf Ringbuffer}$<$ Type $>$\-::free\-Head (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}
+Unlock buffer after external write operation (using reserve\-Head) finished. All other calls to the buffer will block until \hyperlink{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}{free\-Head()} is called. Calling \hyperlink{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}{free\-Head()} wakes up other threads trying to read from an empty buffer. \hypertarget{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}{\index{Ringbuffer@{Ringbuffer}!free\-Tail@{free\-Tail}}
+\index{free\-Tail@{free\-Tail}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{free\-Tail}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ int {\bf Ringbuffer}$<$ Type $>$\-::free\-Tail (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}
+Unlock buffer after external read operation (using reserve\-Tail()) finished. All other calls to the buffer will block until \hyperlink{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}{free\-Tail()} is called. Calling \hyperlink{classRingbuffer_a66193754bca336ed8b8f2d5a9a89995c}{free\-Tail()} wakes up other blocking threads trying to write to a full buffer. \hypertarget{classRingbuffer_aefca234ed766de811794f6ab91e86d17}{\index{Ringbuffer@{Ringbuffer}!get\-Size@{get\-Size}}
+\index{get\-Size@{get\-Size}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{get\-Size}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ int {\bf Ringbuffer}$<$ Type $>$\-::get\-Size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_aefca234ed766de811794f6ab91e86d17}
+Get amount of items stored in buffer. \begin{DoxyReturn}{Returns}
+Number of items in buffer 
+\end{DoxyReturn}
+\hypertarget{classRingbuffer_af746d95cfff3115957d01181484be191}{\index{Ringbuffer@{Ringbuffer}!is\-Empty@{is\-Empty}}
+\index{is\-Empty@{is\-Empty}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{is\-Empty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ bool {\bf Ringbuffer}$<$ Type $>$\-::is\-Empty (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_af746d95cfff3115957d01181484be191}
+Tell if buffer is empty. \begin{DoxyReturn}{Returns}
+True if no elements are in buffer. False otherwise. 
+\end{DoxyReturn}
+\hypertarget{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}{\index{Ringbuffer@{Ringbuffer}!is\-Finished@{is\-Finished}}
+\index{is\-Finished@{is\-Finished}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{is\-Finished}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ bool {\bf Ringbuffer}$<$ Type $>$\-::is\-Finished (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}
+Tell if buffer is empty and will stay empty. \begin{DoxyReturn}{Returns}
+True if there are no elements in buffer and all producers announced that they stopped adding elements. False otherwise. 
+\end{DoxyReturn}
+\hypertarget{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}{\index{Ringbuffer@{Ringbuffer}!producer\-Quit@{producer\-Quit}}
+\index{producer\-Quit@{producer\-Quit}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{producer\-Quit}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ void {\bf Ringbuffer}$<$ Type $>$\-::producer\-Quit (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}
+Lets a producer announce that it is adding no more elements to the buffer. To be called only once per producer. This is not checked. \hypertarget{classRingbuffer_acf64a0c3c16f208dd1191130b0d18b33}{\index{Ringbuffer@{Ringbuffer}!reserve\-Head@{reserve\-Head}}
+\index{reserve\-Head@{reserve\-Head}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{reserve\-Head}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type $>$ Type $\ast$ {\bf Ringbuffer}$<$ Type $>$\-::reserve\-Head (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_acf64a0c3c16f208dd1191130b0d18b33}
+Lock head position of buffer to perform write operations externally.
+
+The call blocks until there is space available in the buffer.
+
+Buffer is blocked until \hyperlink{classRingbuffer_a1d8b62be3d51a00930e7b06d1ad2df53}{free\-Head()} is called. \begin{DoxyReturn}{Returns}
+Pointer to the head of the ringbuffer. One item of $<$\-Type$>$ can be written here. 
+\end{DoxyReturn}
+\hypertarget{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}{\index{Ringbuffer@{Ringbuffer}!write\-From\-Host@{write\-From\-Host}}
+\index{write\-From\-Host@{write\-From\-Host}!Ringbuffer@{Ringbuffer}}
+\subsubsection[{write\-From\-Host}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class Type$>$ int {\bf Ringbuffer}$<$ Type $>$\-::write\-From\-Host (
+\begin{DoxyParamCaption}
+\item[{Type $\ast$}]{input\-On\-Host}
+\end{DoxyParamCaption}
+)}}\label{classRingbuffer_ac8b2973f3ab190cf778535c394ba980d}
+Write data to the buffer from the host.
+
+The call blocks if there is no space available on the buffer or if the buffer is already used by another thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\-On\-Host} & Needs to be on host memory. \\
+\hline
+\end{DoxyParams}
 
 
 The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
 \item 
-/home/fabian/\-D\-S\-P/src/Ringbuffer.\-h\end{DoxyCompactItemize}
+/home/richard/coding/\-H\-O\-P\-S\-\_\-\-Co/\-D\-S\-P/src/Ringbuffer.\-h\end{DoxyCompactItemize}
