@@ -12,11 +12,32 @@
 #define CUDA //defined: runs on GPU, otherwise on CPU (useful for debugging)
 
 #ifdef CUDA
-texture<DATATYPE, 2, cudaReadModeElementType> dataTexture;
-#define GETSAMPLE(I, INDEXDATASET) tex2D(dataTexture, (I) + 0.5, (INDEXDATASET) + 0.5)
+texture<DATATYPE, 2, cudaReadModeElementType> dataTexture0, dataTexture1, dataTexture2, dataTexture3, dataTexture4, dataTexture5;
+
+template<unsigned int tex>
+__device__ float getSample(float I, int INDEXDATASET);
+
+template<> __device__ float getSample<0>(float I, int INDEXDATASET) {
+	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+}
+template<> __device__ float getSample<1>(float I, int INDEXDATASET) {
+	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+}
+template<> __device__ float getSample<2>(float I, int INDEXDATASET) {
+	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+}
+template<> __device__ float getSample<3>(float I, int INDEXDATASET) {
+	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+}
+template<> __device__ float getSample<4>(float I, int INDEXDATASET) {
+	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+}
+template<> __device__ float getSample<5>(float I, int INDEXDATASET) {
+	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+}
 #else
 DATATYPE *data;
-#define GETSAMPLE(I, INDEXDATASET) data[(int)(I)] //INDEXDATASET has no effect (only for CUDA)
+#define getSample(I, INDEXDATASET) data[(int)(I)] //INDEXDATASET has no effect (only for CUDA)
 #endif
 
 #ifdef CUDA
@@ -39,23 +60,6 @@ DATATYPE *data;
 #define MIN(A, B) (((A) <= (B)) ? (A) : (B))
 #define MAX(A, B) (((A) >= (B)) ? (A) : (B))
 #define SQR(X)    ((X) * (X))
-
-DEVICE inline void fitFunction(float x, float *param, float *y);
-DEVICE inline void fitFunctionExtremum(float *param, float *x);
-
-DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset, float xStep);
-DEVICE void qrSolve(int n, float *r, int ldr, int *ipvt, float *diag, float *qtb, float *x, float *sdiag, float *wa);
-DEVICE void euclidNorm(int n, float *x, float* result);
-DEVICE void lmpar(int n, float *r, int ldr, int *ipvt, float *diag, float *qtb, float delta, float *par, float *x,
-			  float *sdiag, float *wa1, float *wa2);
-DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt, float *rdiag, float *acnorm, float *wa);
-DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn,
-			  float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1,
-			  float *wa2, float *wa3, float *wa4, int indexDataset, int xOffset);
-DEVICE void maxValue(int countData, int indexDataset, int *x, DATATYPE *y);
-DEVICE void averageValue(int start, int count, int indexDataset, float *y);
-DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x);
-GLOBAL void kernel(int countData, struct fitData *result);
 
 
 /*
@@ -119,6 +123,7 @@ const char *statusMessage[] = { //indexed by fitData.status
  * \param indexDataset index of the current dataset (GPU mode) or not used (CPU mode)
  * \param param the returned parameter start values
 */
+template<unsigned int tex>
 DEVICE void paramStartValue(int firstValue, int lastValue, int indexDataset, float *param)
 {
 	long long int x1, y1, x2, y2, x3, y3, dv;
@@ -126,9 +131,9 @@ DEVICE void paramStartValue(int firstValue, int lastValue, int indexDataset, flo
 	x1 = firstValue;
 	x2 = (lastValue - firstValue) / 2 + firstValue;
 	x3 = lastValue;
-	y1 = GETSAMPLE(x1, indexDataset);
-	y2 = GETSAMPLE(x2, indexDataset);
-	y3 = GETSAMPLE(x3, indexDataset);
+	y1 = getSample<tex>(x1, indexDataset);
+	y2 = getSample<tex>(x2, indexDataset);
+	y3 = getSample<tex>(x3, indexDataset);
 
 	//any value, but not { 0, 0, 0 }
 	dv = (x2-x1)*(x3-x1)*(x2-x3);
@@ -165,6 +170,7 @@ DEVICE inline void fitFunctionExtremum(float *param, float *x) //get x
 
 //------------------------
 
+template<unsigned int tex>
 DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset, float xStep)
 {
 	int i;
@@ -172,7 +178,7 @@ DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset,
 
 	for (i = 0; i < countData; i++) {
 		fitFunction(i * xStep + xOffset, param, &y);
-		fvec[i] = GETSAMPLE(i * xStep + xOffset, indexDataset) - y;
+		fvec[i] = getSample<tex>(i * xStep + xOffset, indexDataset) - y;
 	}
 }
 
@@ -552,6 +558,7 @@ DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt,
 	}
 }
 
+template<unsigned int tex>
 DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn,
 			  float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1,
 			  float *wa2, float *wa3, float *wa4, int indexDataset, int xOffset, float xStep)
@@ -587,7 +594,7 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, f
 	//evaluate function at starting point and calculate norm
 
 	*info = 0;
-	evaluate(x, m, fvec, indexDataset, xOffset, xStep);
+	evaluate<tex>(x, m, fvec, indexDataset, xOffset, xStep);
 	++(*nfev);
 	euclidNorm(m, fvec, &fnorm);
 
@@ -602,7 +609,7 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, f
 				step = eps;
 			x[j] = temp + step;
 			*info = 0;
-			evaluate(x, m, wa4, indexDataset, xOffset, xStep);
+			evaluate<tex>(x, m, wa4, indexDataset, xOffset, xStep);
 			for (i = 0; i < m; i++) //changed in 2.3, Mark Bydder
 				fjac[j * m + i] = (wa4[i] - fvec[i]) / (x[j] - temp);
 			x[j] = temp;
@@ -700,7 +707,7 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, f
 			//evaluate the function at x + p and calculate its norm
 
 			*info = 0;
-			evaluate(wa2, m, wa4, indexDataset, xOffset, xStep);
+			evaluate<tex>(wa2, m, wa4, indexDataset, xOffset, xStep);
 			++(*nfev);
 
 			euclidNorm(m, wa4, &fnorm1);
@@ -796,14 +803,15 @@ DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, f
  * \param x the returned x value
  * \param y the returned y value
 */
+template<unsigned int tex>
 DEVICE void maxValue(int countData, int indexDataset, int *x, DATATYPE *y)
 {
 	int i;
 	*x = 0;
-	*y = GETSAMPLE(0, indexDataset);
+	*y = getSample<tex>(0, indexDataset);
 	for (i = 0; i < countData; i++)
-		if (GETSAMPLE(i, indexDataset) > *y) {
-			*y = GETSAMPLE(i, indexDataset);
+		if (getSample<tex>(i, indexDataset) > *y) {
+			*y = getSample<tex>(i, indexDataset);
 			*x = i;
 		}
 }
@@ -815,13 +823,15 @@ DEVICE void maxValue(int countData, int indexDataset, int *x, DATATYPE *y)
  * \param indexDataset index of the current dataset (GPU mode) or not used (CPU mode)
  * \param y the returned average
 */
+
+template<unsigned int tex>
 DEVICE void averageValue(int start, int count, int indexDataset, float *y)
 {
 	int i;
 	float sum = 0;
 
 	for (i = start; i < start + count; i++)
-		sum += GETSAMPLE(i, indexDataset);
+		sum += getSample<tex>(i, indexDataset);
 	*y = sum / count;
 }
 
@@ -833,20 +843,22 @@ DEVICE void averageValue(int start, int count, int indexDataset, float *y)
  * \param minValue min. y value
  * \param x the returned x value, -1 if there is no x with a y greater or equal minValue
 */
+
+template<unsigned int tex>
 DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x)
 {
 	int i;
 	*x = -1;
 	if (fromDirection == 'l') {
 		for (i = 0; i < countData; i++)
-			if (GETSAMPLE(i, indexDataset) >= minValue) {
+			if (getSample<tex>(i, indexDataset) >= minValue) {
 				*x = i;
 				break;
 			}
 	}
 	else if (fromDirection == 'r')
 		for (i = countData - 1; i >= 0; i--)
-			if (GETSAMPLE(i, indexDataset) >= minValue) {
+			if (getSample<tex>(i, indexDataset) >= minValue) {
 				*x = i;
 				break;
 			}
@@ -867,6 +879,7 @@ DEVICE void averageAbsResidues(int countResidues, float *residues, float *averag
  * \param countData number of samples
  * \param result fit-function and other parameters, defined in fitData struct
 */
+template<unsigned int tex>
 GLOBAL void kernel(int countData, float step, struct fitData *result)
 {
 #ifdef CUDA
@@ -891,13 +904,13 @@ GLOBAL void kernel(int countData, float step, struct fitData *result)
 	SHARED float wa1[COUNTPARAM], wa2[COUNTPARAM], wa3[COUNTPARAM];
 	SHARED int ipvt[COUNTPARAM];
 
-	maxValue(countData, indexDataset, &maxX, &maxY);
-	xOfValue(countData, indexDataset, 'l', (maxY - GETSAMPLE(0, indexDataset)) * FITVALUETHRESHOLD + GETSAMPLE(0, indexDataset), &firstValue);
-	xOfValue(countData, indexDataset, 'r', (maxY - GETSAMPLE(countData - 1, indexDataset)) * FITVALUETHRESHOLD + GETSAMPLE(countData - 1, indexDataset), &lastValue);
+	maxValue<tex>(countData, indexDataset, &maxX, &maxY);
+	xOfValue<tex>(countData, indexDataset, 'l', (maxY - getSample<tex>(0, indexDataset)) * FITVALUETHRESHOLD + getSample<tex>(0, indexDataset), &firstValue);
+	xOfValue<tex>(countData, indexDataset, 'r', (maxY - getSample<tex>(countData - 1, indexDataset)) * FITVALUETHRESHOLD + getSample<tex>(countData - 1, indexDataset), &lastValue);
 
-	paramStartValue(firstValue, lastValue, indexDataset, param);
+	paramStartValue<tex>(firstValue, lastValue, indexDataset, param);
 
-	lmdif((int)((lastValue - firstValue) / step) + 1, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
+	lmdif<tex>((int)((lastValue - firstValue) / step) + 1, COUNTPARAM, param, fvec, LM_USERTOL, LM_USERTOL, LM_USERTOL,
 		MAXCALL * (COUNTPARAM + 1), LM_USERTOL, diag, 1, 100, &info,
 		&nfev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4, indexDataset, firstValue, step);
 
@@ -909,8 +922,8 @@ GLOBAL void kernel(int countData, float step, struct fitData *result)
 	countAverage = countData * STARTENDPROPORTION;
 	if (countData > 0 && countAverage == 0)
 		countAverage = 1;
-	averageValue(0, countAverage, indexDataset, &result[indexDataset].startValue);
-	averageValue(countData - countAverage, countAverage, indexDataset, &result[indexDataset].endValue);
+	averageValue<tex>(0, countAverage, indexDataset, &result[indexDataset].startValue);
+	averageValue<tex>(countData - countAverage, countAverage, indexDataset, &result[indexDataset].endValue);
 	fitFunctionExtremum(param, &result[indexDataset].extremumPos);
 	fitFunction(result[indexDataset].extremumPos, param, &result[indexDataset].extremumValue);
 	result[indexDataset].status = info;

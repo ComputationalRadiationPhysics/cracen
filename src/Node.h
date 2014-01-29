@@ -27,7 +27,6 @@ private:
 	 *  \param texArray Location on the GPU, where the raw data will be copied to.
 	 *  \param fitData  Location on the GPU, where the result will be written to.
 	 */
-	int copyChunk(cudaArray *texArray, fitData* d_result);
 	
 public:
 	//! Basic constructor.
