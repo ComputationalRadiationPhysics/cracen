@@ -74,7 +74,17 @@ void Node::run() {
 
 		if(c != NULL) {
 			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice, streams[tex]);
-			/* Free ringbuffer */
+			/* Free ringbuffer 
+               This is possible because at the moment we use pageable (non-pinnend)
+               host memory for the ringbuffer.
+               In this case cudaMemcpy...Async will first copy data to a staging 
+               buffer and then return. Only copying from staging buffer to final 
+               destination is asynchronous.
+               Should we switch to pinnend host memory for the ringbuffer we must
+               not call iBuffer->freeTail() directly after cudaMemcpy..Async.
+               See 
+http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
+             */
 			iBuffer->freeTail();
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 			cudaMemcpy(d_result[tex], result[tex], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice);
