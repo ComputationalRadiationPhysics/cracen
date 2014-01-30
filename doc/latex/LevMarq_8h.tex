@@ -1,5 +1,5 @@
-\hypertarget{LevMarq_8h}{\section{/home/richard/coding/\-H\-O\-P\-S\-\_\-\-Co/\-D\-S\-P/src/\-Lev\-Marq.h File Reference}
-\label{LevMarq_8h}\index{/home/richard/coding/\-H\-O\-P\-S\-\_\-\-Co/\-D\-S\-P/src/\-Lev\-Marq.\-h@{/home/richard/coding/\-H\-O\-P\-S\-\_\-\-Co/\-D\-S\-P/src/\-Lev\-Marq.\-h}}
+\hypertarget{LevMarq_8h}{\section{D\-S\-P/src/\-Lev\-Marq.h File Reference}
+\label{LevMarq_8h}\index{D\-S\-P/src/\-Lev\-Marq.\-h@{D\-S\-P/src/\-Lev\-Marq.\-h}}
 }
 {\ttfamily \#include $<$stdlib.\-h$>$}\\*
 {\ttfamily \#include $<$math.\-h$>$}\\*
@@ -132,9 +132,6 @@ D\-E\-V\-I\-C\-E void \hyperlink{LevMarq_8h_ad811b4e3f21363f3411fb5bcf40f039f}{e
 \item 
 const char $\ast$ {\bfseries status\-Message} \mbox{[}$\,$\mbox{]}
 \end{DoxyCompactItemize}
-
-
-\subsection{Detailed Description}
 
 
 \subsection{Function Documentation}
@@ -319,14 +316,12 @@ x\-Of\-Value returns the first x of a value y that is greater or equal of a give
 \subsubsection[{status\-Message}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ status\-Message\mbox{[}$\,$\mbox{]}}}\label{LevMarq_8h_a566842bb6e232f37419d0ac24e4618b1}
 {\bfseries Initial value\-:}
 \begin{DoxyCode}
- \{ 
+= \{ 
     \textcolor{stringliteral}{"fatal coding error (improper input parameters)"},
     \textcolor{stringliteral}{"success (the relative error in the sum of squares is at most tol)"},
     \textcolor{stringliteral}{"success (the relative error between x and the solution is at most tol)"},
-    \textcolor{stringliteral}{"success (the relative errors in the sum of squares and between x and the
-       solution are at most tol)"},
-    \textcolor{stringliteral}{"trapped by degeneracy (fvec is orthogonal to the columns of the jacobian)"}
-      ,
+    \textcolor{stringliteral}{"success (the relative errors in the sum of squares and between x and the solution are at most tol)"},
+    \textcolor{stringliteral}{"trapped by degeneracy (fvec is orthogonal to the columns of the jacobian)"},
     \textcolor{stringliteral}{"timeout (number of calls to fcn has reached maxcall*(n+1))"},
     \textcolor{stringliteral}{"failure (ftol<tol: cannot reduce sum of squares any further)"},
     \textcolor{stringliteral}{"failure (xtol<tol: cannot improve approximate solution any further)"},
