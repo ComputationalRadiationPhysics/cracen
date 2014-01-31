@@ -21,19 +21,19 @@ template<> __device__ float getSample<0>(float I, int INDEXDATASET) {
 	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 template<> __device__ float getSample<1>(float I, int INDEXDATASET) {
-	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+	return tex2D(dataTexture1, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 template<> __device__ float getSample<2>(float I, int INDEXDATASET) {
-	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+	return tex2D(dataTexture2, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 template<> __device__ float getSample<3>(float I, int INDEXDATASET) {
-	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+	return tex2D(dataTexture3, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 template<> __device__ float getSample<4>(float I, int INDEXDATASET) {
-	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+	return tex2D(dataTexture4, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 template<> __device__ float getSample<5>(float I, int INDEXDATASET) {
-	return tex2D(dataTexture0, (I) + 0.5, (INDEXDATASET) + 0.5);
+	return tex2D(dataTexture5, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 #else
 DATATYPE *data;
