@@ -88,50 +88,274 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Ringbuffer&lt; Type &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>A ringbuffer template supporting non-host consumers/producers.  
+ <a href="classRingbuffer.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Ringbuffer_8h_source.html">Ringbuffer.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae2ff732b1a9a88f95d57ce27330c00ad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2ff732b1a9a88f95d57ce27330c00ad"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Ringbuffer</b> (unsigned int bSize, int producer)</td></tr>
+<tr class="memitem:ae2ff732b1a9a88f95d57ce27330c00ad"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#ae2ff732b1a9a88f95d57ce27330c00ad">Ringbuffer</a> (unsigned int bSize, int producer)</td></tr>
 <tr class="separator:ae2ff732b1a9a88f95d57ce27330c00ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8b2973f3ab190cf778535c394ba980d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8b2973f3ab190cf778535c394ba980d"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>writeFromHost</b> (Type *inputOnHost)</td></tr>
+<tr class="memitem:ac8b2973f3ab190cf778535c394ba980d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#ac8b2973f3ab190cf778535c394ba980d">writeFromHost</a> (Type *inputOnHost)</td></tr>
 <tr class="separator:ac8b2973f3ab190cf778535c394ba980d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97f008c10065843bbab49579c8ce3ce4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97f008c10065843bbab49579c8ce3ce4"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>copyToHost</b> (Type *outputOnHost)</td></tr>
+<tr class="memitem:a97f008c10065843bbab49579c8ce3ce4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#a97f008c10065843bbab49579c8ce3ce4">copyToHost</a> (Type *outputOnHost)</td></tr>
 <tr class="separator:a97f008c10065843bbab49579c8ce3ce4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf64a0c3c16f208dd1191130b0d18b33"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf64a0c3c16f208dd1191130b0d18b33"></a>
-Type *&#160;</td><td class="memItemRight" valign="bottom"><b>reserveHead</b> ()</td></tr>
+<tr class="memitem:acf64a0c3c16f208dd1191130b0d18b33"><td class="memItemLeft" align="right" valign="top">Type *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">reserveHead</a> ()</td></tr>
 <tr class="separator:acf64a0c3c16f208dd1191130b0d18b33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d8b62be3d51a00930e7b06d1ad2df53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d8b62be3d51a00930e7b06d1ad2df53"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>freeHead</b> ()</td></tr>
+<tr class="memitem:a1d8b62be3d51a00930e7b06d1ad2df53"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">freeHead</a> ()</td></tr>
 <tr class="separator:a1d8b62be3d51a00930e7b06d1ad2df53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3aadf9953f637b327125d96fa6d2c65c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3aadf9953f637b327125d96fa6d2c65c"></a>
-Type *&#160;</td><td class="memItemRight" valign="bottom"><b>reserveTail</b> ()</td></tr>
-<tr class="separator:a3aadf9953f637b327125d96fa6d2c65c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66193754bca336ed8b8f2d5a9a89995c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66193754bca336ed8b8f2d5a9a89995c"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>freeTail</b> ()</td></tr>
+<tr class="memitem:ab8a0b4877bfcf06687d782b029185be7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8a0b4877bfcf06687d782b029185be7"></a>
+Type *&#160;</td><td class="memItemRight" valign="bottom"><b>reserveTailTry</b> ()</td></tr>
+<tr class="separator:ab8a0b4877bfcf06687d782b029185be7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66193754bca336ed8b8f2d5a9a89995c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">freeTail</a> ()</td></tr>
 <tr class="separator:a66193754bca336ed8b8f2d5a9a89995c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aefca234ed766de811794f6ab91e86d17"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefca234ed766de811794f6ab91e86d17"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> ()</td></tr>
+<tr class="memitem:aefca234ed766de811794f6ab91e86d17"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">getSize</a> ()</td></tr>
 <tr class="separator:aefca234ed766de811794f6ab91e86d17"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af746d95cfff3115957d01181484be191"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af746d95cfff3115957d01181484be191"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmpty</b> ()</td></tr>
+<tr class="memitem:af746d95cfff3115957d01181484be191"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">isEmpty</a> ()</td></tr>
 <tr class="separator:af746d95cfff3115957d01181484be191"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac43a1bbfa6c41dd0aba33c70248425a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac43a1bbfa6c41dd0aba33c70248425a6"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isFinished</b> ()</td></tr>
+<tr class="memitem:ac43a1bbfa6c41dd0aba33c70248425a6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">isFinished</a> ()</td></tr>
 <tr class="separator:ac43a1bbfa6c41dd0aba33c70248425a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae40e43d8729f0cfdcb97675cda52b05f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae40e43d8729f0cfdcb97675cda52b05f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>producerQuit</b> ()</td></tr>
+<tr class="memitem:ae40e43d8729f0cfdcb97675cda52b05f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">producerQuit</a> ()</td></tr>
 <tr class="separator:ae40e43d8729f0cfdcb97675cda52b05f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class Type&gt;<br/>
+class Ringbuffer&lt; Type &gt;</h3>
+
+<p>A ringbuffer template supporting non-host consumers/producers. </p>
+<p><a class="el" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers. ">Ringbuffer</a> Data is written to the head of the buffer and read from the tail. To enable reading to devices like graphic cards the tail of the buffer can be reserved. In the reserved state copy operations can be performed externally. After copying the head needs to be freed. The same mechanism is available for writing to the buffer from other devices. For data reading/writing from host to host classic write/read methods are available. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="ae2ff732b1a9a88f95d57ce27330c00ad"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::<a class="el" href="classRingbuffer.html">Ringbuffer</a> </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>bSize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>producer</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Basic Constructor.</p>
+<p>Reserves buffer memory.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bSize</td><td>buffer size in items of 'Type' </td></tr>
+    <tr><td class="paramname">producer</td><td>Number of producers feeding the buffer. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a97f008c10065843bbab49579c8ce3ce4"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::copyToHost </td>
+          <td>(</td>
+          <td class="paramtype">Type *&#160;</td>
+          <td class="paramname"><em>outputOnHost</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Read data from the buffer to the host.</p>
+<p>The call blocks until there is data available in the buffer. The call blocks if the buffer is already used by another thread.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outputOnHost</td><td>Pointer to host memory where buffer data is to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a1d8b62be3d51a00930e7b06d1ad2df53"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::freeHead </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unlock buffer after external write operation (using reserveHead) finished. All other calls to the buffer will block until <a class="el" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">freeHead()</a> is called. Calling <a class="el" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">freeHead()</a> wakes up other threads trying to read from an empty buffer. </p>
+
+</div>
+</div>
+<a class="anchor" id="a66193754bca336ed8b8f2d5a9a89995c"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::freeTail </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unlock buffer after external read operation (using reserveTail()) finished. All other calls to the buffer will block until <a class="el" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">freeTail()</a> is called. Calling <a class="el" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">freeTail()</a> wakes up other blocking threads trying to write to a full buffer. </p>
+
+</div>
+</div>
+<a class="anchor" id="aefca234ed766de811794f6ab91e86d17"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::getSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get amount of items stored in buffer. </p>
+<dl class="section return"><dt>Returns</dt><dd>Number of items in buffer </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="af746d95cfff3115957d01181484be191"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::isEmpty </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Tell if buffer is empty. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if no elements are in buffer. False otherwise. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac43a1bbfa6c41dd0aba33c70248425a6"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::isFinished </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Tell if buffer is empty and will stay empty. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if there are no elements in buffer and all producers announced that they stopped adding elements. False otherwise. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ae40e43d8729f0cfdcb97675cda52b05f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::producerQuit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Lets a producer announce that it is adding no more elements to the buffer. To be called only once per producer. This is not checked. </p>
+
+</div>
+</div>
+<a class="anchor" id="acf64a0c3c16f208dd1191130b0d18b33"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Type * <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::reserveHead </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Lock head position of buffer to perform write operations externally.</p>
+<p>The call blocks until there is space available in the buffer.</p>
+<p>Buffer is blocked until <a class="el" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">freeHead()</a> is called. </p>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the head of the ringbuffer. One item of &lt;Type&gt; can be written here. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac8b2973f3ab190cf778535c394ba980d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Type&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classRingbuffer.html">Ringbuffer</a>&lt; Type &gt;::writeFromHost </td>
+          <td>(</td>
+          <td class="paramtype">Type *&#160;</td>
+          <td class="paramname"><em>inputOnHost</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Write data to the buffer from the host.</p>
+<p>The call blocks if there is no space available on the buffer or if the buffer is already used by another thread.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inputOnHost</td><td>Needs to be on host memory. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/fabian/DSP/src/<a class="el" href="Ringbuffer_8h_source.html">Ringbuffer.h</a></li>
+<li>DSP/src/<a class="el" href="Ringbuffer_8h_source.html">Ringbuffer.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jan 31 2014 12:01:02 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

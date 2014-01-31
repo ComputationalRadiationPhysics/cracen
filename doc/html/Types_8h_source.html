@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Digital Signal Processing using CUDA: /home/fabian/DSP/src/Types.h Source File</title>
+<title>Digital Signal Processing using CUDA: DSP/src/Types.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_650d82db24a6311fa7658fced19ae149.html">DSP</a></li><li class="navelem"><a class="el" href="dir_abd880db5973a936a512583fcfc44005.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -105,29 +105,31 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keywordtype">float</span> endValue;</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">float</span> extremumPos;</div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordtype">float</span> extremumValue;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordtype">int</span> status;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;};</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">typedef</span> <a class="code" href="structfitData.html">fitData</a> <a class="code" href="structfitData.html">Output</a>;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">// a waveform consisting of SAMPLE_COUNT samples is of type: wform_t</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">typedef</span> std::vector&lt;short int&gt; wform_t;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;SampleChunk&gt;</a> <a class="code" href="classRingbuffer.html">InputBuffer</a>;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;Output&gt;</a> <a class="code" href="classRingbuffer.html">OutputBuffer</a>;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">float</span> DATATYPE;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordtype">float</span> euclidNormResidues;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keywordtype">float</span> averageAbsResidues;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keywordtype">int</span> status;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;};</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">typedef</span> <a class="code" href="structfitData.html">fitData</a> <a class="code" href="structfitData.html">Output</a>;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">// a waveform consisting of SAMPLE_COUNT samples is of type: wform_t</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">typedef</span> std::vector&lt;short int&gt; wform_t;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;SampleChunk&gt;</a> <a class="code" href="classRingbuffer.html">InputBuffer</a>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classRingbuffer.html">Ringbuffer&lt;Output&gt;</a> <a class="code" href="classRingbuffer.html">OutputBuffer</a>;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">float</span> DATATYPE;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="structfitData_html"><div class="ttname"><a href="structfitData.html">fitData</a></div><div class="ttdef"><b>Definition:</b> Types.h:12</div></div>
-<div class="ttc" id="classRingbuffer_html"><div class="ttname"><a href="classRingbuffer.html">Ringbuffer</a></div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:9</div></div>
+<div class="ttc" id="classRingbuffer_html"><div class="ttname"><a href="classRingbuffer.html">Ringbuffer</a></div><div class="ttdoc">A ringbuffer template supporting non-host consumers/producers. </div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:23</div></div>
 <div class="ttc" id="Constants_8h_html"><div class="ttname"><a href="Constants_8h.html">Constants.h</a></div><div class="ttdoc">This File holds all configurations and constants. </div></div>
 <div class="ttc" id="Constants_8h_html_aa1fd9fa96f35a4a8f85ca789fb51e1d6"><div class="ttname"><a href="Constants_8h.html#aa1fd9fa96f35a4a8f85ca789fb51e1d6">CHUNK_COUNT</a></div><div class="ttdeci">const unsigned int CHUNK_COUNT</div><div class="ttdoc">Number of events copied to the GPU in one step. </div><div class="ttdef"><b>Definition:</b> Constants.h:16</div></div>
-<div class="ttc" id="Constants_8h_html_a0df66aec82cc118ec8978ce882abea1c"><div class="ttname"><a href="Constants_8h.html#a0df66aec82cc118ec8978ce882abea1c">COUNTPARAM</a></div><div class="ttdeci">const unsigned int COUNTPARAM</div><div class="ttdoc">number of parameters for the fit function </div><div class="ttdef"><b>Definition:</b> Constants.h:61</div></div>
+<div class="ttc" id="Constants_8h_html_a0df66aec82cc118ec8978ce882abea1c"><div class="ttname"><a href="Constants_8h.html#a0df66aec82cc118ec8978ce882abea1c">COUNTPARAM</a></div><div class="ttdeci">const unsigned int COUNTPARAM</div><div class="ttdoc">number of parameters for the fit function </div><div class="ttdef"><b>Definition:</b> Constants.h:66</div></div>
 <div class="ttc" id="Constants_8h_html_a2d7ef1a20e62c8311c9351dae8dd5a53"><div class="ttname"><a href="Constants_8h.html#a2d7ef1a20e62c8311c9351dae8dd5a53">SAMPLE_COUNT</a></div><div class="ttdeci">const unsigned int SAMPLE_COUNT</div><div class="ttdoc">Number of samples per event. </div><div class="ttdef"><b>Definition:</b> Constants.h:13</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jan 31 2014 12:01:02 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

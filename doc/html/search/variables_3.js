@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['sample_5fcount',['SAMPLE_COUNT',['../Constants_8h.html#a2d7ef1a20e62c8311c9351dae8dd5a53',1,'Constants.h']]],
-  ['startendproportion',['STARTENDPROPORTION',['../Constants_8h.html#a1f9cee197895f0b90c69e2f333072fc9',1,'Constants.h']]]
+  ['maxcall',['MAXCALL',['../Constants_8h.html#aa915bc2c7f7f3f5b9afa9bf59cf43ae6',1,'Constants.h']]],
+  ['maxcountdata',['MAXCOUNTDATA',['../Constants_8h.html#aae6cb8f40a8868256a40e05ccbab0a47',1,'Constants.h']]]
 ];

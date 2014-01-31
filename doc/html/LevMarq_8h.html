@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Digital Signal Processing using CUDA: /home/fabian/DSP/src/LevMarq.h File Reference</title>
+<title>Digital Signal Processing using CUDA: DSP/src/LevMarq.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_650d82db24a6311fa7658fced19ae149.html">DSP</a></li><li class="navelem"><a class="el" href="dir_abd880db5973a936a512583fcfc44005.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -97,21 +97,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;float.h&gt;</code><br/>
 <code>#include &lt;stdio.h&gt;</code><br/>
 <code>#include &quot;Types.h&quot;</code><br/>
-<code>#include &quot;<a class="el" href="LevMarq_8h_source.html">LevMarq.h</a>&quot;</code><br/>
 </div>
 <p><a href="LevMarq_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:af2bde972add2819c87bb35356f216c7d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2bde972add2819c87bb35356f216c7d"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>PARAMSTARTVALUE</b>&#160;&#160;&#160;{ 1, 1, 1 }</td></tr>
-<tr class="separator:af2bde972add2819c87bb35356f216c7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b01e29f669d6beed251f1b2a547ca93"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b01e29f669d6beed251f1b2a547ca93"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>CUDA</b></td></tr>
 <tr class="separator:a7b01e29f669d6beed251f1b2a547ca93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafd44675f0730213a63f23d919f6bf0a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aafd44675f0730213a63f23d919f6bf0a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>GETSAMPLE</b>(I, INDEXDATASET)&#160;&#160;&#160;tex2D(dataTexture, (I) + 0.5, (INDEXDATASET) + 0.5)</td></tr>
-<tr class="separator:aafd44675f0730213a63f23d919f6bf0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3de33738fd3c7e77bffbcfaefc3e7645"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3de33738fd3c7e77bffbcfaefc3e7645"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>GLOBAL</b>&#160;&#160;&#160;__global__</td></tr>
 <tr class="separator:a3de33738fd3c7e77bffbcfaefc3e7645"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -148,15 +141,48 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:adf0c30c0f7827c9ec64081ead174e071"><td class="memTemplParams" colspan="2"><a class="anchor" id="adf0c30c0f7827c9ec64081ead174e071"></a>
+template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:adf0c30c0f7827c9ec64081ead174e071"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:adf0c30c0f7827c9ec64081ead174e071"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad03393f5efe8859b81b576260f3a6ab4"><td class="memTemplParams" colspan="2"><a class="anchor" id="ad03393f5efe8859b81b576260f3a6ab4"></a>
+template&lt;&gt; </td></tr>
+<tr class="memitem:ad03393f5efe8859b81b576260f3a6ab4"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample&lt; 0 &gt;</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:ad03393f5efe8859b81b576260f3a6ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d7e14ae07070a00aa58f3d6847bcbe"><td class="memTemplParams" colspan="2"><a class="anchor" id="a91d7e14ae07070a00aa58f3d6847bcbe"></a>
+template&lt;&gt; </td></tr>
+<tr class="memitem:a91d7e14ae07070a00aa58f3d6847bcbe"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample&lt; 1 &gt;</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:a91d7e14ae07070a00aa58f3d6847bcbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af16863df00f77bd2f33bc14138db1163"><td class="memTemplParams" colspan="2"><a class="anchor" id="af16863df00f77bd2f33bc14138db1163"></a>
+template&lt;&gt; </td></tr>
+<tr class="memitem:af16863df00f77bd2f33bc14138db1163"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample&lt; 2 &gt;</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:af16863df00f77bd2f33bc14138db1163"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48c8d36e9846593589c0addeeb297e60"><td class="memTemplParams" colspan="2"><a class="anchor" id="a48c8d36e9846593589c0addeeb297e60"></a>
+template&lt;&gt; </td></tr>
+<tr class="memitem:a48c8d36e9846593589c0addeeb297e60"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample&lt; 3 &gt;</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:a48c8d36e9846593589c0addeeb297e60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78cfda4ff1a00fdcd85f3bc0e30b8901"><td class="memTemplParams" colspan="2"><a class="anchor" id="a78cfda4ff1a00fdcd85f3bc0e30b8901"></a>
+template&lt;&gt; </td></tr>
+<tr class="memitem:a78cfda4ff1a00fdcd85f3bc0e30b8901"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample&lt; 4 &gt;</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:a78cfda4ff1a00fdcd85f3bc0e30b8901"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13d892dd61f9475b2d5f0bda4f5b772e"><td class="memTemplParams" colspan="2"><a class="anchor" id="a13d892dd61f9475b2d5f0bda4f5b772e"></a>
+template&lt;&gt; </td></tr>
+<tr class="memitem:a13d892dd61f9475b2d5f0bda4f5b772e"><td class="memTemplItemLeft" align="right" valign="top">__device__ float&#160;</td><td class="memTemplItemRight" valign="bottom"><b>getSample&lt; 5 &gt;</b> (float I, int INDEXDATASET)</td></tr>
+<tr class="separator:a13d892dd61f9475b2d5f0bda4f5b772e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a682db89fc9fd71fc08af4c6bf97b8a67"><td class="memTemplParams" colspan="2">template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:a682db89fc9fd71fc08af4c6bf97b8a67"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a682db89fc9fd71fc08af4c6bf97b8a67">paramStartValue</a> (int firstValue, int lastValue, int indexDataset, float *param)</td></tr>
+<tr class="memdesc:a682db89fc9fd71fc08af4c6bf97b8a67"><td class="mdescLeft">&#160;</td><td class="mdescRight">paramStartValue returns the parameter start values for the fit-function calculation  <a href="#a682db89fc9fd71fc08af4c6bf97b8a67">More...</a><br/></td></tr>
+<tr class="separator:a682db89fc9fd71fc08af4c6bf97b8a67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cd69665c6373b0e11b4d4dac1c96870"><td class="memItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a5cd69665c6373b0e11b4d4dac1c96870">fitFunction</a> (float x, float *param, float *y)</td></tr>
 <tr class="memdesc:a5cd69665c6373b0e11b4d4dac1c96870"><td class="mdescLeft">&#160;</td><td class="mdescRight">fitFunction returns the y of a given x  <a href="#a5cd69665c6373b0e11b4d4dac1c96870">More...</a><br/></td></tr>
 <tr class="separator:a5cd69665c6373b0e11b4d4dac1c96870"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57031410d7214c2ce6569d26d313c81f"><td class="memItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a57031410d7214c2ce6569d26d313c81f">fitFunctionExtremum</a> (float *param, float *x)</td></tr>
 <tr class="memdesc:a57031410d7214c2ce6569d26d313c81f"><td class="mdescLeft">&#160;</td><td class="mdescRight">fitFunctionExtremum returns the x of the min. or max. y value  <a href="#a57031410d7214c2ce6569d26d313c81f">More...</a><br/></td></tr>
 <tr class="separator:a57031410d7214c2ce6569d26d313c81f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a387a39d934b5388da5475b6f81f4dca2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a387a39d934b5388da5475b6f81f4dca2"></a>
-DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><b>evaluate</b> (float *param, int countData, float *fvec, int indexDataset, int xOffset)</td></tr>
-<tr class="separator:a387a39d934b5388da5475b6f81f4dca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2235ecaa0cb148a38acea9e88eb48c7f"><td class="memTemplParams" colspan="2"><a class="anchor" id="a2235ecaa0cb148a38acea9e88eb48c7f"></a>
+template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:a2235ecaa0cb148a38acea9e88eb48c7f"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>evaluate</b> (float *param, int countData, float *fvec, int indexDataset, int xOffset, float xStep)</td></tr>
+<tr class="separator:a2235ecaa0cb148a38acea9e88eb48c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa2c225ad735dbaf4b949124356c7680"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa2c225ad735dbaf4b949124356c7680"></a>
 DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><b>qrSolve</b> (int n, float *r, int ldr, int *ipvt, float *diag, float *qtb, float *x, float *sdiag, float *wa)</td></tr>
 <tr class="separator:aaa2c225ad735dbaf4b949124356c7680"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,35 +194,65 @@ DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><b>lmpar</b> (int
 <tr class="memitem:a15b9d544dbbe5defd5987e65cc6d934e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15b9d544dbbe5defd5987e65cc6d934e"></a>
 DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><b>qrFactorization</b> (int m, int n, float *a, int pivot, int *ipvt, float *rdiag, float *acnorm, float *wa)</td></tr>
 <tr class="separator:a15b9d544dbbe5defd5987e65cc6d934e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89077028d3f652a4d07235c517af3c9d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89077028d3f652a4d07235c517af3c9d"></a>
-DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><b>lmdif</b> (int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn, float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1, float *wa2, float *wa3, float *wa4, int indexDataset, int xOffset)</td></tr>
-<tr class="separator:a89077028d3f652a4d07235c517af3c9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11e517a13063d8dd881e0c9d80cbd2e8"><td class="memItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a11e517a13063d8dd881e0c9d80cbd2e8">maxValue</a> (int countData, int indexDataset, int *x, DATATYPE *y)</td></tr>
-<tr class="memdesc:a11e517a13063d8dd881e0c9d80cbd2e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">maxValue returns the x and y where y has the greatest value  <a href="#a11e517a13063d8dd881e0c9d80cbd2e8">More...</a><br/></td></tr>
-<tr class="separator:a11e517a13063d8dd881e0c9d80cbd2e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a424a5df06a8a7f00096f4164e32e37ce"><td class="memItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a424a5df06a8a7f00096f4164e32e37ce">averageValue</a> (int start, int count, int indexDataset, float *y)</td></tr>
-<tr class="memdesc:a424a5df06a8a7f00096f4164e32e37ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">averageValue returns the average of all y values in a given range  <a href="#a424a5df06a8a7f00096f4164e32e37ce">More...</a><br/></td></tr>
-<tr class="separator:a424a5df06a8a7f00096f4164e32e37ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d6b3f6ea2a9237e6d34524697c2eb0d"><td class="memItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a9d6b3f6ea2a9237e6d34524697c2eb0d">xOfValue</a> (int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x)</td></tr>
-<tr class="memdesc:a9d6b3f6ea2a9237e6d34524697c2eb0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">xOfValue returns the first x of a value y that is greater or equal of a given min. value  <a href="#a9d6b3f6ea2a9237e6d34524697c2eb0d">More...</a><br/></td></tr>
-<tr class="separator:a9d6b3f6ea2a9237e6d34524697c2eb0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14a00442d7bb39cccd9c8aa5122b9a25"><td class="memItemLeft" align="right" valign="top">GLOBAL void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a14a00442d7bb39cccd9c8aa5122b9a25">kernel</a> (int countData, struct <a class="el" href="structfitData.html">fitData</a> *result)</td></tr>
-<tr class="memdesc:a14a00442d7bb39cccd9c8aa5122b9a25"><td class="mdescLeft">&#160;</td><td class="mdescRight">kernel is the start method for calculation (you have to set the dataTexture (GPU mode) or data variable (CPU mode) before calling this method)  <a href="#a14a00442d7bb39cccd9c8aa5122b9a25">More...</a><br/></td></tr>
-<tr class="separator:a14a00442d7bb39cccd9c8aa5122b9a25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a836594da02491db5779ce3d04f0574d2"><td class="memTemplParams" colspan="2"><a class="anchor" id="a836594da02491db5779ce3d04f0574d2"></a>
+template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:a836594da02491db5779ce3d04f0574d2"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>lmdif</b> (int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn, float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1, float *wa2, float *wa3, float *wa4, int indexDataset, int xOffset, float xStep)</td></tr>
+<tr class="separator:a836594da02491db5779ce3d04f0574d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8694039b8a2d6041fd6a6ccffea8b5a4"><td class="memTemplParams" colspan="2">template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:a8694039b8a2d6041fd6a6ccffea8b5a4"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a8694039b8a2d6041fd6a6ccffea8b5a4">maxValue</a> (int countData, int indexDataset, int *x, DATATYPE *y)</td></tr>
+<tr class="memdesc:a8694039b8a2d6041fd6a6ccffea8b5a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">maxValue returns the x and y where y has the greatest value  <a href="#a8694039b8a2d6041fd6a6ccffea8b5a4">More...</a><br/></td></tr>
+<tr class="separator:a8694039b8a2d6041fd6a6ccffea8b5a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d040680c6e9154dea4102a9491e7748"><td class="memTemplParams" colspan="2">template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:a4d040680c6e9154dea4102a9491e7748"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#a4d040680c6e9154dea4102a9491e7748">averageValue</a> (int start, int count, int indexDataset, float *y)</td></tr>
+<tr class="memdesc:a4d040680c6e9154dea4102a9491e7748"><td class="mdescLeft">&#160;</td><td class="mdescRight">averageValue returns the average of all y values in a given range  <a href="#a4d040680c6e9154dea4102a9491e7748">More...</a><br/></td></tr>
+<tr class="separator:a4d040680c6e9154dea4102a9491e7748"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc2eca95c3a57907e8f4a3b5ac74dad3"><td class="memTemplParams" colspan="2">template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:adc2eca95c3a57907e8f4a3b5ac74dad3"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#adc2eca95c3a57907e8f4a3b5ac74dad3">xOfValue</a> (int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x)</td></tr>
+<tr class="memdesc:adc2eca95c3a57907e8f4a3b5ac74dad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">xOfValue returns the first x of a value y that is greater or equal of a given min. value  <a href="#adc2eca95c3a57907e8f4a3b5ac74dad3">More...</a><br/></td></tr>
+<tr class="separator:adc2eca95c3a57907e8f4a3b5ac74dad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc3685405ad9238914fc836f63e860c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc3685405ad9238914fc836f63e860c6"></a>
+DEVICE void&#160;</td><td class="memItemRight" valign="bottom"><b>averageAbsResidues</b> (int countResidues, float *residues, float *average)</td></tr>
+<tr class="separator:adc3685405ad9238914fc836f63e860c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfe6a74e36f9c835b98e1773051de280"><td class="memTemplParams" colspan="2">template&lt;unsigned int tex&gt; </td></tr>
+<tr class="memitem:acfe6a74e36f9c835b98e1773051de280"><td class="memTemplItemLeft" align="right" valign="top">GLOBAL void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LevMarq_8h.html#acfe6a74e36f9c835b98e1773051de280">kernel</a> (int countData, float step, struct <a class="el" href="structfitData.html">fitData</a> *result)</td></tr>
+<tr class="memdesc:acfe6a74e36f9c835b98e1773051de280"><td class="mdescLeft">&#160;</td><td class="mdescRight">kernel is the start method for calculation (you have to set the dataTexture (GPU mode) or data variable (CPU mode) before calling this method)  <a href="#acfe6a74e36f9c835b98e1773051de280">More...</a><br/></td></tr>
+<tr class="separator:acfe6a74e36f9c835b98e1773051de280"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a0e55d293c8b42cfdb4df2c0e0bdd294d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e55d293c8b42cfdb4df2c0e0bdd294d"></a>
-texture&lt; Precision, <br class="typebreak"/>
-2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture</b></td></tr>
-<tr class="separator:a0e55d293c8b42cfdb4df2c0e0bdd294d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26e1c066f5c236659d8f457d955d10ee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26e1c066f5c236659d8f457d955d10ee"></a>
+texture&lt; DATATYPE, <br class="typebreak"/>
+2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture0</b></td></tr>
+<tr class="separator:a26e1c066f5c236659d8f457d955d10ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f6b7847bbc86a2b353e3b5bee51be99"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f6b7847bbc86a2b353e3b5bee51be99"></a>
+texture&lt; DATATYPE, <br class="typebreak"/>
+2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture1</b></td></tr>
+<tr class="separator:a1f6b7847bbc86a2b353e3b5bee51be99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b420872aa582bd229ccd220ecc19863"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4b420872aa582bd229ccd220ecc19863"></a>
+texture&lt; DATATYPE, <br class="typebreak"/>
+2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture2</b></td></tr>
+<tr class="separator:a4b420872aa582bd229ccd220ecc19863"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54823b1402a2e31dabb783593cf9437a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54823b1402a2e31dabb783593cf9437a"></a>
+texture&lt; DATATYPE, <br class="typebreak"/>
+2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture3</b></td></tr>
+<tr class="separator:a54823b1402a2e31dabb783593cf9437a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73ae3e2dde91f009171359866f62bc1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad73ae3e2dde91f009171359866f62bc1"></a>
+texture&lt; DATATYPE, <br class="typebreak"/>
+2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture4</b></td></tr>
+<tr class="separator:ad73ae3e2dde91f009171359866f62bc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32744f6251c18238803ccb128d1e47eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a32744f6251c18238803ccb128d1e47eb"></a>
+texture&lt; DATATYPE, <br class="typebreak"/>
+2, cudaReadModeElementType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataTexture5</b></td></tr>
+<tr class="separator:a32744f6251c18238803ccb128d1e47eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a566842bb6e232f37419d0ac24e4618b1"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><b>statusMessage</b> []</td></tr>
 <tr class="separator:a566842bb6e232f37419d0ac24e4618b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a424a5df06a8a7f00096f4164e32e37ce"></a>
+<a class="anchor" id="a4d040680c6e9154dea4102a9491e7748"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int tex&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">DEVICE void averageValue </td>
@@ -369,15 +425,23 @@ texture&lt; Precision, <br class="typebreak"/>
 
 </div>
 </div>
-<a class="anchor" id="a14a00442d7bb39cccd9c8aa5122b9a25"></a>
+<a class="anchor" id="acfe6a74e36f9c835b98e1773051de280"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int tex&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">GLOBAL void kernel </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>countData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -404,9 +468,11 @@ texture&lt; Precision, <br class="typebreak"/>
 
 </div>
 </div>
-<a class="anchor" id="a11e517a13063d8dd881e0c9d80cbd2e8"></a>
+<a class="anchor" id="a8694039b8a2d6041fd6a6ccffea8b5a4"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int tex&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">DEVICE void maxValue </td>
@@ -453,9 +519,62 @@ texture&lt; Precision, <br class="typebreak"/>
 
 </div>
 </div>
-<a class="anchor" id="a9d6b3f6ea2a9237e6d34524697c2eb0d"></a>
+<a class="anchor" id="a682db89fc9fd71fc08af4c6bf97b8a67"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int tex&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">DEVICE void paramStartValue </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>firstValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>lastValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>indexDataset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>param</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>paramStartValue returns the parameter start values for the fit-function calculation </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">firstValue</td><td>first value of the data used for fit-function </td></tr>
+    <tr><td class="paramname">lastValue</td><td>last value of the data used for fit-function </td></tr>
+    <tr><td class="paramname">indexDataset</td><td>index of the current dataset (GPU mode) or not used (CPU mode) </td></tr>
+    <tr><td class="paramname">param</td><td>the returned parameter start values </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="adc2eca95c3a57907e8f4a3b5ac74dad3"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int tex&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">DEVICE void xOfValue </td>
@@ -536,7 +655,7 @@ texture&lt; Precision, <br class="typebreak"/>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jan 31 2014 12:01:02 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['ringbuffer',['Ringbuffer',['../classRingbuffer.html',1,'']]],
-  ['ringbuffer_3c_20fitdata_20_3e',['Ringbuffer&lt; fitData &gt;',['../classRingbuffer.html',1,'']]]
+  ['outputstream',['OutputStream',['../classOutputStream.html',1,'OutputStream'],['../classOutputStream.html#ab581ff3d5e6cbc31c5f84eea52c298e1',1,'OutputStream::OutputStream()']]]
 ];

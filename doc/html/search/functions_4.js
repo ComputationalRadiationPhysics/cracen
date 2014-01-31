@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['join',['join',['../classOutputStream.html#ae8481e9bef46ca1522da5312c32d4bba',1,'OutputStream']]]
+  ['getbuffer',['getBuffer',['../classOutputStream.html#a0e0bc9c5542c5e56e7b331e19c31890d',1,'OutputStream']]],
+  ['getsize',['getSize',['../classRingbuffer.html#aefca234ed766de811794f6ab91e86d17',1,'Ringbuffer']]]
 ];

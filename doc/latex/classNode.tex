@@ -9,7 +9,7 @@
 \begin{DoxyCompactItemize}
 \item 
 \hyperlink{classNode_a92525bdf79b65cee6f47ce90b8afa83c}{Node} (int device\-Identifier, \hyperlink{classRingbuffer}{Input\-Buffer} $\ast$input, \hyperlink{classRingbuffer}{Output\-Buffer} $\ast$output)
-\begin{DoxyCompactList}\small\item\em Basic constructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Copy one chunk of data to the G\-P\-U and the result back to the output buffer. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
@@ -27,8 +27,15 @@ Each installed device should be handled by its own thread. This class provides a
 )}}\label{classNode_a92525bdf79b65cee6f47ce90b8afa83c}
 
 
-Basic constructor. 
+Copy one chunk of data to the G\-P\-U and the result back to the output buffer. 
 
+
+\begin{DoxyParams}{Parameters}
+{\em tex\-Array} & Location on the G\-P\-U, where the raw data will be copied to. \\
+\hline
+{\em \hyperlink{structfitData}{fit\-Data}} & Location on the G\-P\-U, where the result will be written to.\-Basic constructor.\\
+\hline
+\end{DoxyParams}
 Stats a new Thread. The new Thread reads data from the input buffer, copies them to the gpu and copy the result back to the output buffer.
 
 
@@ -44,4 +51,4 @@ Stats a new Thread. The new Thread reads data from the input buffer, copies them
 
 The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
 \item 
-/home/fabian/\-D\-S\-P/src/Node.\-h\end{DoxyCompactItemize}
+D\-S\-P/src/Node.\-h\end{DoxyCompactItemize}

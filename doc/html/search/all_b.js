@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['outputstream',['OutputStream',['../classOutputStream.html',1,'OutputStream'],['../classOutputStream.html#ab581ff3d5e6cbc31c5f84eea52c298e1',1,'OutputStream::OutputStream()']]]
+  ['node',['Node',['../classNode.html',1,'Node'],['../classNode.html#a92525bdf79b65cee6f47ce90b8afa83c',1,'Node::Node()']]]
 ];

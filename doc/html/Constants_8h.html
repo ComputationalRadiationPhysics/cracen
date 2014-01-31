@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Digital Signal Processing using CUDA: /home/fabian/DSP/src/Constants.h File Reference</title>
+<title>Digital Signal Processing using CUDA: DSP/src/Constants.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_650d82db24a6311fa7658fced19ae149.html">DSP</a></li><li class="navelem"><a class="el" href="dir_abd880db5973a936a512583fcfc44005.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -130,6 +130,10 @@ const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>SEGMENT
 <tr class="memitem:a89f81f98c4385b3c26f725a84d32496c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89f81f98c4385b3c26f725a84d32496c"></a>
 const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>WAVEFORM_COUNT_TESTFILE</b> = 100000</td></tr>
 <tr class="separator:a89f81f98c4385b3c26f725a84d32496c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6390fab697b174ff09b014e9817552b7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6390fab697b174ff09b014e9817552b7"></a>
+const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Constants_8h.html#a6390fab697b174ff09b014e9817552b7">INTERPOLATION_COUNT</a> = 20</td></tr>
+<tr class="memdesc:a6390fab697b174ff09b014e9817552b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of points that are averaged to on Datapoint. Higher Value decrease the resolution and increase the speed of the programm. <br/></td></tr>
+<tr class="separator:a6390fab697b174ff09b014e9817552b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae6cb8f40a8868256a40e05ccbab0a47"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae6cb8f40a8868256a40e05ccbab0a47"></a>
 const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Constants_8h.html#aae6cb8f40a8868256a40e05ccbab0a47">MAXCOUNTDATA</a> = 1000</td></tr>
 <tr class="memdesc:aae6cb8f40a8868256a40e05ccbab0a47"><td class="mdescLeft">&#160;</td><td class="mdescRight">max. number of samples per event for compute capability 2.0 or higher - currently ca. 2450 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 48 kB (= max. shared memory); for compute capability 1.x - currently ca. 800 is max. because (COUNTPARAM + 2) * MAXCOUNTDATA * sizeof(float) = 16 kB (= max. shared memory) <br/></td></tr>
@@ -139,7 +143,7 @@ const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="
 <tr class="memdesc:aa915bc2c7f7f3f5b9afa9bf59cf43ae6"><td class="mdescLeft">&#160;</td><td class="mdescRight">max. calls for Levenberg Marquardt until stops <br/></td></tr>
 <tr class="separator:aa915bc2c7f7f3f5b9afa9bf59cf43ae6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66b2f74917ef4c0351e568ae19583c3a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66b2f74917ef4c0351e568ae19583c3a"></a>
-const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Constants_8h.html#a66b2f74917ef4c0351e568ae19583c3a">FITVALUETHRESHOLD</a> = 0.0</td></tr>
+const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Constants_8h.html#a66b2f74917ef4c0351e568ae19583c3a">FITVALUETHRESHOLD</a> = 0.5</td></tr>
 <tr class="memdesc:a66b2f74917ef4c0351e568ae19583c3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">threshold between min (0.0) and max (1.0) value to define the data using interval to calculate the fit function <br/></td></tr>
 <tr class="separator:a66b2f74917ef4c0351e568ae19583c3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f9cee197895f0b90c69e2f333072fc9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f9cee197895f0b90c69e2f333072fc9"></a>
@@ -156,7 +160,7 @@ const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jan 31 2014 12:01:02 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

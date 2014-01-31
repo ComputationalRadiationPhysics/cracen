@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['xofvalue',['xOfValue',['../LevMarq_8h.html#a9d6b3f6ea2a9237e6d34524697c2eb0d',1,'LevMarq.h']]]
+  ['node',['Node',['../classNode.html#a92525bdf79b65cee6f47ce90b8afa83c',1,'Node']]]
 ];

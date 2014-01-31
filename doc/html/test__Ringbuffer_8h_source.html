@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Digital Signal Processing using CUDA: /home/fabian/DSP/src/test_Ringbuffer.h Source File</title>
+<title>Digital Signal Processing using CUDA: DSP/src/test_Ringbuffer.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_650d82db24a6311fa7658fced19ae149.html">DSP</a></li><li class="navelem"><a class="el" href="dir_abd880db5973a936a512583fcfc44005.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -117,7 +117,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;\tStart writing to buffer.&quot;</span> &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordflow">while</span>(total_copies &lt; 100) {</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;write to buffer no &quot;</span> &lt;&lt; total_copies &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        rb-&gt;writeFromHost(&amp;input);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        rb-&gt;<a class="code" href="classRingbuffer.html#ac8b2973f3ab190cf778535c394ba980d">writeFromHost</a>(&amp;input);</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        total_copies++;</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        usleep(100);</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    }</div>
@@ -130,7 +130,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">int</span> total_copies = 0;</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordflow">while</span>(total_copies &lt; 100) {</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;read from buffer no &quot;</span> &lt;&lt; total_copies &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        rb-&gt;copyToHost(&amp;output);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        rb-&gt;<a class="code" href="classRingbuffer.html#a97f008c10065843bbab49579c8ce3ce4">copyToHost</a>(&amp;output);</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        total_copies++;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        usleep(325);</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    }</div>
@@ -205,11 +205,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;}</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="classRingbuffer_html"><div class="ttname"><a href="classRingbuffer.html">Ringbuffer</a></div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:9</div></div>
+<div class="ttc" id="classRingbuffer_html_ac8b2973f3ab190cf778535c394ba980d"><div class="ttname"><a href="classRingbuffer.html#ac8b2973f3ab190cf778535c394ba980d">Ringbuffer::writeFromHost</a></div><div class="ttdeci">int writeFromHost(Type *inputOnHost)</div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:87</div></div>
+<div class="ttc" id="classRingbuffer_html_a97f008c10065843bbab49579c8ce3ce4"><div class="ttname"><a href="classRingbuffer.html#a97f008c10065843bbab49579c8ce3ce4">Ringbuffer::copyToHost</a></div><div class="ttdeci">int copyToHost(Type *outputOnHost)</div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:111</div></div>
+<div class="ttc" id="classRingbuffer_html"><div class="ttname"><a href="classRingbuffer.html">Ringbuffer</a></div><div class="ttdoc">A ringbuffer template supporting non-host consumers/producers. </div><div class="ttdef"><b>Definition:</b> Ringbuffer.h:23</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 27 2014 11:45:43 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jan 31 2014 12:01:02 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

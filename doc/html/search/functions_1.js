@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['euclidnorm',['euclidNorm',['../LevMarq_8h.html#ad811b4e3f21363f3411fb5bcf40f039f',1,'LevMarq.h']]]
+  ['copytohost',['copyToHost',['../classRingbuffer.html#a97f008c10065843bbab49579c8ce3ce4',1,'Ringbuffer']]]
 ];

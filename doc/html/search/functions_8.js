@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['outputstream',['OutputStream',['../classOutputStream.html#ab581ff3d5e6cbc31c5f84eea52c298e1',1,'OutputStream']]]
+  ['maxvalue',['maxValue',['../LevMarq_8h.html#a8694039b8a2d6041fd6a6ccffea8b5a4',1,'LevMarq.h']]]
 ];
