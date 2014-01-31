@@ -4,6 +4,7 @@
 \title[Digital Signal Processing]{Digital Signal Processing using CUDA}
 \subtitle{Digital Signal Processing using CUDA}
 \author{Nico Wehmeier, Richard Pfeifer, Fabian Jung}
+
 \maketitle
 
 \begin{frame}
@@ -11,18 +12,93 @@
     \tableofcontents[currentsection]
 \end{frame}
 
-\section{Erster Teil}
+%Verantwortlicher: ???
+\section{Aufgabenstellung}
 \begin{frame}
-\frametitle{Erste Folie}
-\framesubtitle{untertitel erste folie}
+\frametitle{Aufgabenstellung}
+%\framesubtitle{untertitel erste folie}
 \begin{itemize} 
-	\item{Bullet Point}
-	\item{Bullet Point}
-	\item{Bullet Point}
-	\item{Bullet Point}
-	\item{Bullet Point}
-	\item{Bullet Point}
+	\item{Ausgangsitutation}
+	\begin{itemize}
+		\item{Messgeräte erzeugen Datenstrom}
+		\item{Datenstrom nicht kontinuierlich}
+		\item{Serielle Implementierung}
+	\end{itemize}
+	\item{Anforderungen}
+	\begin{itemize}
+		\item{Portierung auf GPU}
+		\item{Hoher Datendurchsatz}
+		\item{Skalierbar auf bis zu 4 GPUs/Node}
+	\end{itemize}
 \end{itemize}
 \end{frame}
 
+%Verantwortlicher: ???
+\section{Überblick}
+\begin{frame}
+    \frametitle*{Überblick}
+	\begin{itemize}
+	\item{Host}
+	\begin{itemize}
+		%TODO
+		\item{Eingabe Datei auslesen}
+		\item{Daten zwischenspeichern}
+	\end{itemize}
+	\item{Verwaltung Devices}
+	\begin{itemize}
+		\item{Daten aus Puffer lesen}
+		\item{Zu den Devices streamen}
+		\item{Kernel starten}
+		\item{Ausgabe schreiben}
+	\end{itemize}
+	\item{Levenberg Marquardt}
+	\begin{itemize}
+		%TODO
+		\item{???}
+	\end{itemize}
+	\end{itemize}
+\end{frame}
+%Verantwortlicher: Richard
+\section{Host Code}
+\begin{frame}
+    \frametitle*{Host Code}
+    
+\end{frame}
+%Verantwortlicher: Fabian
+\section{Verwaltung Devices}
+%Verantwortlicher: Nico
+\begin{frame}
+    \frametitle*{Verwaltung Devices}
+    \begin{itemize}
+    	\item{Jedes Devices wird von eigeneme Thread verwaltet}
+    	\item{Asynchrone Aufrufe}
+    		\itemize
+    			\item{Pipeline}
+    		\enditemize
+    \end{itemize}
+\end{frame}
+\section{Levenberg Marquardt}
+%Verantwortlicher: Fabian
+\begin{frame}
+    \frametitle*{Levenberg Marquardt}
+    
+\end{frame}
+\section{Benchmark}
+%Verantwortlicher: Fabian
+\begin{frame}
+    \frametitle*{Benchmark}
+    
+\end{frame}
+\section{Skalierbarkeit}
+%Verantwortlicher: ???
+\begin{frame}
+    \frametitle*{Skalierbarkeit}
+    
+\end{frame}
+\section{Danksagung}
+
+\begin{frame}
+    \frametitle*{Danksagung}
+    
+\end{frame}
 \end{document}

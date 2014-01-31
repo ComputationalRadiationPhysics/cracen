@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.1.7)  31 JAN 2014 12:42
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.1.7)  31 JAN 2014 16:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -855,7 +855,7 @@ LaTeX Font Warning: Font shape `T1/aun/l/sl' undefined
 LaTeX Font Warning: Font shape `T1/aun/l/n' undefined
 (Font)              using `T1/cmr/m/n' instead on input line 3.
 
-<TU_Logo_SW.pdf, id=18, 256.96pt x 75.28125pt>
+<TU_Logo_SW.pdf, id=46, 256.96pt x 75.28125pt>
 File: TU_Logo_SW.pdf Graphic file (type pdf)
  <use TU_Logo_SW.pdf>
 Package pdftex.def Info: TU_Logo_SW.pdf used on input line 3.
@@ -871,21 +871,21 @@ Package hyperref Warning: Option `pdfauthor' has already been used,
 
 
 LaTeX Font Warning: Font shape `OT1/aun/b/n' undefined
-(Font)              using `OT1/cmr/m/n' instead on input line 7.
+(Font)              using `OT1/cmr/m/n' instead on input line 8.
 
-LaTeX Font Info:    Try loading font information for OT1+din on input line 7.
-LaTeX Font Info:    No file OT1din.fd. on input line 7.
+LaTeX Font Info:    Try loading font information for OT1+din on input line 8.
+LaTeX Font Info:    No file OT1din.fd. on input line 8.
 
 LaTeX Font Warning: Font shape `OT1/din/b/n' undefined
-(Font)              using `OT1/cmr/m/n' instead on input line 7.
+(Font)              using `OT1/cmr/m/n' instead on input line 8.
 
 
 LaTeX Font Warning: Font shape `OT1/aun/l/n' in size <4> not available
-(Font)              size <5> substituted on input line 7.
+(Font)              size <5> substituted on input line 8.
 
 File: TU_Logo_SW.pdf Graphic file (type pdf)
 <use TU_Logo_SW.pdf>
-Package pdftex.def Info: TU_Logo_SW.pdf used on input line 7.
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 8.
 (pdftex.def)             Requested size: 75.84958pt x 22.22159pt.
 
 Overfull \hbox (12.0pt too wide) has occurred while \output is active
@@ -896,18 +896,21 @@ Overfull \hbox (12.0pt too wide) has occurred while \output is active
 Overfull \vbox (8.43752pt too high) has occurred while \output is active []
 
 
-<DDC-weissf.pdf, id=19, 34.70978pt x 69.42929pt>
+<DDC-weissf.pdf, id=47, 34.70978pt x 69.42929pt>
 File: DDC-weissf.pdf Graphic file (type pdf)
  <use DDC-weissf.pdf>
-Package pdftex.def Info: DDC-weissf.pdf used on input line 7.
+Package pdftex.def Info: DDC-weissf.pdf used on input line 8.
 (pdftex.def)             Requested size: 16.72829pt x 33.46042pt.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./TU_Logo_SW.pdf> <./DDC-w
-eissf.pdf>] (./Slides.toc)
+eissf.pdf>] (./Slides.toc
+Missing character: There is no Ã in font cmr8!
+Missing character: There is no œ in font cmr8!
+)
 File: TU_Logo_SW.pdf Graphic file (type pdf)
  <use TU_Logo_SW.pdf>
-Package pdftex.def Info: TU_Logo_SW.pdf used on input line 12.
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 13.
 (pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
 
 Underfull \hbox (badness 10000) has occurred while \output is active
@@ -917,17 +920,19 @@ Underfull \hbox (badness 10000) has occurred while \output is active
 [2
 
 ]
-LaTeX Font Info:    Try loading font information for OMS+aun on input line 26.
-LaTeX Font Info:    No file OMSaun.fd. on input line 26.
+LaTeX Font Info:    Try loading font information for OMS+aun on input line 34.
+LaTeX Font Info:    No file OMSaun.fd. on input line 34.
 
 
 LaTeX Font Warning: Font shape `OMS/aun/l/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbullet' on input line 26.
+(Font)              for symbol `textbullet' on input line 34.
 
+Missing character: There is no Ã in font cmr8!
+Missing character: There is no ¤ in font cmr8!
 File: TU_Logo_SW.pdf Graphic file (type pdf)
 <use TU_Logo_SW.pdf>
-Package pdftex.def Info: TU_Logo_SW.pdf used on input line 26.
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 34.
 (pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
 
 Underfull \hbox (badness 10000) has occurred while \output is active
@@ -935,6 +940,92 @@ Underfull \hbox (badness 10000) has occurred while \output is active
  []
 
 [3
+
+]
+Missing character: There is no Ã in font cmr12!
+Missing character: There is no œ in font cmr12!
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 60.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[4
+
+]
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 66.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[5
+
+]
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 79.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[6
+
+]
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 85.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[7
+
+]
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 91.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[8
+
+]
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 97.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[9
+
+]
+File: TU_Logo_SW.pdf Graphic file (type pdf)
+ <use TU_Logo_SW.pdf>
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 103.
+(pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
+
+Underfull \hbox (badness 10000) has occurred while \output is active
+[]
+ []
+
+[10
 
 ]
 \tf@nav=\write6
@@ -955,13 +1046,13 @@ Underfull \hbox (badness 10000) has occurred while \output is active
 \tf@snm=\write11
 \openout11 = `Slides.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 28.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 28.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 104.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 104.
  (./Slides.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 28.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 28.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 104.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 104.
 Package rerunfilecheck Info: File `Slides.out' has not changed.
-(rerunfilecheck)             Checksum: 0DCE8FAF3FE4C035FD18D758921AD568;46.
+(rerunfilecheck)             Checksum: E0CC76ACD69C72633DCE72AA676C235D;385.
 
 
 LaTeX Font Warning: Size substitutions with differences
@@ -970,13 +1061,13 @@ LaTeX Font Warning: Size substitutions with differences
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 28.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 104.
  ) 
 Here is how much of TeX's memory you used:
- 15810 strings out of 494976
- 290054 string characters out of 6179138
- 364749 words of memory out of 5000000
- 18643 multiletter control sequences out of 15000+600000
+ 15900 strings out of 494976
+ 291450 string characters out of 6179138
+ 366749 words of memory out of 5000000
+ 18712 multiletter control sequences out of 15000+600000
  8875 words of font info for 30 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  55i,23n,55p,415b,548s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -986,10 +1077,10 @@ texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/font
 s/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on Slides.pdf (3 pages, 76929 bytes).
+Output written on Slides.pdf (10 pages, 92499 bytes).
 PDF statistics:
- 77 PDF objects out of 1000 (max. 8388607)
- 54 compressed objects within 1 object stream
- 8 named destinations out of 1000 (max. 500000)
- 61 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 160 PDF objects out of 1000 (max. 8388607)
+ 129 compressed objects within 2 object streams
+ 29 named destinations out of 1000 (max. 500000)
+ 117 words of extra memory for PDF output out of 10000 (max. 10000000)
 
