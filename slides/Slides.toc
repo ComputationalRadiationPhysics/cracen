@@ -1,0 +1,2 @@
+\beamer@endinputifotherversion {3.24pt}
+\beamer@sectionintoc {1}{Erster Teil}{3}{0}{1}
