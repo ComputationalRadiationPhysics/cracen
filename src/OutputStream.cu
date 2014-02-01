@@ -9,7 +9,7 @@ std::ostream& operator<<(std::ostream& lhs, const Output& rhs) {
 void OutputStream::run() {
 	file << "status	startValue	endValue	extremumPos	extremumValue" << std::endl;
 	while(!oBuffer.isFinished()) {
-		Output* o = oBuffer.reserveTail();
+		Output* o = oBuffer.reserveTailTry();
 		if(o != NULL) {
 			file << (*o) << std::endl;
 			oBuffer.freeTail();
