@@ -2,14 +2,10 @@ CXX = nvcc
 CFLAGS = -g -arch=compute_30 -code=sm_30
 LFLAGS = -lpthread
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
-TESTOBJECTS = DataReader.o tests.o
 
 
 all: $(OBJECTS)
 	$(CXX) $(CFLAGS) $(LFLAGS) -o DSP $(OBJECTS)
-
-test_DSP: $(TESTOBJECTS)
-	$(CXX) $(CFLAGS) $(LFLAGS) -o test_DSP $(TESTOBJECTS)
 
 Dsp.o: Dsp.cu
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Dsp.o Dsp.cu
@@ -20,9 +16,6 @@ Dsp.o: Dsp.cu
 .PHONY: run
 run: all
 	./DSP
-
-.PHONY: tests
-tests: test_DSP
 
 .PHONY: clean
 clean:

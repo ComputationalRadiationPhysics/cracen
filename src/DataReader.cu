@@ -1,12 +1,13 @@
 #include "DataReader.h"
 
-DataReader::DataReader(const std::string& filename, InputBuffer* buffer) :
+DataReader::DataReader(const std::string& filename, InputBuffer* buffer,                       int chunksize) :
     inputFilename(filename),
-    nSamp(-1), nSeg(-1), nWf(-1),
+    nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize),
     rb(buffer)
 {
-    channelBuffer.reserve(2*SAMPLE_COUNT);
-    _checkFileHeader();
+    readHeader(filename, nSamp, nSeg, nWf);
+    channelBuffer.resize(2 * nSamp);
+    temp.resize(nSamp * nChunk);
 }
 
 DataReader::~DataReader()
@@ -14,57 +15,61 @@ DataReader::~DataReader()
 
 }
 
-int DataReader::_checkFileHeader()
+int DataReader::readHeader(const std::string& filename,
+                           int &nSample, int &nSegment, int &nWaveform)
 {
     int errorcode = 0;
     std::ifstream fs;
-    fs.open(inputFilename.c_str(), std::ifstream::in | std::ifstream::binary);
+    fs.open(filename.c_str(), 
+            std::ifstream::in | std::ifstream::binary);
     if (fs) {
-        fs.read(reinterpret_cast<char*>(&nSamp), sizeof(int));
-        fs.read(reinterpret_cast<char*>(&nSeg),  sizeof(int));
-        fs.read(reinterpret_cast<char*>(&nWf),   sizeof(int));
+        fs.read(reinterpret_cast<char*>(&nSample),   sizeof(int));
+        fs.read(reinterpret_cast<char*>(&nSegment),  sizeof(int));
+        fs.read(reinterpret_cast<char*>(&nWaveform), sizeof(int));
     } else {
         std::cout << "Failed to open file." << std::endl;
         if (fs.fail()) {
             std::cout << "Fail() was true." << std::endl;
+            errorcode = 1;
         }
         if (fs.eof()) {
             std::cout << "EOF() was true." << std::endl;
+            errorcode = 2;
         }
+
     }
-    //std::cout << "nSamp = " << nSamp << std::endl;
-    //std::cout << "nSegments = " << nSeg << std::endl;
-    //std::cout << "nWafeforms = " << nWf << std::endl;
-    //std::cout << "Filesize = " << fsize << std::endl;
+    std::cout << "nSample: " << nSample << "\n";
+    std::cout << "nSegment: " << nSegment << "\n";
+    std::cout << "nWaveform: " << nWaveform << "\n";
+    //Check if NSAMPLE of file matches our NSAMPLE
     
-    // Check if NSAMPLE of file matches our NSAMPLE
-    if(nSamp != SAMPLE_COUNT) {
+    if(nSample != SAMPLE_COUNT) {
     	std::cerr << "Error reading the File:" << std::endl;
     	std::cerr << "SAMPLE_COUNT does not match SAMPLE_COUNT written to the file" << std::endl;
-    	std::cerr << SAMPLE_COUNT << " != " << nSamp << std::endl;
-    	std::cerr << "Recompile the programm with SAMPLE_COUNT = " << nSamp << " to fix this problem." << std::endl;
+    	std::cerr << SAMPLE_COUNT << " != " << nSample << std::endl;
+    	std::cerr << "Recompile the programm with SAMPLE_COUNT = " << nSample << " to fix this problem." << std::endl;
     	std::cerr << "Abort." << std::endl;
-	  	errorcode = 1;
+	  	errorcode = 3;
     }
     
-    if(nSeg != 1) {
+    if(nSegment != 1) {
     	std::cerr << "Number of Segments has to be one. Sequence Mode is not allowed" << std::endl;
     	std::cerr << "Abort." << std::endl;
-     	errorcode = 2;
+     	errorcode = 4;
     }
     
-    if(nSamp > MAXCOUNTDATA) {
+    if(nSample > MAXCOUNTDATA) {
     	std::cerr << "Resolution of the Waveforms exceed the compute capability of you graphics card." << std::endl;
     	std::cerr << "Maximum number of samples is:" << MAXCOUNTDATA << std::endl;
     	std::cerr << "Abort." << std::endl;
-	 	errorcode = 3;
+	 	errorcode = 5;
     }
-
+    
     fs.close();
     return errorcode; 
 }
 
-void DataReader::readToBufferAsync()
+void DataReader::readToBuffer()
 {
     std::ifstream fs;
     fs.open(inputFilename.c_str(), std::ifstream::in |
@@ -77,8 +82,8 @@ void DataReader::readToBufferAsync()
         while (not fs.eof()) {
             // reading directly into the vector seems legitimate
             // http://stackoverflow.com/questions/2780365/using-read-directly-into-a-c-stdvector
-           fs.read(reinterpret_cast<char*>(&channelBuffer[0]), 
-                    sizeof(short int) * 2 * nSamp);
+            fs.read(reinterpret_cast<char*>(&channelBuffer[0]), 
+                    sizeof(MeasureType) * 2 * nSamp);
            
             // Now we have sampledata of two Waveforms (channel 1 and 
             // channel 2) mixed like
@@ -87,40 +92,39 @@ void DataReader::readToBufferAsync()
             //      [s1ch1 s2ch1 s3ch1 ... s1ch2 s2ch2 s3ch2 ...]
 
             for (int i=0; i<nSamp; i++) {
-                temp[j][i] = static_cast<Precision>(channelBuffer[2*i]);
-                temp[j+1][i] = static_cast<Precision>(channelBuffer[2*i+1]);
+                temp[ j   *nSamp + i] = 
+                        static_cast<DATATYPE>(channelBuffer[2*i]);
+                temp[(j+1)*nSamp + i] = 
+                        static_cast<DATATYPE>(channelBuffer[2*i+1]);
             }
 			j += 2;
             
-            if(j >= CHUNK_COUNT) {
+            if(j >= nChunk) {
             	//Copy data to ring buffer
     			//TODO : Replace the copy thing with a nice function
             	//rb->writeFromHost(&temp); //This can work because of missing copy constructors
-            	SampleChunk *buffer = rb->reserveHead();
-		        for(int k = 0; k < CHUNK_COUNT; k++) {
-		        	for(int i = 0; i < SAMPLE_COUNT; i++) {
-		        		(*buffer)[k][i] = temp[k][i];	
-		        	}
-		        }
+            	Chunk *buffer = rb->reserveHead();
+		        for(int k = 0; k < nChunk*nSamp; k++) {
+		        	//(*buffer)[k] = temp[k];
+		            buffer->at(k) = temp.at(k);	
+                }
             	rb->freeHead();
             	j = 0;
             }
         }
         
         //Fill the last Chunk with 0
-        for(j=j; j < CHUNK_COUNT; j++) {
+        for(j=j; j < nChunk; j++) {
         	for(int i = 0; i < nSamp; i++) {
-        		temp[j][i] = static_cast<Precision>(0);
+        		temp[j*nSamp +i] = static_cast<DATATYPE>(0);
         	}
         }
 		//Copy data to ring buffer
 		//TODO : Replace the copy thing with a nice function
     	//rb->writeFromHost(&temp); //This can work because of missing copy constructors
-    	SampleChunk *buffer = rb->reserveHead();
-        for(int k = 0; k < CHUNK_COUNT; k++) {
-        	for(int i = 0; i < SAMPLE_COUNT; i++) {
-        		(*buffer)[k][i] = temp[k][i];	
-        	}
+    	Chunk *buffer = rb->reserveHead();
+        for(int k = 0; k < nChunk*nSamp; k++) {
+            buffer->at(k) = temp.at(k);	
         }
     	rb->freeHead();
     	
@@ -133,14 +137,4 @@ void DataReader::readToBufferAsync()
         fs.close();
     }
 	rb->producerQuit();
-}
-
-int DataReader::isReading()
-{
-    return 0;
-}
-
-void DataReader::stopReading()
-{
-    // stop readThread
 }

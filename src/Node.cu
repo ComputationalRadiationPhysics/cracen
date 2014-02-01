@@ -48,7 +48,7 @@ void Node::run() {
 	std::vector<cudaArray*> texArrays;
 	std::vector<fitData*> d_result;
 	cudaStream_t streams[6];
-	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<Precision>();
+	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<DATATYPE>();
 	for(int i = 0; i <= 5; i++) {
 		/* Allocate memory */
 		texArrays.push_back(NULL);
@@ -69,11 +69,13 @@ void Node::run() {
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
 		/* Block ringbuffer */
-		SampleChunk *c = iBuffer->reserveTailTry();
+		Chunk *c = iBuffer->reserveTailTry();
 		/* Copy to device */
 
 		if(c != NULL) {
-			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, c, sizeof(Precision)*SAMPLE_COUNT*CHUNK_COUNT, cudaMemcpyHostToDevice, streams[tex]);
+			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &c->front(), 
+                                   sizeof(DATATYPE) * c->size(), 
+                                   cudaMemcpyHostToDevice, streams[tex]);
 			/* Free ringbuffer 
                This is possible because at the moment we use pageable (non-pinnend)
                host memory for the ringbuffer.
@@ -110,7 +112,7 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
 					
 					for(int j = 0; j < CHUNK_COUNT; j++) {
 						if(true) { //TODO: Check for fit quality
-							oBuffer->writeFromHost(&result[i][j]);
+							oBuffer->writeFromHost(result[i][j]);
 						}
 					}				
 				}

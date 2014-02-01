@@ -9,7 +9,6 @@
 #include "Constants.h"
 #include "Ringbuffer.h"
 
-typedef Ringbuffer<wform_t> InputBufferWf;
 
 class DataReader {
     /*  DataReader is meant as a producer for the Ringbuffer class. It 
@@ -20,21 +19,21 @@ class DataReader {
 private:
     std::string inputFilename;
     InputBuffer* rb;
-    SampleChunk temp;
-    std::vector<short int> channelBuffer;
+    Chunk temp;
+    std::vector<MeasureType> channelBuffer;
 
     int nSamp;
     int nSeg;
     int nWf;
-    pthread_t readthread;
+    int nChunk;
 
 public:
-    DataReader(const std::string& filename, InputBuffer* buffer);
+    DataReader(const std::string& filename, InputBuffer* buffer,
+               int chunksize);
     ~DataReader();
-    int _checkFileHeader();
-    void readToBufferAsync();
-    int isReading();
-    void stopReading();
+    static int readHeader(const std::string& filename,
+                          int &nSample, int &nSegment, int &nWaveform);
+    void readToBuffer();
 
     int get_nSamp() {return nSamp;};
     int get_nSeg() {return nSeg;};

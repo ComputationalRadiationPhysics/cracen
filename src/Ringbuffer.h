@@ -31,10 +31,12 @@ private:
     int producer;
 
 public:
-    Ringbuffer(unsigned int bSize, int producer);
+    Ringbuffer(const unsigned int bSize, int producer,
+               Type defaultItem);
+    Ringbuffer(const unsigned int bSize, int procducer);
     ~Ringbuffer();
-    int writeFromHost(Type *inputOnHost);
-    int copyToHost(Type *outputOnHost);
+    int writeFromHost(Type &inputOnHost);
+    int copyToHost(Type &outputOnHost);
     Type* reserveHead();
     int freeHead();
     Type* reserveTailTry();
@@ -45,27 +47,62 @@ public:
     void producerQuit();
 };
 
+typedef std::vector<float >Chunk;
+
 /**
  * Basic Constructor.
  *
- * Reserves buffer memory.
+ * Reserves buffer memory. The buffer holds bSize items. The 
+ * items consist of itemSize elements of type Type.
  *
- * \param bSize buffer size in items of 'Type'
- * \param producer Number of producers feeding the buffer. 
+ * \param bSize Amount of items the buffer can hold.
+ * \param producer number of producers feeding the buffer. 
+ * \param defaultItem A default item to store in the buffer. This fixes
+ *                    the memory available for variable length types
+ *                    like std::vector.
  */
 template <class Type>
-Ringbuffer<Type>::Ringbuffer(unsigned int bSize, int producer) :
-	head(0),// We write new data to this position
-	tail(0),// We read stored data from this position
+Ringbuffer<Type>::Ringbuffer(const unsigned int bSize, 
+                             int producer,
+                             Type defaultItem) :
+	head(0),// We write new item to this position
+	tail(0),// We read stored item from this position
 	producer(producer)
 {
     buffer.reserve(bSize);
-    std::cout << "Reserved buffer of size " << bSize << "\n";
+    for (int i=0; i<bSize; i++) {
+        // We need to push_back the defaultItem for variable size types 
+        // like std::vector. Otherwise the memory is not allocated.
+        buffer.push_back(defaultItem);
+    }
     sem_init(&mtx, 0, 1);
     sem_init(&usage, 0, 0);
     sem_init(&space, 0, bSize);
     bufferSize = bSize; 
 }
+
+/**
+ *  Fixed size type Constructor.
+ *
+ *  For Type with fixed size no defaultItem is needed.
+ *
+ *  \param bSize Amount of items the buffer can hold.
+ *  \param producer Number of producers feeding the buffer.
+ */
+template <class Type>
+Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
+                             int producer) :
+    head(0),
+    tail(0),
+    producer(producer),
+    bufferSize(bSize)
+{
+    buffer.resize(bSize);
+    sem_init(&mtx, 0, 1);
+    sem_init(&usage, 0, 0);
+    sem_init(&space, 0, bSize);
+}
+
 
 template <class Type>
 Ringbuffer<Type>::~Ringbuffer()
@@ -84,12 +121,12 @@ Ringbuffer<Type>::~Ringbuffer()
  * \param inputOnHost Needs to be on host memory.
  */
 template <class Type>
-int Ringbuffer<Type>::writeFromHost(Type *inputOnHost)
+int Ringbuffer<Type>::writeFromHost(Type &inputOnHost)
 {
     sem_wait(&space);   // is there space in buffer?
     sem_wait(&mtx);     // lock buffer
     
-    buffer[head] = *inputOnHost;
+    buffer.at(head) = inputOnHost;
     head = ++head % bufferSize;     // move head
 
     sem_post(&mtx);     // unlock buffer
@@ -108,12 +145,12 @@ int Ringbuffer<Type>::writeFromHost(Type *inputOnHost)
  *        written.
  */
 template <class Type>
-int Ringbuffer<Type>::copyToHost(Type *outputOnHost)
+int Ringbuffer<Type>::copyToHost(Type &outputOnHost)
 {
     sem_wait(&usage);   // is there some data in buffer?
     sem_wait(&mtx);     // lock buffer
     
-    *outputOnHost = buffer[tail];
+    outputOnHost = buffer.at(tail);
     tail = ++tail % bufferSize;     // move tail
     
     sem_post(&mtx);     // unlock buffer
@@ -136,7 +173,7 @@ Type* Ringbuffer<Type>::reserveHead()
 {
     sem_wait(&space);
     sem_wait(&mtx);
-    return &buffer[head];
+    return &buffer.at(head);
 }
 
 /** Unlock buffer after external write operation (using reserveHead) 
@@ -170,7 +207,7 @@ Type* Ringbuffer<Type>::reserveTailTry()
     	return NULL;
     }
     sem_wait(&mtx);
-    return &buffer[tail];
+    return &buffer.at(tail);
 }
 
 /**Unlock buffer after external read operation (using reserveTail())

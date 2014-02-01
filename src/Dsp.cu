@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
 
 	std::string input_filename = FILENAME_TESTFILE;
 	std::string output_filename =  OUTPUT_FILENAME;
-	
+
 	if(argc > 1) {
 		input_filename = argv[1];	
 	}
@@ -31,12 +31,26 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
-	/* Initialise buffer */
-	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
+
+    int nSample = -1;
+    int nSegments = -1;
+    int nWaveforms = -1;
+
+    DataReader::readHeader(input_filename, nSample, nSegments, nWaveforms);
+	std::cout << "Header read. File compatible." << std::endl;
+
+	/* Initialize input buffer (with dynamic elements) */
+    Chunk dc(CHUNK_COUNT * nSample);
+    std::fill(dc.begin(), dc.end(), 0);
+	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, dc);
+    /* Initialize output buffer (with static elements) */
 	OutputStream os(output_filename, numberOfDevices);
 	
 	std::cout << "Buffer created." << std::endl;
 	
+    DataReader reader(input_filename, &inputBuffer, CHUNK_COUNT);
+    std::cout << "DataReader created." << std::endl;
+
 	std::vector<Node*> devices;
 	for(int i = 0; i < numberOfDevices; i++) {
 		/* Start threads to handle Nodes */
@@ -44,11 +58,8 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::cout << "Nodes created." << std::endl;
-	
-	DataReader reader(input_filename, &inputBuffer);	
-	std::cout << "DataReader created" << std::endl;
-	
-	reader.readToBufferAsync();
+		
+	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;
 
 	//Make sure all results are written back
