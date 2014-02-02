@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="392.16577"
+   height="222.24939"
+   id="svg5490"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="Ringbuffer.eps">
+  <defs
+     id="defs5492" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="260.38605"
+     inkscape:cy="95.356698"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1105"
+     inkscape:window-height="774"
+     inkscape:window-x="347"
+     inkscape:window-y="127"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5495">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-3.5246336,-757.82843)">
+    <rect
+       style="fill:#d2dff6;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5227"
+       width="57.982754"
+       height="19"
+       x="8.4412327"
+       y="773.25085"
+       ry="5.2093378e-07" />
+    <rect
+       style="fill:#005eff;fill-opacity:1;stroke:#12ff00;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5227-9"
+       width="57.982754"
+       height="19"
+       x="67.238686"
+       y="773.25085"
+       ry="5.2093378e-07" />
+    <rect
+       style="fill:#005eff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5227-2"
+       width="57.982754"
+       height="19"
+       x="126.03614"
+       y="773.25085"
+       ry="5.2093378e-07" />
+    <rect
+       style="fill:#005eff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5227-6"
+       width="57.982754"
+       height="19"
+       x="184.8336"
+       y="773.25085"
+       ry="5.2093378e-07" />
+    <rect
+       style="fill:#d2dff6;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5227-4"
+       width="57.982754"
+       height="19"
+       x="243.63106"
+       y="773.25085"
+       ry="5.2093378e-07" />
+    <rect
+       style="fill:#d2dff6;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5227-8"
+       width="57.982754"
+       height="19"
+       x="302.4285"
+       y="773.25085"
+       ry="5.2093378e-07" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="69.277"
+       y="768.46515"
+       id="text6073"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6075"
+         x="69.277"
+         y="768.46515"
+         style="font-size:14px">tail</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="245.70558"
+       y="768.46515"
+       id="text6077"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6079"
+         x="245.70558"
+         y="768.46515"
+         style="font-size:14px">head</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="3.5627196"
+       y="809.89374"
+       id="text6081"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6083"
+         x="3.5627196"
+         y="809.89374"
+         style="font-size:13px">Type* ringbuffer.reserveTail()</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="826.14374"
+         id="tspan6087"
+         style="font-size:13px">     sem_trywai(&amp;usage) !=0)</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="842.39374"
+         id="tspan6089"
+         style="font-size:13px">          return NULL</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="858.64374"
+         id="tspan6091"
+         style="font-size:13px">     sem_wait(&amp;mtx)</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="874.89374"
+         id="tspan6093"
+         style="font-size:13px">     return &amp;buffer.at(tail)</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="891.14374"
+         id="tspan6085"
+         style="font-size:13px" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="3.5627196"
+       y="914.89374"
+       id="text6095"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6097"
+         x="3.5627196"
+         y="914.89374"
+         style="font-size:13px">int ringbuffer.freeTail()</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="931.14374"
+         id="tspan6099"
+         style="font-size:13px">     tail = ++tail % bufferSize</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="947.39374"
+         id="tspan6101"
+         style="font-size:13px">     sem_post(&amp;mtx)</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="963.64374"
+         id="tspan6103"
+         style="font-size:13px">     sem_post(&amp;space)</tspan><tspan
+         sodipodi:role="line"
+         x="3.5627196"
+         y="979.89374"
+         style="font-size:13px"
+         id="tspan6167">     return 0</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="240.70558"
+       y="831.32227"
+       id="text6105"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6107"
+         x="240.70558"
+         y="831.32227">Daten vorhanden?</tspan></text>
+    <path
+       sodipodi:type="arc"
+       style="fill:#010101;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="path6115"
+       sodipodi:cx="329.72009"
+       sodipodi:cy="129.28423"
+       sodipodi:rx="1.8624687"
+       sodipodi:ry="1.8940361"
+       transform="translate(0,752.36218)" />
+    <g
+       id="g6121"
+       transform="translate(-41.416255,-24.243661)">
+      <rect
+         ry="1.7857149"
+         y="873.255"
+         x="321.07144"
+         height="15.178572"
+         width="17.678572"
+         id="rect6109"
+         style="fill:#85878c;fill-opacity:1;fill-rule:evenodd;stroke:none" />
+      <path
+         sodipodi:nodetypes="ccc"
+         transform="translate(0,752.36218)"
+         inkscape:connector-curvature="0"
+         id="path6113"
+         d="m 323.4433,121.0083 c -0.21653,-3.75362 4.10168,-10.30281 6.42146,-10.25069 2.31254,-0.004 6.69204,6.56743 6.18686,10.19838"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         transform="translate(-1.9571706,749.01605)"
+         d="m 333.22406,131.74646 c 0,2.47565 -0.93278,4.48255 -2.08344,4.48255 -1.15065,0 -2.08343,-2.0069 -2.08343,-4.48255 0,-2.47565 0.93278,-4.48255 2.08343,-4.48255 1.15066,0 2.08344,2.0069 2.08344,4.48255 z"
+         sodipodi:ry="4.4825521"
+         sodipodi:rx="2.0834396"
+         sodipodi:cy="131.74646"
+         sodipodi:cx="331.14062"
+         id="path6117"
+         style="fill:#010101;fill-opacity:1;fill-rule:evenodd;stroke:none"
+         sodipodi:type="arc" />
+    </g>
+    <g
+       id="g6156"
+       transform="translate(-27.274119,-14.142136)">
+      <rect
+         ry="1.7857149"
+         y="953.91211"
+         x="304.01785"
+         height="15.178572"
+         width="17.678572"
+         id="rect6109-2"
+         style="fill:#85878c;fill-opacity:1;fill-rule:evenodd;stroke:none" />
+      <path
+         sodipodi:nodetypes="ccc"
+         inkscape:connector-curvature="0"
+         id="path6113-8"
+         d="m 306.70539,954.40637 c -2.42624,-2.49093 -4.10581,-8.15624 -2.16483,-9.87189 1.42865,-1.8349 6.88144,-1.70319 9.97493,-0.0294"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         transform="translate(-19.010755,829.67313)"
+         d="m 333.22406,131.74646 c 0,2.47565 -0.93278,4.48255 -2.08344,4.48255 -1.15065,0 -2.08343,-2.0069 -2.08343,-4.48255 0,-2.47565 0.93278,-4.48255 2.08343,-4.48255 1.15066,0 2.08344,2.0069 2.08344,4.48255 z"
+         sodipodi:ry="4.4825521"
+         sodipodi:rx="2.0834396"
+         sodipodi:cy="131.74646"
+         sodipodi:cx="331.14062"
+         id="path6117-9"
+         style="fill:#010101;fill-opacity:1;fill-rule:evenodd;stroke:none"
+         sodipodi:type="arc" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="222.13416"
+       y="890.60803"
+       id="text6161"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6163"
+         x="222.13416"
+         y="890.60803">-&gt;externes Kopieren</tspan><tspan
+         sodipodi:role="line"
+         x="222.13416"
+         y="910.60803"
+         id="tspan6165">    auf GPU möglich</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="198.59666"
+       y="966.40308"
+       id="text6105-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6107-3"
+         x="198.59666"
+         y="966.40308">Speicher kommunizieren</tspan></text>
+  </g>
+</svg>

@@ -62,8 +62,33 @@
 %Verantwortlicher: Richard
 \section{Host Code}
 \begin{frame}
-    \frametitle*{Host Code}
-    
+    \frametitle*{Host: Lesen der Daten}
+    \begin{minipage}{0.6\textwidth}
+        \begin{figure}
+            \includegraphics[scale=.5]{Datareader.eps}
+        \end{figure}
+    \end{minipage} \hfill
+    \begin{minipage}{0.28\textwidth}
+        \begin{itemize}
+            \item Lesen von Daten zweier Kanäle
+            \item Kanaltrennung
+            \item Casten der Daten
+            \item Sammeln mehrerer Signale zu Chunks
+            \item Letzter Chunk wird mit Nullen gefüllt.
+        \end{itemize}
+    \end{minipage}
+\end{frame}
+\begin{frame}
+    \frametitle*{Host: Ringpuffer}
+    \begin{itemize}
+        \item Messdatenfile $\rightarrow$ DataReader $\rightarrow$ Ringpuffer $\rightarrow$ GPU
+        \item Speicher des Ringpuffer: Vektor dessen Typ per Template frei gewählt werden kann
+        \item Host-GPU-Transfer wird wie folgt gelöst:
+    \end{itemize}
+    \begin{figure}
+        \centering
+        \includegraphics[scale=.5]{Ringbuffer.eps}
+    \end{figure}
 \end{frame}
 %Verantwortlicher: Fabian
 \section{Verwaltung Devices}
