@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.1.11)  2 FEB 2014 12:45
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.1.11)  2 FEB 2014 15:55
 entering extended mode
 **Slides.tex
 (D:\e\HZDR_dafuer\slides\Slides.tex
@@ -1050,7 +1050,7 @@ Underfull \hbox (badness 10000) has occurred while \output is active
 ]
 File: TU_Logo_SW.pdf Graphic file (type pdf)
  <use TU_Logo_SW.pdf>
-Package pdftex.def Info: TU_Logo_SW.pdf used on input line 134.
+Package pdftex.def Info: TU_Logo_SW.pdf used on input line 135.
 (pdftex.def)             Requested size: 57.78606pt x 16.92937pt.
 
 Underfull \hbox (badness 10000) has occurred while \output is active
@@ -1059,9 +1059,12 @@ Underfull \hbox (badness 10000) has occurred while \output is active
 
 [9
 
-]
-Missing character: There is no Ã in font cmr8!
-Missing character: There is no ¼ in font cmr8!
+] <Beispielergebnis.png, id=130, 750.55406pt x 294.34969pt>
+File: Beispielergebnis.png Graphic file (type png)
+
+<use Beispielergebnis.png>
+Package pdftex.def Info: Beispielergebnis.png used on input line 142.
+(pdftex.def)             Requested size: 253.92523pt x 99.58464pt.
 File: TU_Logo_SW.pdf Graphic file (type pdf)
  <use TU_Logo_SW.pdf>
 Package pdftex.def Info: TU_Logo_SW.pdf used on input line 142.
@@ -1073,7 +1076,7 @@ Underfull \hbox (badness 10000) has occurred while \output is active
 
 [10
 
-]
+ <D:/e/HZDR_dafuer/slides/Beispielergebnis.png>]
 File: TU_Logo_SW.pdf Graphic file (type pdf)
  <use TU_Logo_SW.pdf>
 Package pdftex.def Info: TU_Logo_SW.pdf used on input line 148.
@@ -1134,10 +1137,10 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 161.
  ) 
 Here is how much of TeX's memory you used:
- 15988 strings out of 493921
- 296074 string characters out of 3147285
+ 15993 strings out of 493921
+ 296193 string characters out of 3147285
  367960 words of memory out of 3000000
- 18850 multiletter control sequences out of 15000+200000
+ 18854 multiletter control sequences out of 15000+200000
  11437 words of font info for 38 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
  62i,23n,57p,416b,548s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1151,9 +1154,9 @@ gram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files
 9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/
 type1/public/amsfonts/cm/cmsy8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/pub
 lic/amsfonts/cm/cmsy9.pfb>
-Output written on Slides.pdf (13 pages, 133659 bytes).
+Output written on Slides.pdf (13 pages, 143651 bytes).
 PDF statistics:
- 198 PDF objects out of 1000 (max. 8388607)
+ 218 PDF objects out of 1000 (max. 8388607)
  35 named destinations out of 1000 (max. 500000)
- 117 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 122 words of extra memory for PDF output out of 10000 (max. 10000000)
 
