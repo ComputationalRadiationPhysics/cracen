@@ -1,5 +1,7 @@
 \documentclass[ddcfooter]{tudbeamer}
+\usepackage[utf8]{inputenc}
 \usepackage{german}
+
 \begin{document}
 \title[Digital Signal Processing]{Digital Signal Processing using CUDA}
 \subtitle{Digital Signal Processing using CUDA}
@@ -95,11 +97,14 @@
 \begin{frame}
     \frametitle*{Verwaltung Devices}
     \begin{itemize}
-    	\item{Jedes Devices wird von eigeneme Thread verwaltet}
+    	\item{Jedes Devices wird von einem Thread verwaltet}
     	\item{Asynchrone Aufrufe}
-    		\itemize
-    			\item{Pipeline}
-    		\enditemize
+		\begin{itemize}
+			\item{cudaMemcpyAsync}
+			\item{Kernel}
+			\item{Ermöglicht Pipeline}
+		\end{itemize}
+    	\item{Eigener Thread für Ausgabedatenstrom}
     \end{itemize}
 \end{frame}
 \section{Levenberg Marquardt}
@@ -169,18 +174,45 @@
 %Verantwortlicher: Fabian
 \begin{frame}
     \frametitle*{Benchmark}
-    
+    \begin{center}
+    \begin{tabular}{|r|r|r|r|r|}
+    \hline
+	GPUs & Datei    & Zeit     & Rate       & Normiert  \\
+	\hline
+	1    & 247MB	& 72.450s  &  3.41 MB/s & 3.41 MB/s \\
+	2	 & 247MB	& 38.141s  &  6.48 MB/s & 3.24 MB/s \\
+	3	 & 247MB	& 29.060s  &  8.50 MB/s & 2.83 MB/s \\
+	4	 & 247MB	& 20.828s  & 11.85 MB/s & 2.96 MB/s \\
+	1	 & 382MB	& 107.902s &  3.54 MB/s & 3.54 MB/s \\
+	2	 & 382MB	& 57.537s  &  6.64 MB/s & 3.32 MB/s \\
+	3	 & 382MB	& 40.951s  &  9.33 MB/s & 3.11 MB/s \\
+	4	 & 382MB	& 29.885s  & 12.78 MB/s & 3.20 MB/s \\
+	\hline
+	\end{tabular}
+	\end{center}
 \end{frame}
 \section{Skalierbarkeit}
 %Verantwortlicher: ???
 \begin{frame}
     \frametitle*{Skalierbarkeit}
+    \begin{itemize}
+        \item{Horizontal Skalierbar}
+        \item{PCIe Bus noch nicht vollständig ausgelastet}
+        \item{Reserven in der Implementierung des Ringbuffers}
+    \end{itemize}
 
 \end{frame}
 \section{Danksagung}
 
 \begin{frame}
     \frametitle*{Danksagung}
-    
+    %TODO: Sinnvollere Satzbildung
+
+    \begin{block} ~
+    \begin{center}
+    Vielen Dank an \\Dr. Michael Bussmann, Axel Hübel und Rene Widera \\ für die Hilfe und Optimierungsvorschläge.
+    \end{center}
+    \end{block}
+
 \end{frame}
 \end{document}
