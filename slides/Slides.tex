@@ -54,7 +54,8 @@
 	\item{Levenberg Marquardt}
 	\begin{itemize}
 		%TODO
-		\item{???}
+		\item{Parameter einer Näherungsfunktion bestimmen}
+		\item{Markante Stellen (Anfangs-, Endwert, Maximum) ermitteln und zurückgeben}
 	\end{itemize}
 	\end{itemize}
 \end{frame}
@@ -66,7 +67,6 @@
 \end{frame}
 %Verantwortlicher: Fabian
 \section{Verwaltung Devices}
-%Verantwortlicher: Nico
 \begin{frame}
     \frametitle*{Verwaltung Devices}
     \begin{itemize}
@@ -78,10 +78,67 @@
     \end{itemize}
 \end{frame}
 \section{Levenberg Marquardt}
-%Verantwortlicher: Fabian
+%Verantwortlicher: Nico
 \begin{frame}
-    \frametitle*{Levenberg Marquardt}
-    
+    \frametitle*{Levenberg Marquardt (1)}
+    \begin{itemize}
+        \item{Eingabedaten}
+        	\begin{itemize}
+        		\item{Samples}
+	        		\begin{itemize}
+	        			\item{Compute Capability 1.x: ca. 800)}
+	        			\item{Compute Capability 2.0 oder höher: ca. 2500)}
+	        		\end{itemize}
+        		\item{Interpolationsschritt}
+	        		\begin{itemize}
+	        			\item{beliebige Dezimalzahl größer 0)}
+	        			\item{Interpolation durch Texture Memory)}
+	        		\end{itemize}
+        	\end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle*{Levenberg Marquardt (2)}
+    \begin{itemize}
+        \item{Verarbeitung}
+            \begin{itemize}
+             	\item{eine Ausgleichungsrechnung pro Block}
+             	\item{Grund: ca. das 5-fache der Sampleanzahl an Shared Memory benötigt (bei 1000 Samples ca. 20 kB)}
+             	\item{Zugriff auf Samples durch Texture Memory}
+	             	\begin{itemize}
+	             	    \item{Shared Memory gespart}
+	             	    \item{schnelle Interpolation möglich}
+	             	\end{itemize}
+             	\item{Vorgehensweise}
+	             	\begin{itemize}
+	           	        \item{Anfangs- und Endwert ermitteln}
+	           	        \item{abhängig vom Schwellwert Bereich festlegen}
+	           	        \item{für den Bereich Näherungsfunktion ermitteln}
+	           	        \item{Qualität durch Residuen und Maximum der Funktion ermitteln}
+	         	    \end{itemize}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle*{Levenberg Marquardt (3)}
+	\begin{itemize}
+        \item{Ausgabedaten}
+        	\begin{itemize}
+        		\item{3 Parameter einer quadratischen Funktion: $a*x^2+b*x+c$}
+        		\item{Anfangs- und Endwert}
+        		\item{Maximum}
+        		\item{durchschnittliche Abweichung}
+        		\item{Status (Fehler, Erfolg, Abbruch)}
+        	\end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle*{Levenberg Marquardt (4)}
+	\begin{itemize}
+        \item{Ergebnis}
+        \item{[TODO Bild 'Beispielergebnis' einfügen]}
+        %TODO Bild (Beispielergebnis.png -> Beispielergebnis.eps) einfügen
+    \end{itemize}
 \end{frame}
 \section{Benchmark}
 %Verantwortlicher: Fabian
@@ -93,7 +150,7 @@
 %Verantwortlicher: ???
 \begin{frame}
     \frametitle*{Skalierbarkeit}
-    
+
 \end{frame}
 \section{Danksagung}
 
