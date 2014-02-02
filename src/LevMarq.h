@@ -14,6 +14,12 @@
 #ifdef CUDA
 texture<DATATYPE, 2, cudaReadModeElementType> dataTexture0, dataTexture1, dataTexture2, dataTexture3, dataTexture4, dataTexture5;
 
+/*!
+ * \brief getSample returns the y value of a given sample index
+ * \param I sample index
+ * \param INDEXDATASET index of the current dataset (GPU mode) or not used (CPU mode)
+ * \return y value
+*/
 template<unsigned int tex>
 __device__ float getSample(float I, int INDEXDATASET);
 
@@ -170,6 +176,15 @@ DEVICE inline void fitFunctionExtremum(float *param, float *x) //get x
 
 //------------------------
 
+/*!
+ * \brief evaluate calculates the residues between the given samples and the current fit-function
+ * \param param parameters to define the concrete current fit-function
+ * \param countData number of samples
+ * \param fvec the returned residues
+ * \param indexDataset index of the current dataset (GPU mode) or not used (CPU mode)
+ * \param xOffset first x value that is used to calculate the fit-function
+ * \param xStep the distance between two x values that are used to calculate the fit-function (if decimal then y values will be interpolated)
+*/
 template<unsigned int tex>
 DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset, int xOffset, float xStep)
 {
@@ -182,6 +197,17 @@ DEVICE void evaluate(float *param, int countData, float *fvec, int indexDataset,
 	}
 }
 
+/*!
+ * \brief qrSolve completes the solution of the problem if it is provided with the necessary information from the qr factorization, with column pivoting, of a
+ * \param n width and height of array r
+ * \param ldr a positive integer input variable not less than n which specifies the leading dimension of the array r
+ * \param ipvt an integer input array of length n which defines the permutation matrix p such that a*p = q*r
+ * \param diag an input array of length n which must contain the diagonal elements of the matrix d
+ * \param qtb an input array of length n which must contain the first n elements of the vector (q transpose)*b
+ * \param x an output array of length n which contains the least squares solution of the system a*x = b, d*x = 0
+ * \param sdiag an output array of length n which contains the diagonal elements of the upper triangular matrix s
+ * \param wa work array of length n
+*/
 DEVICE void qrSolve(int n, float *r, int ldr, int *ipvt, float *diag,
 			   float *qtb, float *x, float *sdiag, float *wa)
 {
@@ -278,6 +304,12 @@ DEVICE void qrSolve(int n, float *r, int ldr, int *ipvt, float *diag,
 		x[ipvt[j]] = wa[j];
 }
 
+/*!
+ * \brief euclidNorm calculates the euclidean norm of x
+ * \param n length of array x
+ * \param x array for euclidean norm
+ * \param result euclidean norm of x
+*/
 DEVICE void euclidNorm(int n, float *x, float* result)
 {
 	int i;
@@ -339,6 +371,20 @@ DEVICE void euclidNorm(int n, float *x, float* result)
 
 }
 
+/*!
+ * \brief lmpar determines a value for the parameter par such that x solves the system
+ * \param n width and height of array r
+ * \param ldr a positive integer input variable not less than n which specifies the leading dimension of the array r
+ * \param ipvt an integer input array of length n which defines the permutation matrix p such that a*p = q*r
+ * \param diag an input array of length n which must contain the diagonal elements of the matrix d
+ * \param qtb an input array of length n which must contain the first n elements of the vector (q transpose)*b
+ * \param delta a positive input variable which specifies an upper bound on the euclidean norm of d*x
+ * \param par input: contains an initial estimate of the levenberg-marquardt parameter; output: contains the final estimate
+ * \param x an output array of length n which contains the least squares solution of the system a*x = b, d*x = 0
+ * \param sdiag an output array of length n which contains the diagonal elements of the upper triangular matrix s
+ * \param wa1 work array of length n
+ * \param wa2 work array of length n
+*/
 DEVICE void lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 			  float *qtb, float delta, float *par, float *x,
 			  float *sdiag, float *wa1, float *wa2)
@@ -470,6 +516,17 @@ DEVICE void lmpar(int n, float *r, int ldr, int *ipvt, float *diag,
 	}
 }
 
+/*!
+ * \brief qrFactorization uses householder transformations with column pivoting (optional) to compute a qr factorization of the m by n matrix a
+ * \param m height of array a
+ * \param n width of array a
+ * \param a input: contains the matrix for which the qr factorization is to be computed; output: the strict upper trapezoidal part of a contains the strict upper trapezoidal part of r, and the lower trapezoidal part of a contains a factored form of q
+ * \param pivot if is set true then column pivoting is enforced; if is set false then no column pivoting is done
+ * \param ipvt defines the permutation matrix p such that a*p = q*r
+ * \param rdiag an output array of length n which contains the diagonal elements of r
+ * \param acnorm an output array of length n which contains the norms of the corresponding columns of the input matrix a
+ * \param wa work array of length n
+*/
 DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt,
 			  float *rdiag, float *acnorm, float *wa)
 {
@@ -558,6 +615,32 @@ DEVICE void qrFactorization(int m, int n, float *a, int pivot, int *ipvt,
 	}
 }
 
+/*!
+ * \brief lmdif minimizes the sum of the squares of m nonlinear functions in n variables by a modification of the levenberg-marquardt algorithm
+ * \param m number of samples
+ * \param n number of parameters
+ * \param x input: must contain an initial estimate of the solution vector; output: contains the final estimate of the solution vector
+ * \param fvec an output array of length m which contains the functions evaluated at the output x
+ * \param ftol measures the relative error desired in the sum of squares
+ * \param xtol measures the relative error desired in the approximate solution
+ * \param gtol gtol measures the orthogonality desired between the function vector and the columns of the jacobian
+ * \param maxfev a integer input variable that is used to terminate when the number of calls is at least maxfev by the end of an iteration
+ * \param epsfcn an input variable used in determining a suitable step length for the forward-difference approximation
+ * \param mode if mode = 1 then the variables will be scaled internally, if mode = 2 then the scaling is specified by the input diag
+ * \param factor a input variable used in determining the initial step bound. This bound is set to the product of factor and the euclidean norm of diag*x
+ * \param info an integer output variable that indicates the termination status of lmdif (see statusMessage)
+ * \param nfev an output variable set to the number of calls to the user-supplied routine *evaluate
+ * \param fjac an output m by n array. The upper n by n submatrix of fjac contains an upper triangular matrix r with diagonal elements of nonincreasing magnitude
+ * \param ipvt an integer output array of length n that defines a permutation matrix p such that jac*p = q*r
+ * \param qtf an output array of length n which contains the first n elements of the vector (q transpose)*fvec
+ * \param wa1 work array of length n
+ * \param wa2 work array of length n
+ * \param wa3 work array of length n
+ * \param wa4 work array of length m
+ * \param indexDataset index of the current dataset (GPU mode) or not used (CPU mode)
+ * \param xOffset first x value that is used to calculate the fit-function
+ * \param xStep the distance between two x values that are used to calculate the fit-function (if decimal then y values will be interpolated)
+*/
 template<unsigned int tex>
 DEVICE void lmdif(int m, int n, float *x, float *fvec, float ftol, float xtol, float gtol, int maxfev, float epsfcn,
 			  float *diag, int mode, float factor, int *info, int *nfev, float *fjac, int *ipvt, float *qtf, float *wa1,
@@ -823,7 +906,6 @@ DEVICE void maxValue(int countData, int indexDataset, int *x, DATATYPE *y)
  * \param indexDataset index of the current dataset (GPU mode) or not used (CPU mode)
  * \param y the returned average
 */
-
 template<unsigned int tex>
 DEVICE void averageValue(int start, int count, int indexDataset, float *y)
 {
@@ -843,7 +925,6 @@ DEVICE void averageValue(int start, int count, int indexDataset, float *y)
  * \param minValue min. y value
  * \param x the returned x value, -1 if there is no x with a y greater or equal minValue
 */
-
 template<unsigned int tex>
 DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATYPE minValue, int *x)
 {
@@ -864,6 +945,12 @@ DEVICE void xOfValue(int countData, int indexDataset, char fromDirection, DATATY
 			}
 }
 
+/*!
+ * \brief averageAbsResidues returns the average of the residues absolute value
+ * \param countResidues number of residues
+ * \param residues array of length countResidues that contains the residues
+ * \param average the returned average
+*/
 DEVICE void averageAbsResidues(int countResidues, float *residues, float *average)
 {
 	int i;
@@ -877,6 +964,7 @@ DEVICE void averageAbsResidues(int countResidues, float *residues, float *averag
 /*!
  * \brief kernel is the start method for calculation (you have to set the dataTexture (GPU mode) or data variable (CPU mode) before calling this method)
  * \param countData number of samples
+ * \param step the distance between two x values that are used to calculate the fit-function (if decimal then y values will be interpolated)
  * \param result fit-function and other parameters, defined in fitData struct
 */
 template<unsigned int tex>
@@ -955,25 +1043,25 @@ GLOBAL void kernel(int countData, float step, struct fitData *result)
 	cudaMallocArray(&dataArray, &channelDesc, countData, countDatasets);
 	cudaMemcpyToArray(dataArray, 0, 0, testData, sizeof(DATATYPE) * countData * countDatasets, cudaMemcpyHostToDevice);
 
-	dataTexture.normalized = 0;
-	dataTexture.filterMode = cudaFilterModeLinear;
-	dataTexture.addressMode[0] = cudaAddressModeClamp;
-	dataTexture.addressMode[1] = cudaAddressModeClamp;
+	dataTexture0.normalized = 0;
+	dataTexture0.filterMode = cudaFilterModeLinear;
+	dataTexture0.addressMode[0] = cudaAddressModeClamp;
+	dataTexture0.addressMode[1] = cudaAddressModeClamp;
 
-	cudaBindTextureToArray(dataTexture, dataArray);
+	cudaBindTextureToArray(dataTexture0, dataArray);
 
 	dim3 grid(countDatasets, 1, 1); //number of blocks (in all dimensions) = number of datasets
 	//currently, the number of threads per block must be 1 (in the future used for simultaneous calculations in one dataset)
 	
 	cudaEventRecord(start, 0);
-	kernel<<<grid, 1>>>(countData, 1, d_result);
+	kernel<0><<<grid, 1>>>(countData, 1, d_result);
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
 
 	cudaMemcpy(result, d_result, sizeof(struct fitData) * countDatasets, cudaMemcpyDeviceToHost);
 
-	cudaUnbindTexture(dataTexture);
+	cudaUnbindTexture(dataTexture0);
 	cudaFreeArray(dataArray);
 	cudaFree(d_result);
 
@@ -989,7 +1077,7 @@ GLOBAL void kernel(int countData, float step, struct fitData *result)
 	struct fitData result[1];
 
 	data = testData;
-	kernel(countData, 1, result);
+	kernel<0>(countData, 1, result);
 #endif
 
 	for (int i = 0; i < countDatasets; i++) {
