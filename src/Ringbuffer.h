@@ -9,6 +9,8 @@
  *  @brief A ringbuffer template supporting non-host consumers/producers.
  *
  *  Data is written to the head of the buffer and read from the tail.
+ *  The buffer will block write attempts if full and block read attempts
+ *  if empty.
  *  To enable reading to devices like graphic cards the tail of the 
  *  buffer can be reserved. In the reserved state copy operations can
  *  be performed externally. After copying the head needs to be 
@@ -33,7 +35,7 @@ private:
 public:
     Ringbuffer(const unsigned int bSize, int producer,
                Type defaultItem);
-    Ringbuffer(const unsigned int bSize, int procducer);
+    Ringbuffer(const unsigned int bSize, int producer);
     ~Ringbuffer();
     int writeFromHost(Type &inputOnHost);
     int copyToHost(Type &outputOnHost);
@@ -50,10 +52,11 @@ public:
 typedef std::vector<float >Chunk;
 
 /**
- * Basic Constructor.
+ * Constructor for dynamic size elements.
  *
  * Reserves buffer memory. The buffer holds bSize items. The 
- * items consist of itemSize elements of type Type.
+ * items consist of itemSize elements of type Type. These elements 
+ * may be of a dynamic size type but they need to have the same size.
  *
  * \param bSize Amount of items the buffer can hold.
  * \param producer number of producers feeding the buffer. 
@@ -191,7 +194,7 @@ int Ringbuffer<Type>::freeHead()
     return 0;
 }
 
-/* Lock tail position of buffer to perform read/copy operation externally.
+/** Lock tail position of buffer to perform read/copy operation externally.
  * 
  * If there is no data in the buffer it returns NULL. The call blocks if
  * another thread is using the buffer.
@@ -245,7 +248,8 @@ bool Ringbuffer<Type>::isEmpty() {
 	return (full_value == 0) && (empty_value == bufferSize);
 }
 
-/** Tell if buffer is empty and will stay empty.
+/** Tell if buffer is empty and will stay empty. This is the case if
+ *  all produces ceased to add data and no data is in the buffer.
  * \return True if there are no elements in buffer and all producers 
  * announced that they stopped adding elements. False otherwise.
  */

@@ -4,19 +4,10 @@
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hypertarget{classDataReader_adba9892886eceb717d50ffc02bf8e2c2}{{\bfseries Data\-Reader} (const std\-::string \&filename, \hyperlink{classRingbuffer}{Input\-Buffer} $\ast$buffer)}\label{classDataReader_adba9892886eceb717d50ffc02bf8e2c2}
+\hypertarget{classDataReader_a11f1b8c98c7cd0f0998b6df84a0e1ea8}{{\bfseries Data\-Reader} (const std\-::string \&filename, \hyperlink{classRingbuffer}{Input\-Buffer} $\ast$buffer, int chunksize)}\label{classDataReader_a11f1b8c98c7cd0f0998b6df84a0e1ea8}
 
 \item 
-\hypertarget{classDataReader_aa53ed71dd3a6220e8f6d7d3f3db31ade}{int {\bfseries \-\_\-check\-File\-Header} ()}\label{classDataReader_aa53ed71dd3a6220e8f6d7d3f3db31ade}
-
-\item 
-\hypertarget{classDataReader_ae657eb3b65c75418f21ba9f03ac12b13}{void {\bfseries read\-To\-Buffer\-Async} ()}\label{classDataReader_ae657eb3b65c75418f21ba9f03ac12b13}
-
-\item 
-\hypertarget{classDataReader_a8a5bf454b34839d63e5d0c6ca7573682}{int {\bfseries is\-Reading} ()}\label{classDataReader_a8a5bf454b34839d63e5d0c6ca7573682}
-
-\item 
-\hypertarget{classDataReader_a4d153d457d8121a14386050a5a5618ce}{void {\bfseries stop\-Reading} ()}\label{classDataReader_a4d153d457d8121a14386050a5a5618ce}
+\hypertarget{classDataReader_aefb5de1f5a148eaef4b317dc93cf61d5}{void {\bfseries read\-To\-Buffer} ()}\label{classDataReader_aefb5de1f5a148eaef4b317dc93cf61d5}
 
 \item 
 \hypertarget{classDataReader_a8ada95ad5aca5fbb3e50f0b6a954a623}{int {\bfseries get\-\_\-n\-Samp} ()}\label{classDataReader_a8ada95ad5aca5fbb3e50f0b6a954a623}
@@ -26,6 +17,12 @@
 
 \item 
 \hypertarget{classDataReader_ad754d5ff3d2e833aaabf9460f47a77e4}{int {\bfseries get\-\_\-n\-Wf} ()}\label{classDataReader_ad754d5ff3d2e833aaabf9460f47a77e4}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classDataReader_a92348a971a3d82d9b5a785f254c1b290}{static int {\bfseries read\-Header} (const std\-::string \&filename, int \&n\-Sample, int \&n\-Segment, int \&n\-Waveform)}\label{classDataReader_a92348a971a3d82d9b5a785f254c1b290}
 
 \end{DoxyCompactItemize}
 
