@@ -3,4 +3,5 @@
 *.nav
 *.toc
 *-eps-converted-to.pdf
-
+*.out
+*.snm

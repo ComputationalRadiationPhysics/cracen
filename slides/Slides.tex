@@ -18,21 +18,23 @@
 \section{Aufgabenstellung}
 \begin{frame}
 \frametitle{Aufgabenstellung}
-%\framesubtitle{untertitel erste folie}
+\begin{minipage}{0.475\textwidth}
 \begin{itemize} 
-	\item{Ausgangsitutation}
-	\begin{itemize}
-		\item{Messgeräte erzeugen Datenstrom} %TODO(Nico) Datenbild
-		\item{Datenstrom nicht kontinuierlich}
-		\item{Serielle Implementierung}
-	\end{itemize}
-	\item{Anforderungen}
-	\begin{itemize}
-		\item{Portierung auf GPU}
-		\item{Hoher Datendurchsatz}
-		\item{Skalierbar auf bis zu 4 GPUs/Node}
-	\end{itemize}
+    \item{Messgeräte erzeugen kontinuierlichen Datenstrom}
+    \item{Daten: Kurven mit Tausenden von Samplepunkten}
+    \item{Ziel: Datenreduktion durch Fitten von Vorgabefunktion}
+    \item{Anforderungen:}
+    \begin{itemize}
+	    \item{Hoher Datendurchsatz}
+	    \item{Skalierbar auf bis zu 4 GPUs/Node}
+    \end{itemize}
 \end{itemize}
+\end{minipage} \hfill
+\begin{minipage}{0.475\textwidth}
+    \begin{figure}
+        \includegraphics[scale=.11]{TaskDescription.png}
+    \end{figure} 
+\end{minipage}
 \end{frame}
 
 %Verantwortlicher: Richard
