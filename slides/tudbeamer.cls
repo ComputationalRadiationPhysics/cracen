@@ -237,7 +237,7 @@
         \setlength{\arrayrulewidth}{0.3pt}%
         \begin{tabular*}{\paperwidth}[b]{p{\textwidth}}%@{\extracolsep\fill}
           % TUD-Logo
-            \hspace*{3.0mm}\color{white}\includegraphics[height=7.81mm]{\logo@front}%
+            \hspace*{3.0mm}\color{white}\includegraphics[height=7.81mm]{\logo@front}\hfill\includegraphics[height=10mm]{Logo-HZDR-EPS-(weiß).eps}%
             \if@ddc\hfill\includegraphics[height=7.81mm]{DDC-weiss}\fi%
             \hspace*{11.76mm}\\[1.2mm]\hline
             \hspace*{11.76mm}\rule[-0.8mm]{0pt}{2.47mm}%
@@ -281,8 +281,8 @@
         \setbeamertemplate{headline}{%
             \vskip6.15mm\color{gray}
             \setlength{\arrayrulewidth}{0.1pt}
-            \begin{tabular*}{\paperwidth}[b]{l@{\extracolsep\fill}}
-                \hspace*{5.0mm}\color{text}\includegraphics[height=5.95mm]{\logo@default} \\[1mm]\hline
+            \begin{tabular*}{\paperwidth}[b]{p{\textwidth}}
+                \hspace*{5.0mm}\color{text}\includegraphics[height=5.95mm]{\logo@default}  \hfill\includegraphics[height=10.00mm]{Logo-HZDR-EPS.eps} \hspace*{10.0mm} \\[1mm]\hline
                 \rule[-2.47mm]{0pt}{2.47mm}\\[-2.47mm]\hline
             \end{tabular*}
         }
@@ -308,7 +308,7 @@
     }
 
     \setbeamertemplate{frametitle}{%
-        \vskip6.5mm\color{frametitle}\if@useNoFrameTitleSection\else\frame@title@section\fi\insertframetitle\\%
+        \vskip3.5mm\color{frametitle}\if@useNoFrameTitleSection\else\frame@title@section\fi\insertframetitle\\%
         \vskip0.3ex\color{text}\small\bfseries\insertframesubtitle%
     }
 
