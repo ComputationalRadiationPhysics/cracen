@@ -113,7 +113,7 @@ Public Member Functions</h2></td></tr>
 class Ringbuffer&lt; Type &gt;</h3>
 
 <p>A ringbuffer template supporting non-host consumers/producers. </p>
-<p><a class="el" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer</a> Data is written to the head of the buffer and read from the tail. To enable reading to devices like graphic cards the tail of the buffer can be reserved. In the reserved state copy operations can be performed externally. After copying the head needs to be freed. The same mechanism is available for writing to the buffer from other devices. For data reading/writing from host to host classic write/read methods are available. </p>
+<p><a class="el" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer</a> Data is written to the head of the buffer and read from the tail. The buffer will block write attempts if full and block read attempts if empty. To enable reading to devices like graphic cards the tail of the buffer can be reserved. In the reserved state copy operations can be performed externally. After copying the head needs to be freed. The same mechanism is available for writing to the buffer from other devices. For data reading/writing from host to host classic write/read methods are available. </p>
 </div><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a8982c4a8217131d5183e0f8562978ca4"></a>
 <div class="memitem">
@@ -311,7 +311,7 @@ template&lt;class Type &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Tell if buffer is empty and will stay empty. </p>
+<p>Tell if buffer is empty and will stay empty. This is the case if all produces ceased to add data and no data is in the buffer. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if there are no elements in buffer and all producers announced that they stopped adding elements. False otherwise. </dd></dl>
 
 </div>
@@ -408,7 +408,7 @@ template&lt;class Type&gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 3 2014 22:29:06 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 3 2014 23:33:07 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

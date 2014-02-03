@@ -94,175 +94,175 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;semaphore.h&gt;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00023"></a><span class="lineno"><a class="code" href="classRingbuffer.html">   23</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer</a> {</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    sem_t mtx;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    sem_t usage, space;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    std::vector&lt;Type&gt; buffer;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bufferSize;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> head, tail;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">int</span> producer;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize, <span class="keywordtype">int</span> producer,</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;               Type defaultItem);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize, <span class="keywordtype">int</span> producer);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    ~<a class="code" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer</a>();</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a6ad11ee3df86729dd6a2b567eabb9e0c">writeFromHost</a>(Type &amp;inputOnHost);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a3795dfe25eca748e9bec6adf7e2658d2">copyToHost</a>(Type &amp;outputOnHost);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    Type* <a class="code" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">reserveHead</a>();</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">freeHead</a>();</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    Type* <a class="code" href="classRingbuffer.html#ab8a0b4877bfcf06687d782b029185be7">reserveTailTry</a>();</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">freeTail</a>();</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">getSize</a>();</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">isEmpty</a>();</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">isFinished</a>();</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">producerQuit</a>();</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;};</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="keyword">typedef</span> std::vector&lt;float &gt;Chunk;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00025"></a><span class="lineno"><a class="code" href="classRingbuffer.html">   25</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer</a> {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    sem_t mtx;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    sem_t usage, space;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    std::vector&lt;Type&gt; buffer;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bufferSize;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> head, tail;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">int</span> producer;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize, <span class="keywordtype">int</span> producer,</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;               Type defaultItem);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize, <span class="keywordtype">int</span> producer);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    ~<a class="code" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer</a>();</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a6ad11ee3df86729dd6a2b567eabb9e0c">writeFromHost</a>(Type &amp;inputOnHost);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a3795dfe25eca748e9bec6adf7e2658d2">copyToHost</a>(Type &amp;outputOnHost);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    Type* <a class="code" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">reserveHead</a>();</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">freeHead</a>();</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    Type* <a class="code" href="classRingbuffer.html#ab8a0b4877bfcf06687d782b029185be7">reserveTailTry</a>();</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">freeTail</a>();</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">getSize</a>();</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">isEmpty</a>();</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">isFinished</a>();</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">producerQuit</a>();</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;};</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">   66</a></span>&#160;<a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer&lt;Type&gt;::Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize, </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                             <span class="keywordtype">int</span> producer,</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                             Type defaultItem) :</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    head(0),<span class="comment">// We write new item to this position</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    tail(0),<span class="comment">// We read stored item from this position</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    producer(producer)</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;{</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    buffer.reserve(bSize);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;bSize; i++) {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="comment">// We need to push_back the defaultItem for variable size types </span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="comment">// like std::vector. Otherwise the memory is not allocated.</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        buffer.push_back(defaultItem);</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    }</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    sem_init(&amp;mtx, 0, 1);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    sem_init(&amp;usage, 0, 0);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    sem_init(&amp;space, 0, bSize);</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    bufferSize = bSize; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00094"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ad8b9e2d524a89f22e7feffac888af796">   94</a></span>&#160;<a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer&lt;Type&gt;::Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize,</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                             <span class="keywordtype">int</span> producer) :</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    head(0),</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    tail(0),</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    producer(producer),</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    bufferSize(bSize)</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;{</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    buffer.resize(bSize);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    sem_init(&amp;mtx, 0, 1);</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    sem_init(&amp;usage, 0, 0);</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    sem_init(&amp;space, 0, bSize);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;}</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<a class="code" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer&lt;Type&gt;::~Ringbuffer</a>()</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;{</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    sem_destroy(&amp;mtx);</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    sem_destroy(&amp;usage);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    sem_destroy(&amp;space);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;}</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00125"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a6ad11ee3df86729dd6a2b567eabb9e0c">  125</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a6ad11ee3df86729dd6a2b567eabb9e0c">Ringbuffer&lt;Type&gt;::writeFromHost</a>(Type &amp;inputOnHost)</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;{</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    sem_wait(&amp;space);   <span class="comment">// is there space in buffer?</span></div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    sem_wait(&amp;mtx);     <span class="comment">// lock buffer</span></div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    </div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    buffer.at(head) = inputOnHost;</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    head = ++head % bufferSize;     <span class="comment">// move head</span></div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    sem_post(&amp;mtx);     <span class="comment">// unlock buffer</span></div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    sem_post(&amp;usage);   <span class="comment">// tell them that there is something in buffer</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    </div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;}</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00149"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a3795dfe25eca748e9bec6adf7e2658d2">  149</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a3795dfe25eca748e9bec6adf7e2658d2">Ringbuffer&lt;Type&gt;::copyToHost</a>(Type &amp;outputOnHost)</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;{</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    sem_wait(&amp;usage);   <span class="comment">// is there some data in buffer?</span></div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    sem_wait(&amp;mtx);     <span class="comment">// lock buffer</span></div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    </div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    outputOnHost = buffer.at(tail);</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    tail = ++tail % bufferSize;     <span class="comment">// move tail</span></div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    </div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    sem_post(&amp;mtx);     <span class="comment">// unlock buffer</span></div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    sem_post(&amp;space);   <span class="comment">// tell them that there is space in buffer</span></div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    </div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;}</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00173"></a><span class="lineno"><a class="code" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">  173</a></span>&#160;Type* <a class="code" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">Ringbuffer&lt;Type&gt;::reserveHead</a>()</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;{</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    sem_wait(&amp;space);</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    sem_wait(&amp;mtx);</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <span class="keywordflow">return</span> &amp;buffer.at(head);</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;}</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00187"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">  187</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">Ringbuffer&lt;Type&gt;::freeHead</a>()</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;{</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    head = ++head % bufferSize;</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    sem_post(&amp;mtx);</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    sem_post(&amp;usage);</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;}</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00205"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ab8a0b4877bfcf06687d782b029185be7">  205</a></span>&#160;Type* <a class="code" href="classRingbuffer.html#ab8a0b4877bfcf06687d782b029185be7">Ringbuffer&lt;Type&gt;::reserveTailTry</a>()</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;{</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    <span class="keywordflow">if</span>(sem_trywait(&amp;usage) != 0) {</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    }</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    sem_wait(&amp;mtx);</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    <span class="keywordflow">return</span> &amp;buffer.at(tail);</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;}</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00221"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">  221</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">Ringbuffer&lt;Type&gt;::freeTail</a>()</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;{</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    tail = ++ tail % bufferSize;</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    sem_post(&amp;mtx);</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    sem_post(&amp;space);</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;}</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00232"></a><span class="lineno"><a class="code" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">  232</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">Ringbuffer&lt;Type&gt;::getSize</a>() {</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    <span class="keywordtype">int</span> full_value;</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    sem_getvalue(&amp;usage, &amp;full_value);</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordflow">return</span> full_value;</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;}</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00242"></a><span class="lineno"><a class="code" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">  242</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">Ringbuffer&lt;Type&gt;::isEmpty</a>() {</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <span class="keywordtype">int</span> full_value, empty_value;</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    sem_getvalue(&amp;usage, &amp;full_value);</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    sem_getvalue(&amp;space, &amp;empty_value);</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    <span class="keywordflow">return</span> (full_value == 0) &amp;&amp; (empty_value == bufferSize);</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;}</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00254"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">  254</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">Ringbuffer&lt;Type&gt;::isFinished</a>() {</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keywordtype">int</span> full_value;</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    sem_getvalue(&amp;usage, &amp;full_value);</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    <span class="keywordflow">return</span> (producer==0) &amp;&amp; (full_value == 0);</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;}</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
-<div class="line"><a name="l00265"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">  265</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">Ringbuffer&lt;Type&gt;::producerQuit</a>() {</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    __sync_sub_and_fetch(&amp;producer,1);</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;}</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">typedef</span> std::vector&lt;float &gt;Chunk;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">   68</a></span>&#160;<a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer&lt;Type&gt;::Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize, </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                             <span class="keywordtype">int</span> producer,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                             Type defaultItem) :</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    head(0),<span class="comment">// We write new item to this position</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    tail(0),<span class="comment">// We read stored item from this position</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    producer(producer)</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;{</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    buffer.reserve(bSize);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;bSize; i++) {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="comment">// We need to push_back the defaultItem for variable size types </span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="comment">// like std::vector. Otherwise the memory is not allocated.</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        buffer.push_back(defaultItem);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    sem_init(&amp;mtx, 0, 1);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    sem_init(&amp;usage, 0, 0);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    sem_init(&amp;space, 0, bSize);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    bufferSize = bSize; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;}</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00096"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ad8b9e2d524a89f22e7feffac888af796">   96</a></span>&#160;<a class="code" href="classRingbuffer.html#a8982c4a8217131d5183e0f8562978ca4">Ringbuffer&lt;Type&gt;::Ringbuffer</a>(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bSize,</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                             <span class="keywordtype">int</span> producer) :</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    head(0),</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    tail(0),</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    producer(producer),</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    bufferSize(bSize)</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;{</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    buffer.resize(bSize);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    sem_init(&amp;mtx, 0, 1);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    sem_init(&amp;usage, 0, 0);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    sem_init(&amp;space, 0, bSize);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;}</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<a class="code" href="classRingbuffer.html" title="A ringbuffer template supporting non-host consumers/producers.">Ringbuffer&lt;Type&gt;::~Ringbuffer</a>()</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;{</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    sem_destroy(&amp;mtx);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    sem_destroy(&amp;usage);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    sem_destroy(&amp;space);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;}</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00127"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a6ad11ee3df86729dd6a2b567eabb9e0c">  127</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a6ad11ee3df86729dd6a2b567eabb9e0c">Ringbuffer&lt;Type&gt;::writeFromHost</a>(Type &amp;inputOnHost)</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;{</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    sem_wait(&amp;space);   <span class="comment">// is there space in buffer?</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    sem_wait(&amp;mtx);     <span class="comment">// lock buffer</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    buffer.at(head) = inputOnHost;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    head = ++head % bufferSize;     <span class="comment">// move head</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    sem_post(&amp;mtx);     <span class="comment">// unlock buffer</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    sem_post(&amp;usage);   <span class="comment">// tell them that there is something in buffer</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    </div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;}</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00151"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a3795dfe25eca748e9bec6adf7e2658d2">  151</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a3795dfe25eca748e9bec6adf7e2658d2">Ringbuffer&lt;Type&gt;::copyToHost</a>(Type &amp;outputOnHost)</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;{</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    sem_wait(&amp;usage);   <span class="comment">// is there some data in buffer?</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    sem_wait(&amp;mtx);     <span class="comment">// lock buffer</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    outputOnHost = buffer.at(tail);</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    tail = ++tail % bufferSize;     <span class="comment">// move tail</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    </div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    sem_post(&amp;mtx);     <span class="comment">// unlock buffer</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    sem_post(&amp;space);   <span class="comment">// tell them that there is space in buffer</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;}</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00175"></a><span class="lineno"><a class="code" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">  175</a></span>&#160;Type* <a class="code" href="classRingbuffer.html#acf64a0c3c16f208dd1191130b0d18b33">Ringbuffer&lt;Type&gt;::reserveHead</a>()</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;{</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    sem_wait(&amp;space);</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    sem_wait(&amp;mtx);</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    <span class="keywordflow">return</span> &amp;buffer.at(head);</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;}</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00189"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">  189</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a1d8b62be3d51a00930e7b06d1ad2df53">Ringbuffer&lt;Type&gt;::freeHead</a>()</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;{</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    head = ++head % bufferSize;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    sem_post(&amp;mtx);</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    sem_post(&amp;usage);</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;}</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00207"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ab8a0b4877bfcf06687d782b029185be7">  207</a></span>&#160;Type* <a class="code" href="classRingbuffer.html#ab8a0b4877bfcf06687d782b029185be7">Ringbuffer&lt;Type&gt;::reserveTailTry</a>()</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;{</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="keywordflow">if</span>(sem_trywait(&amp;usage) != 0) {</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    }</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    sem_wait(&amp;mtx);</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <span class="keywordflow">return</span> &amp;buffer.at(tail);</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;}</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00223"></a><span class="lineno"><a class="code" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">  223</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#a66193754bca336ed8b8f2d5a9a89995c">Ringbuffer&lt;Type&gt;::freeTail</a>()</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;{</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    tail = ++ tail % bufferSize;</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    sem_post(&amp;mtx);</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    sem_post(&amp;space);</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;}</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00234"></a><span class="lineno"><a class="code" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">  234</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="classRingbuffer.html#aefca234ed766de811794f6ab91e86d17">Ringbuffer&lt;Type&gt;::getSize</a>() {</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordtype">int</span> full_value;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    sem_getvalue(&amp;usage, &amp;full_value);</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="keywordflow">return</span> full_value;</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;}</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00244"></a><span class="lineno"><a class="code" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">  244</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#af746d95cfff3115957d01181484be191">Ringbuffer&lt;Type&gt;::isEmpty</a>() {</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    <span class="keywordtype">int</span> full_value, empty_value;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    sem_getvalue(&amp;usage, &amp;full_value);</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    sem_getvalue(&amp;space, &amp;empty_value);</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordflow">return</span> (full_value == 0) &amp;&amp; (empty_value == bufferSize);</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;}</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00257"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">  257</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classRingbuffer.html#ac43a1bbfa6c41dd0aba33c70248425a6">Ringbuffer&lt;Type&gt;::isFinished</a>() {</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keywordtype">int</span> full_value;</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    sem_getvalue(&amp;usage, &amp;full_value);</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    <span class="keywordflow">return</span> (producer==0) &amp;&amp; (full_value == 0);</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;}</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt;</div>
+<div class="line"><a name="l00268"></a><span class="lineno"><a class="code" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">  268</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRingbuffer.html#ae40e43d8729f0cfdcb97675cda52b05f">Ringbuffer&lt;Type&gt;::producerQuit</a>() {</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    __sync_sub_and_fetch(&amp;producer,1);</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;}</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 3 2014 22:29:05 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 3 2014 23:33:07 for Digital Signal Processing using CUDA by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

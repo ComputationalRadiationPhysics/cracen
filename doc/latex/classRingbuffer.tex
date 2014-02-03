@@ -44,7 +44,7 @@ void \hyperlink{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}{producer\-Qui
 
 A ringbuffer template supporting non-\/host consumers/producers. 
 
-\hyperlink{classRingbuffer}{Ringbuffer} Data is written to the head of the buffer and read from the tail. To enable reading to devices like graphic cards the tail of the buffer can be reserved. In the reserved state copy operations can be performed externally. After copying the head needs to be freed. The same mechanism is available for writing to the buffer from other devices. For data reading/writing from host to host classic write/read methods are available. 
+\hyperlink{classRingbuffer}{Ringbuffer} Data is written to the head of the buffer and read from the tail. The buffer will block write attempts if full and block read attempts if empty. To enable reading to devices like graphic cards the tail of the buffer can be reserved. In the reserved state copy operations can be performed externally. After copying the head needs to be freed. The same mechanism is available for writing to the buffer from other devices. For data reading/writing from host to host classic write/read methods are available. 
 
 \subsection{Constructor \& Destructor Documentation}
 \hypertarget{classRingbuffer_a8982c4a8217131d5183e0f8562978ca4}{\index{Ringbuffer@{Ringbuffer}!Ringbuffer@{Ringbuffer}}
@@ -148,7 +148,7 @@ True if no elements are in buffer. False otherwise.
 {}
 \end{DoxyParamCaption}
 )}}\label{classRingbuffer_ac43a1bbfa6c41dd0aba33c70248425a6}
-Tell if buffer is empty and will stay empty. \begin{DoxyReturn}{Returns}
+Tell if buffer is empty and will stay empty. This is the case if all produces ceased to add data and no data is in the buffer. \begin{DoxyReturn}{Returns}
 True if there are no elements in buffer and all producers announced that they stopped adding elements. False otherwise. 
 \end{DoxyReturn}
 \hypertarget{classRingbuffer_ae40e43d8729f0cfdcb97675cda52b05f}{\index{Ringbuffer@{Ringbuffer}!producer\-Quit@{producer\-Quit}}
