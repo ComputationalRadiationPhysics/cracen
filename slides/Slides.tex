@@ -5,7 +5,7 @@
 \begin{document}
 \title[Digital Signal Processing]{Digital Signal Processing using CUDA}
 \subtitle{Digital Signal Processing using CUDA}
-\author{Nico Wehmeier, Richard Pfeifer, Fabian Jung}
+\author{Nico Wehmeyer, Richard Pfeifer, Fabian Jung}
 
 \maketitle
 
@@ -14,7 +14,7 @@
     \tableofcontents[currentsection]
 \end{frame}
 
-%Verantwortlicher: ???
+%Verantwortlicher: Richard
 \section{Aufgabenstellung}
 \begin{frame}
 \frametitle{Aufgabenstellung}
@@ -22,7 +22,7 @@
 \begin{itemize} 
 	\item{Ausgangsitutation}
 	\begin{itemize}
-		\item{Messgeräte erzeugen Datenstrom}
+		\item{Messgeräte erzeugen Datenstrom} %TODO(Nico) Datenbild
 		\item{Datenstrom nicht kontinuierlich}
 		\item{Serielle Implementierung}
 	\end{itemize}
@@ -35,7 +35,7 @@
 \end{itemize}
 \end{frame}
 
-%Verantwortlicher: ???
+%Verantwortlicher: Richard
 \section{Überblick}
 \begin{frame}
     \frametitle*{Überblick}
@@ -46,18 +46,18 @@
 		\item{Eingabe Datei auslesen}
 		\item{Daten zwischenspeichern}
 	\end{itemize}
+	\item{Levenberg Marquardt}
+	\begin{itemize}
+		%TODO
+		\item{Parameter einer Näherungsfunktion bestimmen}
+		\item{Markante Stellen (Anfangs-, Endwert, Maximum) ermitteln und zurückgeben}
+	\end{itemize}
 	\item{Verwaltung Devices}
 	\begin{itemize}
 		\item{Daten aus Puffer lesen}
 		\item{Zu den Devices streamen}
 		\item{Kernel starten}
 		\item{Ausgabe schreiben}
-	\end{itemize}
-	\item{Levenberg Marquardt}
-	\begin{itemize}
-		%TODO
-		\item{Parameter einer Näherungsfunktion bestimmen}
-		\item{Markante Stellen (Anfangs-, Endwert, Maximum) ermitteln und zurückgeben}
 	\end{itemize}
 	\end{itemize}
 \end{frame}
@@ -91,21 +91,6 @@
         \centering
         \includegraphics[scale=.5]{Ringbuffer.eps}
     \end{figure}
-\end{frame}
-%Verantwortlicher: Fabian
-\section{Verwaltung Devices}
-\begin{frame}
-    \frametitle*{Verwaltung Devices}
-    \begin{itemize}
-    	\item{Jedes Devices wird von einem Thread verwaltet}
-    	\item{Asynchrone Aufrufe}
-		\begin{itemize}
-			\item{cudaMemcpyAsync}
-			\item{Kernel}
-			\item{Ermöglicht Pipeline}
-		\end{itemize}
-    	\item{Eigener Thread für Ausgabedatenstrom}
-    \end{itemize}
 \end{frame}
 \section{Levenberg Marquardt}
 %Verantwortlicher: Nico
@@ -170,6 +155,22 @@
         \includegraphics[height=3.5cm]{Beispielergebnis.png}
     \end{itemize}
 \end{frame}
+%Verantwortlicher: Fabian
+\section{Verwaltung Devices}
+\begin{frame}
+    \frametitle*{Verwaltung Devices}
+    \begin{itemize}
+    	\item{Jedes Devices wird von einem Thread verwaltet}
+    	\item{Asynchrone Aufrufe}
+		\begin{itemize}
+			\item{cudaMemcpyAsync}
+			\item{Kernel}
+			\item{Ermöglicht Pipeline}
+		\end{itemize}
+    	\item{Eigener Thread für Ausgabedatenstrom}
+    \end{itemize}
+\end{frame}
+
 \section{Benchmark}
 %Verantwortlicher: Fabian
 \begin{frame}
@@ -210,7 +211,7 @@
 
     \begin{block} ~
     \begin{center}
-    Vielen Dank an \\Dr. Michael Bussmann, Axel Hübel und Rene Widera \\ für die Hilfe und Optimierungsvorschläge.
+    Vielen Dank an \\Dr. Michael Bussmann, Axel Hübel und Rene Widera \\ für Diskussion und Optimierungsvorschläge.
     \end{center}
     \end{block}
 

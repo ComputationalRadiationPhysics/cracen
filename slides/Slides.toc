@@ -1,9 +1,0 @@
-\beamer@endinputifotherversion {3.24pt}
-\beamer@sectionintoc {1}{Aufgabenstellung}{3}{0}{1}
-\beamer@sectionintoc {2}{\IeC {\"U}berblick}{4}{0}{2}
-\beamer@sectionintoc {3}{Host Code}{5}{0}{3}
-\beamer@sectionintoc {4}{Verwaltung Devices}{7}{0}{4}
-\beamer@sectionintoc {5}{Levenberg Marquardt}{8}{0}{5}
-\beamer@sectionintoc {6}{Benchmark}{12}{0}{6}
-\beamer@sectionintoc {7}{Skalierbarkeit}{13}{0}{7}
-\beamer@sectionintoc {8}{Danksagung}{14}{0}{8}
