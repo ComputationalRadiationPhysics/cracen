@@ -88,19 +88,22 @@ void Node::run() {
 http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
              */
 			iBuffer->freeTail();
+
+			cudaMemcpyAsync(d_result[tex], result[tex], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice, streams[tex]);
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-			cudaMemcpy(d_result[tex], result[tex], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice);
+			
 			++tex;
 			/* 6 Chucks are copied to the GPU */
 			if(tex == 6) {
 				tex = 0;
 				/* Start kernel */
-				kernel<0><<<SAMPLE_COUNT, 1, 0, streams[0]>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result[0]);
-				kernel<1><<<SAMPLE_COUNT, 1, 0, streams[1]>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result[1]);
-				kernel<2><<<SAMPLE_COUNT, 1, 0, streams[2]>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result[2]);
-				kernel<3><<<SAMPLE_COUNT, 1, 0, streams[3]>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result[3]);
-				kernel<4><<<SAMPLE_COUNT, 1, 0, streams[4]>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result[4]);
-				kernel<5><<<SAMPLE_COUNT, 1, 0, streams[5]>>>(SAMPLE_COUNT, INTERPOLATION_COUNT, d_result[5]);
+				levenberMarquardt<0>(streams[0]);
+				levenberMarquardt<1>(streams[1]);
+				levenberMarquardt<2>(streams[2]);
+				levenberMarquardt<3>(streams[3]);
+				levenberMarquardt<4>(streams[4]);
+				levenberMarquardt<5>(streams[5]);
+
 				/* Get result */
 				for(int i = 0; i <= 5; i++) {				
 					cudaMemcpyAsync(result[i], d_result[i], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost, streams[i]);

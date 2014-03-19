@@ -10,6 +10,9 @@ all: $(OBJECTS)
 Dsp.o: Dsp.cu
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Dsp.o Dsp.cu
 	
+Node.cu: Node.cu Node.h LevMarq.h
+	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Node.o Node.cu
+	
 %.o: %.cu %.h
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
 	
