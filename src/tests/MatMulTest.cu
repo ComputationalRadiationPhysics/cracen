@@ -1,5 +1,5 @@
 #include <iostream>
-#include<thrust/device_vector.h>
+#include <thrust/device_vector.h>
 #include "UtilKernels.h"
 #include <cstdio>
 

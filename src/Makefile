@@ -24,8 +24,3 @@ run: all
 clean:
 	@rm -f *.o
 	@rm -f *~
-	
-.PHONY: test
-test:
-	nvcc -arch=compute_30 -code=sm_30 -o test test.cu
-	./test
