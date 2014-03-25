@@ -10,7 +10,7 @@ all: $(OBJECTS)
 Dsp.o: Dsp.cu
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Dsp.o Dsp.cu
 	
-Node.cu: Node.cu Node.h LevMarq.h
+Node.cu: Node.cu Node.h LevMarq.h UtilKernels.h
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Node.o Node.cu
 	
 %.o: %.cu %.h
@@ -24,3 +24,8 @@ run: all
 clean:
 	@rm -f *.o
 	@rm -f *~
+	
+.PHONY: test
+test:
+	nvcc -arch=compute_30 -code=sm_30 -o test test.cu
+	./test

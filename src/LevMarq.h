@@ -5,6 +5,7 @@
 
 #include<thrust/device_vector.h>
 #include "Types.h"
+#include "Product.h"
 
 texture<DATATYPE, 2, cudaReadModeElementType> dataTexture0, dataTexture1, dataTexture2, dataTexture3, dataTexture4, dataTexture5;
 
@@ -112,10 +113,24 @@ __global__ void calcDerivF(int wave, float param[], float mu, float deriv_F[]) {
 	}
 }
 
+<template <unsigned int tex>
+__global__ void solveMinimization() {
+	//calc A^T*A => S
+	
+	//calc S^-1
+	
+	
+	//calc A*F => b
+	
+	//calc S^-1*b => s
+}
+
 template <class c>
 float* pcast(thrust::device_vector<c>& dev) {
 	return thrust::raw_pointer_cast(&dev[0]);
 }
+
+//TODO: Convert to Kernel using dynamic Parallelism
 template <unsigned int tex>
 int levenberMarquardt(cudaStream_t& stream) {
 	//Waveformen Sequenziell abarbeiten (keine Taskparallelität)
@@ -140,13 +155,17 @@ int levenberMarquardt(cudaStream_t& stream) {
 	//Calc F'(param)
 	dim3 bs(SAMPLE_COUNT+numberOfParams, numberOfParams, 1);
 	calcDerivF<tex><<<1,bs, 0, stream>>>(i, pcast(param), mu, pcast(deriv_F));
+	
+	/* Debug output
 	for(int i=0; i < SAMPLE_COUNT+numberOfParams; i++) {
 		for(int j= 0; j < numberOfParams; j++) {
-		
+			std::cout << deriv_F[i,j] << std::endl;
 		}
 	}
+	*/
 	/* Abschnitt 2 */
 	//Solve minimization problem
+	solveMinimization<tex><<<1,bs,0,stream>>>();
 	/* Abschnitt 3 */
 	//Calc F(param+s)
 	//Calc F'(param)*s
