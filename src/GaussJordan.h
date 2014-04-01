@@ -1,25 +1,7 @@
 #include <stdio.h>
+#include "UtilKernels.h"
 
 #define MASTER if(threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0 && blockIdx.x == 0 && blockIdx.y == 0 && blockIdx.z == 0)
-
-template <class T>
-class MatrixAccess {	
-public:
-	class Proxy {
-	private:
-		int dim;
-		int x;
-		T* mat;
-	public:
-		__device__ Proxy(int dim, T* mat) : dim(dim), mat(mat) {}
-		__device__ T& operator[](int y)  {return mat[x+y*dim];}
-		__device__ Proxy& operator()(int x1) {x=x1; return *this;}	
-	};
-	__device__ MatrixAccess(int dim, T* mat) : proxy(dim, mat) {}
-	__device__ Proxy& operator[](int x) {return proxy(x);}
-private:
-	Proxy proxy;
-};
 
 __global__ void gaussJordanKernel(float* _input, float* _result, int dim) {
 	extern __shared__ float dynamicMem[];
@@ -39,6 +21,7 @@ __global__ void gaussJordanKernel(float* _input, float* _result, int dim) {
 		else 		mat[x][y] = 0;
 	}	
 	__syncthreads();
+	/*
 	MASTER {
 		for(int j = 0; j < dim; j++) {
 			for(int i = 0; i < 2*dim; i++) {
@@ -47,7 +30,7 @@ __global__ void gaussJordanKernel(float* _input, float* _result, int dim) {
 			printf("\n",mat[x+dim][y]);
 		}
 	}
-	
+	*/
 	//Do stuff
 	for(int i = 0; i < dim; i++) {
 		//Normalize line
@@ -63,8 +46,9 @@ __global__ void gaussJordanKernel(float* _input, float* _result, int dim) {
 		}
 		__syncthreads();
 	}
+	
 	//Copy result back
-	printf("%f\n",mat[x+dim][y]);
+	//printf("%f\n",mat[x+dim][y]);
 	if(x < dim) result[x][y] = mat[x+dim][y];
 }
 

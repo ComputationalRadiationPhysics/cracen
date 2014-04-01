@@ -112,7 +112,7 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
 					/* Sync */
 					cudaStreamSynchronize(streams[i]);
 					/* Push result to output buffer */
-					
+					//TODO: Start new copying and kernels here
 					for(int j = 0; j < CHUNK_COUNT; j++) {
 						if(true) { //TODO: Check for fit quality
 							oBuffer->writeFromHost(result[i][j]);

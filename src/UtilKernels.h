@@ -1,3 +1,6 @@
+#ifndef UTILKERNELS_H
+#define UTILKERNELS_H
+
 //#include <stdio.h>
 
 /*
@@ -8,7 +11,27 @@ __device__ inline T max(T left, T right) {
 }
 */
 
+template <class T>
+class MatrixAccess {	
+public:
+	class Proxy {
+	private:
+		int dim;
+		int x;
+		T* mat;
+	public:
+		__device__ Proxy(int dim, T* mat) : dim(dim), mat(mat) {}
+		__device__ T& operator[](int y)  {return mat[x+y*dim];}
+		__device__ Proxy& operator()(int x1) {x=x1; return *this;}	
+	};
+	__device__ MatrixAccess(int dim, T* mat) : proxy(dim, mat) {}
+	__device__ Proxy& operator[](int x) {return proxy(x);}
+private:
+	Proxy proxy;
+};
+
 #define handleLastError() handle_error( cudaGetLastError(),"Kernel Error occured:\"", __LINE__, __FILE__ )
+
 void handle_error(cudaError_t err, const char* error, int line, const char* file) {
 	if(err != cudaSuccess) std::cerr << error << cudaGetErrorString(err) << "\" in Line " << line << " in File " << file << std::endl;
 }
@@ -86,10 +109,26 @@ template<class T>
 void orthogonalMatProd(T* left, T* result, int rows, int cols) {
 	dim3 blockSize(32,32);
 	dim3 gridSize(ceil((float) rows/32),ceil((float) rows/32));
-	handleLastError();
 	orthogonalMatProdKernel<<<gridSize, blockSize>>>(left, result, rows, cols);
-	handleLastError();
 	cudaDeviceSynchronize();
-	handleLastError();
 }
 
+template <class T>
+__global__ void transposeKernel(T* mat, int rows, int cols) {
+	int x = threadIdx.x+blockIdx.x*blockDim.x;
+	int y = threadIdx.y+blockIdx.y*blockDim.y;
+	if(x < cols && y < rows) {
+		T temp = mat[y*cols+x];
+		__syncthreads();
+		mat[x*rows+y] = temp;
+	}
+}
+
+template <class T>
+void transpose(T* mat, int rows, int cols) {
+	dim3 blockSize(32,32);
+	dim3 gridSize(ceil((float) cols/32),ceil((float) rows/32));
+	transposeKernel<<<gridSize,blockSize>>>(mat, rows, cols);
+}
+
+#endif
