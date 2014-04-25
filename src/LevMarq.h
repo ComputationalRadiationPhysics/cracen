@@ -55,7 +55,7 @@ __global__ void calcF(int wave, float* param, float* F, unsigned int offset, con
 
 //Fit should be a FitFunctor
 template <class Fit, unsigned int tex>
-__global__ void calcDerivF(int wave, float param[], float mu, float deriv_F[], const unsigned int offset, const unsigned sample_count, const unsigned int interpolation_count) {
+__global__ void calcDerivF(int wave, float* param, float mu, float* deriv_F, const unsigned int offset, const unsigned sample_count, const unsigned int interpolation_count) {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 	MatrixAccess<float> deriv(Fit::numberOfParams(), deriv_F);
@@ -108,7 +108,9 @@ int levenbergMarquardt(const unsigned sample_count, const unsigned int max_windo
 		////std::cout << "Sample: " << i << std::endl;
 		float roh;
 		mu = 1;
+		int counter = 0;
 		do {
+			counter++;
 			for(int j = 0; j < numberOfParams; j++) param_old[j] = param[j];
 			////std::cout << "param:" << std::endl;
 			//printMat(param, 1 , numberOfParams);
@@ -223,7 +225,7 @@ int levenbergMarquardt(const unsigned sample_count, const unsigned int max_windo
 			}
 			//std::cout << u1/(sample_count/interpolation_count) << std::endl;
 			//std::cout << "Sample: " << i << std::endl;
-		} while(u1/(sample_count/interpolation_count) > 1e-3 && mu > 1e-3);
+		} while(u1/(sample_count/interpolation_count) > 1e-3 && mu > 1e-3 && counter < 7);
 		//decide if s is accepted or discarded
 	}
 	
