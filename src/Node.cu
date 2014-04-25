@@ -1,7 +1,7 @@
 #include "Node.h"
 #include "LevMarq.h"
 #include <vector>
-
+#include "FitFunction.h"
 
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
 
@@ -97,12 +97,13 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
 			if(tex == 6) {
 				tex = 0;
 				/* Start kernel */
-				levenberMarquardt<0>(streams[0]);
-				levenberMarquardt<1>(streams[1]);
-				levenberMarquardt<2>(streams[2]);
-				levenberMarquardt<3>(streams[3]);
-				levenberMarquardt<4>(streams[4]);
-				levenberMarquardt<5>(streams[5]);
+				//TODO: LevenbergMarquardt als Kernel starten und jedem Kernel eigenen Stream zuweisen streams[0] bis streams[5]
+				levenbergMarquardt<WindowPolynom<3, 0>, 0>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<3, 1>, 1>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<3, 2>, 2>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<3, 3>, 3>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<3, 4>, 4>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<3, 5>, 5>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
 
 				/* Get result */
 				for(int i = 0; i <= 5; i++) {				

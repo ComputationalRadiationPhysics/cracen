@@ -9,6 +9,7 @@
 #include "GaussJordan.h"
 //TODO: remove Util.h
 #include "tests/Util.h"
+#include "FitFunctor.h"
 
 texture<DATATYPE, 2, cudaReadModeElementType> dataTexture0, dataTexture1, dataTexture2, dataTexture3, dataTexture4, dataTexture5;
 
@@ -40,81 +41,30 @@ template<> __device__ float getSample<5>(float I, int INDEXDATASET) {
 	return tex2D(dataTexture5, (I) + 0.5, (INDEXDATASET) + 0.5);
 }
 
-
-/* USER DEFINITIONS */
-
-const int numberOfParams      = 6;
-
-/*!
- * \brief fit function in the form 0 = f(x,y)
- */
-__device__ inline float modelFunction(float x, float y, float *param) {
-	return param[0] + param[1]*x + param[2]*x*x + param[3]*x*x*x + param[4]*x*x*x*x + param[5]*x*x*x*x*x - y;
-}
-
-/*
-	nichtriviale Ableitungen der Summanden der Fitfunktion nach dx
-	=> Konstante entfällt
-*/
-
-
-__device__ float deriv0(float x, float y, float *param) {
-	return 0;
-}
-
-__device__  float deriv1(float x, float y, float *param) {
-	return param[1];
-}
-
-__device__ float deriv2(float x, float y, float *param) {
-	return 2*param[2]*x;
-}
-
-__device__ float deriv3(float x, float y, float *param) {
-	return 3*param[3]*x*x;
-}
-
-__device__ float deriv4(float x, float y, float *param) {
-	return 4*param[4]*x*x*x;
-}
-
-__device__ float deriv5(float x, float y, float *param) {
-	return 5*param[5]*x*x*x*x;
-}
-
-typedef float (*Derivation)(float, float, float *);
-__device__ const Derivation derivations[numberOfParams] = {
-	&deriv0,
-	&deriv1,
-	&deriv2,
-	&deriv3,
-	&deriv4,
-	&deriv5
-};
-
-
-/* End User Definitions */
-
-template <unsigned int tex>
-__global__ void calcF(int wave, float* param, float* F) {
-	if(threadIdx.x*INTERPOLATION_COUNT < SAMPLE_COUNT) {
-		F[threadIdx.x] = -1*modelFunction(threadIdx.x*INTERPOLATION_COUNT,getSample<tex>(threadIdx.x*INTERPOLATION_COUNT,wave),param);
+//Fit should be a FitFunctor
+template < class Fit, unsigned int tex>
+__global__ void calcF(int wave, float* param, float* F, unsigned int offset, const unsigned int sample_count, const unsigned int interpolation_count) {
+	if(threadIdx.x*interpolation_count < sample_count) {
+		float x = threadIdx.x*interpolation_count+offset;
+		float y = getSample<tex>(x,wave);
+		F[threadIdx.x] = -1*Fit::modelFunction(x,y,param);
 	} else {
 		F[threadIdx.x] = 0;
 	}
 }
 
-template <unsigned int tex>
-__global__ void calcDerivF(int wave, float param[], float mu, float deriv_F[]) {
+//Fit should be a FitFunctor
+template <class Fit, unsigned int tex>
+__global__ void calcDerivF(int wave, float param[], float mu, float deriv_F[], const unsigned int offset, const unsigned sample_count, const unsigned int interpolation_count) {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
-	MatrixAccess<float> deriv(numberOfParams, deriv_F);
+	MatrixAccess<float> deriv(Fit::numberOfParams(), deriv_F);
 	
-	if(y < SAMPLE_COUNT/INTERPOLATION_COUNT+numberOfParams && x < numberOfParams) {
-		if(y*INTERPOLATION_COUNT < SAMPLE_COUNT) {
-			deriv[x][y] = (*derivations[x])(y*INTERPOLATION_COUNT,getSample<tex>(y*INTERPOLATION_COUNT,wave),param);
+	if(y < sample_count/interpolation_count+Fit::numberOfParams() && x < Fit::numberOfParams()) {
+		if(y*interpolation_count < sample_count) {
+			deriv[x][y] = Fit::derivation(x,y*interpolation_count+offset,getSample<tex>(y*interpolation_count+offset,wave),param);
 		} else {
-			if((y - SAMPLE_COUNT/INTERPOLATION_COUNT) == x) {
+			if((y - sample_count/interpolation_count) == x) {
 				deriv[x][y] = mu;
 			} else {
 				deriv[x][y] = 0;
@@ -128,103 +78,153 @@ float* pcast(thrust::device_vector<float>& dev) {
 	return thrust::raw_pointer_cast(&dev[0]);
 }
 
-template <unsigned int tex>
-int levenberMarquardt(cudaStream_t& stream) {
+template <class Fit>
+__global__ void getWindowKernel(int i, int sample_count, Window* window) {
+	*window = Fit::getWindow(i, sample_count);
+}
+
+template <class Fit>
+Window getWindowWrapper(int i, int sample_count) {
+	Window *device, host;
+	cudaMalloc((void**) &device, sizeof(Window));
+	getWindowKernel<Fit><<<1,1>>>(i, sample_count, device);
+	cudaMemcpy(&host, device, sizeof(Window), cudaMemcpyDeviceToHost);
+	return host;
+}
+//Fit should be a FitFunctor
+template <class Fit, unsigned int tex>
+int levenbergMarquardt(const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
 	//TODO: Convert to Kernel
 	//TODO: Waveformen Sequenziell abarbeiten (keine Taskparallelität)
-	const int sampling_points = SAMPLE_COUNT/INTERPOLATION_COUNT;
-	thrust::device_vector<float> F(sampling_points+numberOfParams), b(sampling_points+numberOfParams), s(sampling_points+numberOfParams), 
-								 deriv_F((sampling_points+numberOfParams)*numberOfParams),
-								 param(numberOfParams), param2(numberOfParams),
+	unsigned int numberOfParams = Fit::numberOfParams();
+	thrust::device_vector<float> F(max_window_size+numberOfParams), b(numberOfParams), s(numberOfParams), 
+								 deriv_F((max_window_size+numberOfParams)*numberOfParams),
+								 param(numberOfParams), param2(numberOfParams), param_old(numberOfParams),
 								 G((numberOfParams)*(numberOfParams)), G_inverse((numberOfParams)*(numberOfParams));
-	float mu = 1;
-	param[0] = 1;
-	param[1] = 1;
-	param[2] = 0.01;
-	param[3] = 0.00001;
-	param[4] = 0.0000001;
-	param[5] = 0.0000000001;		
-				
+	float mu, u1;
+	for(int i = 0; i < numberOfParams; i++) param[i] = 0;		
 					 
-	for(int i = 0; i < CHUNK_COUNT; i++) {
-		/* Abschnitt 1 */
-		//Calc F(param)
-		calcF<tex><<<1,sampling_points+numberOfParams, 0, stream>>>(i, pcast(param), pcast(F));
-		//for(int i = 0; i < sampling_points; i++) std::cout << F[i] << std::endl;
-		handleLastError();
-		//Calc F'(param)
-		dim3 blockSize(32,32);
-		dim3 gridSize(ceil((float) numberOfParams/32), ceil((float) sampling_points+numberOfParams/32));
-		calcDerivF<tex><<<gridSize,blockSize, 0, stream>>>(i, pcast(param), mu, pcast(deriv_F));
-		handleLastError();
+	for(int i = 0; i < chunk_count; i++) {
+		////std::cout << "Sample: " << i << std::endl;
+		float roh;
+		mu = 1;
+		do {
+			for(int j = 0; j < numberOfParams; j++) param_old[j] = param[j];
+			////std::cout << "param:" << std::endl;
+			//printMat(param, 1 , numberOfParams);
+			/* Abschnitt 1 */
+			//Calc F(param)
+			Window window = getWindowWrapper<Fit>(i, sample_count);
+			int sampling_points = window.width/interpolation_count;
+			calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, pcast(param), pcast(F), window.offset, sample_count, interpolation_count);
+			//for(int j = 0; j < sampling_points; j++) //std::cout << "f("<< j*interpolation_count << ")=" << F[j] << std::endl;
+			////std::cout << "F: " << std::endl;
+			//printMat(F, 1, sampling_points+numberOfParams);
+			handleLastError();
+			//Calc F'(param)
+			dim3 blockSize(32,32);
+			dim3 gridSize(ceil((float) numberOfParams/32), ceil((float) sampling_points+numberOfParams/32));
+			calcDerivF<Fit, tex><<<gridSize,blockSize>>>(i, pcast(param), mu, pcast(deriv_F), window.offset, sample_count, interpolation_count);
+			handleLastError();
 		
-		std::cout << "F': " << std::endl;
-		printMat(deriv_F, sampling_points+numberOfParams, numberOfParams);
+			////std::cout << "F': " << std::endl;
+			//printMat(deriv_F, sampling_points+numberOfParams, numberOfParams);
 		
-		/* Abschnitt 2 */
+			/* Abschnitt 2 */
 		
-		//Solve minimization problem
-		//calc A^T*A => G
-		//transpose(pcast(deriv_F), sampling_points+numberOfParams, numberOfParams);
-		//printMat(deriv_F, numberOfParams, sampling_points+numberOfParams);
-		handleLastError();
+			//Solve minimization problem
+			//calc A^T*A => G
+			transpose(pcast(deriv_F), sampling_points+numberOfParams, numberOfParams);
+			//printMat(deriv_F, numberOfParams, sampling_points+numberOfParams);
+			handleLastError();
 		
-		orthogonalMatProd(pcast(deriv_F), pcast(G), numberOfParams, sampling_points+numberOfParams);
-		handleLastError();
-		std::cout << "G: " << std::endl;
-		printMat(G, numberOfParams, numberOfParams);
+			orthogonalMatProd(pcast(deriv_F), pcast(G), numberOfParams, sampling_points+numberOfParams);
+			handleLastError();
+			////std::cout << "G: " << std::endl;
+			//printMat(G, numberOfParams, numberOfParams);
 	
-		//calc G^-1
-		gaussJordan(pcast(G), pcast(G_inverse), numberOfParams);
-		handleLastError();
-		std::cout << "G^-1: " << std::endl;
-		printMat(G_inverse, numberOfParams, numberOfParams);
+			//calc G^-1
+			gaussJordan(pcast(G), pcast(G_inverse), numberOfParams);
+			handleLastError();
+			////std::cout << "G^-1: " << std::endl;
+			//printMat(G_inverse, numberOfParams, numberOfParams);
 		
-		//calc A^T*F => b
-		matProduct(pcast(deriv_F), pcast(F), pcast(b), sampling_points+numberOfParams, sampling_points+numberOfParams, sampling_points+numberOfParams, 1);
-		handleLastError();
-	
-		//calc G^-1*b => s
-		matProduct(pcast(G_inverse), pcast(b), pcast(s), numberOfParams, numberOfParams, numberOfParams, 1);
-		handleLastError();
+			//calc A^T*F => b
+			matProduct(pcast(deriv_F), pcast(F), pcast(b), numberOfParams, sampling_points+numberOfParams, sampling_points+numberOfParams, 1);
+			handleLastError();
+			////std::cout << "b" << std::endl;
+			//printMat(b,1, numberOfParams);
+			
+			//calc G^-1*b => s
+			matProduct(pcast(G_inverse), pcast(b), pcast(s), numberOfParams, numberOfParams, numberOfParams, 1);
+			handleLastError();
+			
+			////std::cout << "s" << std::endl;
+			//printMat(s,1, numberOfParams);
+			
+			/* Abschnitt 3 */
 		
-		/* Abschnitt 3 */
+			//Fold F(param)
+			thrust::device_vector<float> Temp(1);
+			matProduct(pcast(F), pcast(F), pcast(Temp), 1, sampling_points+numberOfParams, sampling_points+numberOfParams, 1);
 		
-		//Fold F(param)
-		matProduct(pcast(F), pcast(F), pcast(F),sampling_points, 1, 1, sampling_points);
-		handleLastError();
-		float u1 = F[0];
-		std::cout << "u1=" << u1 << std::endl;
+			handleLastError();
+			u1 = Temp[0];
+			//std::cout << "u1=" << u1;
 		
-		//Calc F(param+s)
-		for(int j = 0; j < numberOfParams; j++) param2[j] = param[j] + s[j];
-		printMat(param, 1, numberOfParams);
-		printMat(s, 1, numberOfParams);
-		printMat(param2, 1, numberOfParams);
-		calcF<tex><<<1,sampling_points+numberOfParams, 0, stream>>>(i, pcast(param2), pcast(F));
-		handleLastError();
-		printMat(F, 1, sampling_points+numberOfParams);
-		//Fold F(param+s)
-		matProduct(pcast(F), pcast(F), pcast(F),sampling_points, 1, 1, sampling_points);
-		handleLastError();
-		printMat(F, 1, sampling_points+numberOfParams);
-		float u2 = F[0];
-		std::cout << "u2=" << u2 << std::endl;
+			//Calc F(param+s)
+			thrust::device_vector<float> F1(sampling_points);
+			for(int j = 0; j < numberOfParams; j++) param2[j] = param[j] + s[j];
+			//Fold F(param+s)
+			calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, pcast(param2), pcast(F1), window.offset, sample_count, interpolation_count);
+			matProduct(pcast(F1), pcast(F1), pcast(Temp),1, sampling_points, sampling_points, 1);
+			handleLastError();
+			float u2 = Temp[0];
+			//std::cout << ";u2=" << u2;
 		
-		//Calc F'(param)*s
-		matProduct(pcast(deriv_F),pcast(s), pcast(F), numberOfParams, sampling_points, 1, numberOfParams);
-		handleLastError();
-		//Fold F'(param)*s
-		matProduct(pcast(F), pcast(F), pcast(F), sampling_points, 1, 1, sampling_points);
-		handleLastError();
-		float u3 = F[0];
-		std::cout << "u3=" << u3 << std::endl;
-	
-		//calc roh
-		float roh = (u1-u2)/(u1-u3);
-		std::cout << "roh=" << roh << std::endl;
+
+			//Calc F'(param)*s
+			transpose(pcast(deriv_F), numberOfParams, sampling_points+numberOfParams);
+			matProduct(pcast(deriv_F), pcast(s), pcast(F1), sampling_points, numberOfParams, numberOfParams, 1);
+			//matProduct(pcast(deriv_F),pcast(s), pcast(F), numberOfParams, sampling_points, 1, numberOfParams);
+			handleLastError();
+			////std::cout << "F'*s" << std::endl;
+			//printMat(F1, 1, sampling_points);
+			//Calc F(param) + F'(param)*s'
+			//Fold F'(param)*s
+			for(int j = 0; j < sampling_points; j++) F1[j] = -1*F[j]+F1[j];
+			////std::cout << "F'*s+F:" << std::endl;
+			//printMat(F1, 1, sampling_points);
+			matProduct(pcast(F1), pcast(F1), pcast(Temp), 1, sampling_points, sampling_points, 1);
+			handleLastError();
+			float u3 = Temp[0];
+			//std::cout << ";u3=" << u3 << std::endl;
+		
+			//calc roh
+
+			roh = (u1-u2)/(u1-u3);
+			//std::cout << "roh=" << roh << ", mu=" << mu << std::endl;
+			//std::cout << "plot [0:1]";
+			/*
+			for(int j = 0; j < numberOfParams; j++) {
+				//std::cout << "(" << param[j] << ")" << "*x**" << i;
+				if(i != numberOfParams-1) std::cout << "+";
+			}
+			*/
+			//std::cout << std::endl;
+			if(roh <= 0.2) {
+				//s verwerfen, mu erhöhen
+				mu *= 2;
+			} else  {
+				for(int j = 0; j < numberOfParams; j++) param[j] = param[j] + s[j];
+				if( roh >= 0.8){
+					mu /= 2;
+				}
+			}
+			//std::cout << u1/(sample_count/interpolation_count) << std::endl;
+			//std::cout << "Sample: " << i << std::endl;
+		} while(u1/(sample_count/interpolation_count) > 1e-3 && mu > 1e-3);
 		//decide if s is accepted or discarded
-		
 	}
 	
 	//TODO: return 0 if everything went well

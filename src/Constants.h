@@ -31,7 +31,7 @@ const unsigned int WAVEFORM_COUNT_TESTFILE = 100000;
  * \var INTERPOLATION_COUNT
  * \brief Number of points that are averaged to on Datapoint. Higher Value decrease the resolution and increase the speed of the programm.
  */
-const unsigned int INTERPOLATION_COUNT = 100;
+const unsigned int INTERPOLATION_COUNT = 50;
 
 
 /*!

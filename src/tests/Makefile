@@ -11,6 +11,15 @@ GaussJordanTest: GaussJordanTest.cu ../GaussJordan.h Util.h
 	nvcc -arch=compute_30 -code=sm_30 -o GaussJordanTest GaussJordanTest.cu
 	./GaussJordanTest
 
+LevMarqTest: LevMarqTest.cu ../LevMarq.h ../GaussJordan.h Util.h ../UtilKernels.h
+	nvcc -arch=compute_30 -code=sm_30 -o LevMarqTest LevMarqTest.cu
+
+LapTest: LapTest.cu ../GaussJordan.h ../UtilKernels.h
+	nvcc  -arch=compute_30 -code=sm_30 -o LapTest LapTest.cu
+	./LapTest
+	
+run: LevMarqTest
+	./LevMarqTest
 	
 .PHONY: clean
 clean:

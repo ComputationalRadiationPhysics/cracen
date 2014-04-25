@@ -131,4 +131,21 @@ void transpose(T* mat, int rows, int cols) {
 	transposeKernel<<<gridSize,blockSize>>>(mat, rows, cols);
 }
 
+template <class T>
+__global__ void transposeKernel(T* mat, T* res, int rows, int cols) {
+	int x = threadIdx.x+blockIdx.x*blockDim.x;
+	int y = threadIdx.y+blockIdx.y*blockDim.y;
+	if(x < cols && y < rows) {
+		res[x*rows+y] = mat[y*cols+x];
+	}
+}
+
+template <class T>
+void transpose(T* mat, T* res, int rows, int cols) {
+	dim3 blockSize(32,32);
+	dim3 gridSize(ceil((float) cols/32),ceil((float) rows/32));
+	transposeKernel<<<gridSize,blockSize>>>(mat, res, rows, cols);
+}
+
+
 #endif

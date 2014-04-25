@@ -10,7 +10,7 @@ all: $(OBJECTS)
 Dsp.o: Dsp.cu
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Dsp.o Dsp.cu
 	
-Node.o: Node.cu Node.h LevMarq.h UtilKernels.h GaussJordan.h
+Node.o: Node.cu Node.h LevMarq.h UtilKernels.h GaussJordan.h Constants.h FitFunction.h FitFunctor.h
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Node.o Node.cu
 	
 %.o: %.cu %.h
