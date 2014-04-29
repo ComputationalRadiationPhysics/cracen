@@ -1,6 +1,6 @@
 CXX = nvcc
-CFLAGS = -g -arch=compute_30 -code=sm_30
-LFLAGS = -lpthread
+CFLAGS = -g -arch=compute_35 -code=sm_35 
+LFLAGS = -lpthread -rdc=true -lcudadevrt 
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
 
 
@@ -11,11 +11,17 @@ Dsp.o: Dsp.cu
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Dsp.o Dsp.cu
 	
 Node.o: Node.cu Node.h LevMarq.h UtilKernels.h GaussJordan.h Constants.h FitFunction.h FitFunctor.h
-	$(CXX) $(CFLAGS) $(LFLAGS) -c -o Node.o Node.cu
+	$(CXX) $(CFLAGS) $(LFLAGS) -dc -o Node.o Node.cu
 	
 %.o: %.cu %.h
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
 	
+
+.PHONY: sync
+sync: all
+	rsync -a --progress . rossendorf:~/build
+	 
+	ssh rossendorf "rsync -a --progress build/ hypnos2:~/build"
 .PHONY: run
 run: all
 	./DSP

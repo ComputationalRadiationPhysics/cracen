@@ -34,6 +34,7 @@ template <unsigned int order, unsigned int tex>
 class WindowPolynom:public Polynom<order, tex> {
 public:
 	static __device__ Window getWindow(int dataset, int sample_count) {
+		/*
 		int pos = 2;
 		float value = getSample<tex>(0,dataset)+getSample<tex>(1,dataset)+getSample<tex>(2,dataset)+getSample<tex>(3,dataset)+getSample<tex>(4,dataset);
 		float max = value/5;
@@ -52,6 +53,8 @@ public:
 			return Window(0, 100);
 		}
 		return Window(pos-50, 100);
+		*/
+		return Window(400,100);
 	}
 };
 /* End user definitions*/

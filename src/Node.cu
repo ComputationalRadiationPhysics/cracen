@@ -98,16 +98,17 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
 				tex = 0;
 				/* Start kernel */
 				//TODO: LevenbergMarquardt als Kernel starten und jedem Kernel eigenen Stream zuweisen streams[0] bis streams[5]
-				levenbergMarquardt<WindowPolynom<3, 0>, 0>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<3, 1>, 1>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<3, 2>, 2>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<3, 3>, 3>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<3, 4>, 4>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<3, 5>, 5>(SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-
+				
+				levenbergMarquardt<WindowPolynom<2, 0>, 0>(streams[0], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<2, 1>, 1>(streams[1], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<2, 2>, 2>(streams[2], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<2, 3>, 3>(streams[3], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<2, 4>, 4>(streams[4], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<2, 5>, 5>(streams[5], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				
 				/* Get result */
 				for(int i = 0; i <= 5; i++) {				
-					cudaMemcpyAsync(result[i], d_result[i], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost, streams[i]);
+					//cudaMemcpyAsync(result[i], d_result[i], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost, streams[i]);
 				}
 				for(int i = 0; i <= 5; i++) {									
 					/* Sync */
@@ -116,7 +117,7 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
 					//TODO: Start new copying and kernels here
 					for(int j = 0; j < CHUNK_COUNT; j++) {
 						if(true) { //TODO: Check for fit quality
-							oBuffer->writeFromHost(result[i][j]);
+							//oBuffer->writeFromHost(result[i][j]);
 						}
 					}				
 				}

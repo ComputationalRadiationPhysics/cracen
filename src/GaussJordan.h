@@ -53,7 +53,7 @@ __global__ void gaussJordanKernel(float* _input, float* _result, int dim) {
 }
 
 template <class T>
-void gaussJordan(T* mat, T* result, int dim) {
+__host__ __device__ void gaussJordan(T* mat, T* result, int dim) {
 	dim3 gs(1,1);
 	dim3 bs(2*dim,dim);
 	gaussJordanKernel<<<gs,bs, sizeof(float)*2*dim*dim>>>(mat, result, dim);

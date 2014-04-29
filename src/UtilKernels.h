@@ -68,7 +68,7 @@ __global__ void matProdKernel(T* left, T* right, T* result, int lrows, int lcols
 }
 
 template<class T>
-void matProduct(T* left, T* right, T* result,  int lrows, int lcols, int rrows, int rcols) {
+__host__ __device__ void matProduct(T* left, T* right, T* result,  int lrows, int lcols, int rrows, int rcols) {
 	dim3 blockSize(32,32);
 	dim3 gridSize(ceil((float) rcols/32),ceil((float) lrows/32));
 	matProdKernel<<<gridSize, blockSize>>>(left, right, result, lrows, lcols, rrows, rcols);
@@ -106,7 +106,7 @@ __global__ void orthogonalMatProdKernel(T* left, T* result, int rows, int cols) 
 }
 
 template<class T>
-void orthogonalMatProd(T* left, T* result, int rows, int cols) {
+__host__ __device__ void orthogonalMatProd(T* left, T* result, int rows, int cols) {
 	dim3 blockSize(32,32);
 	dim3 gridSize(ceil((float) rows/32),ceil((float) rows/32));
 	orthogonalMatProdKernel<<<gridSize, blockSize>>>(left, result, rows, cols);
@@ -125,7 +125,7 @@ __global__ void transposeKernel(T* mat, int rows, int cols) {
 }
 
 template <class T>
-void transpose(T* mat, int rows, int cols) {
+__host__ __device__ void transpose(T* mat, int rows, int cols) {
 	dim3 blockSize(32,32);
 	dim3 gridSize(ceil((float) cols/32),ceil((float) rows/32));
 	transposeKernel<<<gridSize,blockSize>>>(mat, rows, cols);
@@ -141,7 +141,7 @@ __global__ void transposeKernel(T* mat, T* res, int rows, int cols) {
 }
 
 template <class T>
-void transpose(T* mat, T* res, int rows, int cols) {
+__host__ __device__ void transpose(T* mat, T* res, int rows, int cols) {
 	dim3 blockSize(32,32);
 	dim3 gridSize(ceil((float) cols/32),ceil((float) rows/32));
 	transposeKernel<<<gridSize,blockSize>>>(mat, res, rows, cols);

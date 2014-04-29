@@ -1,3 +1,5 @@
+#include <thrust/device_vector.h>
+
 template <class c>
 c* pcast(thrust::device_vector<c>& dev) {
 	return thrust::raw_pointer_cast(&dev[0]);
