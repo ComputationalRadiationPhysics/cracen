@@ -10,6 +10,7 @@
 //TODO: remove Util.h
 #include "tests/Util.h"
 #include "FitFunctor.h"
+#include <ctime>
 
 texture<DATATYPE, 2, cudaReadModeElementType> dataTexture0, dataTexture1, dataTexture2, dataTexture3, dataTexture4, dataTexture5;
 
@@ -91,6 +92,7 @@ Window getWindowWrapper(int i, int sample_count) {
 	cudaMemcpy(&host, device, sizeof(Window), cudaMemcpyDeviceToHost);
 	return host;
 }
+
 //Fit should be a FitFunctor
 template <class Fit, unsigned int tex>
 int levenbergMarquardt(const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
@@ -101,6 +103,7 @@ int levenbergMarquardt(const unsigned sample_count, const unsigned int max_windo
 								 deriv_F((max_window_size+numberOfParams)*numberOfParams),
 								 param(numberOfParams), param2(numberOfParams), param_old(numberOfParams),
 								 G((numberOfParams)*(numberOfParams)), G_inverse((numberOfParams)*(numberOfParams));
+	clock_t begin, end;
 	float mu, u1;
 	for(int i = 0; i < numberOfParams; i++) param[i] = 0;		
 					 
@@ -118,7 +121,11 @@ int levenbergMarquardt(const unsigned sample_count, const unsigned int max_windo
 			//Calc F(param)
 			Window window = getWindowWrapper<Fit>(i, sample_count);
 			int sampling_points = window.width/interpolation_count;
+			begin = std::clock();
 			calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, pcast(param), pcast(F), window.offset, sample_count, interpolation_count);
+			cudaDeviceSynchronize();
+			end = std::clock();
+			std::cout << "CalcF time:" << double(end - begin) / CLOCKS_PER_SEC << std::endl;
 			//for(int j = 0; j < sampling_points; j++) //std::cout << "f("<< j*interpolation_count << ")=" << F[j] << std::endl;
 			////std::cout << "F: " << std::endl;
 			//printMat(F, 1, sampling_points+numberOfParams);
@@ -126,7 +133,11 @@ int levenbergMarquardt(const unsigned sample_count, const unsigned int max_windo
 			//Calc F'(param)
 			dim3 blockSize(32,32);
 			dim3 gridSize(ceil((float) numberOfParams/32), ceil((float) sampling_points+numberOfParams/32));
+			begin = std::clock();
 			calcDerivF<Fit, tex><<<gridSize,blockSize>>>(i, pcast(param), mu, pcast(deriv_F), window.offset, sample_count, interpolation_count);
+			cudaDeviceSynchronize();
+			end = std::clock();
+			std::cout << "DerivF time:" << double(end - begin) / CLOCKS_PER_SEC << std::endl;
 			handleLastError();
 		
 			////std::cout << "F': " << std::endl;
@@ -136,23 +147,39 @@ int levenbergMarquardt(const unsigned sample_count, const unsigned int max_windo
 		
 			//Solve minimization problem
 			//calc A^T*A => G
+			begin = std::clock();
 			transpose(pcast(deriv_F), sampling_points+numberOfParams, numberOfParams);
+			cudaDeviceSynchronize();
+			end = std::clock();
+			std::cout << "transpose time:" << double(end - begin) / CLOCKS_PER_SEC << std::endl;
 			//printMat(deriv_F, numberOfParams, sampling_points+numberOfParams);
 			handleLastError();
-		
+			
+			begin = std::clock();		
 			orthogonalMatProd(pcast(deriv_F), pcast(G), numberOfParams, sampling_points+numberOfParams);
+			cudaDeviceSynchronize();
+			end = std::clock();
+			std::cout << "orthogonalMatProd time:" << double(end - begin) / CLOCKS_PER_SEC << std::endl;
 			handleLastError();
 			////std::cout << "G: " << std::endl;
 			//printMat(G, numberOfParams, numberOfParams);
 	
 			//calc G^-1
+			begin = std::clock();
 			gaussJordan(pcast(G), pcast(G_inverse), numberOfParams);
+			cudaDeviceSynchronize();
+			end = std::clock();
+			std::cout << "gaussJordan time:" << double(end - begin) / CLOCKS_PER_SEC << std::endl;
 			handleLastError();
 			////std::cout << "G^-1: " << std::endl;
 			//printMat(G_inverse, numberOfParams, numberOfParams);
 		
 			//calc A^T*F => b
+			begin = std::clock();
 			matProduct(pcast(deriv_F), pcast(F), pcast(b), numberOfParams, sampling_points+numberOfParams, sampling_points+numberOfParams, 1);
+			cudaDeviceSynchronize();
+			end = std::clock();
+			std::cout << "calc b time:" << double(end - begin) / CLOCKS_PER_SEC << std::endl;
 			handleLastError();
 			////std::cout << "b" << std::endl;
 			//printMat(b,1, numberOfParams);
