@@ -21,6 +21,12 @@ LapTest: LapTest.cu ../GaussJordan.h ../UtilKernels.h
 run: LevMarqTest
 	./LevMarqTest
 	
+.PHONY: sync
+sync:
+	rsync -a --progress . rossendorf:~/build 
+	ssh rossendorf "rsync -a --progress build/ hypnos2:~/build"
+
+	
 .PHONY: clean
 clean:
 	@rm -f *.o

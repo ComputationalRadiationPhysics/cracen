@@ -60,17 +60,14 @@ __global__ void calcDerivF(int wave, float* param, float mu, float* deriv_F, con
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 	MatrixAccess<float> deriv(Fit::numberOfParams(), deriv_F);
 	
-	if(y < sample_count/interpolation_count+Fit::numberOfParams() && x < Fit::numberOfParams()) {
-		if(y*interpolation_count < sample_count) {
-			deriv[x][y] = Fit::derivation(x,y*interpolation_count+offset,getSample<tex>(y*interpolation_count+offset,wave),param);
-		} else {
-			if((y - sample_count/interpolation_count) == x) {
-				deriv[x][y] = mu;
-			} else {
-				deriv[x][y] = 0;
-			}
-		}
+	if(!(y < sample_count/interpolation_count+Fit::numberOfParams() && x < Fit::numberOfParams())) return;
+	if(y*interpolation_count < sample_count) {
+		deriv[x][y] = Fit::derivation(x,y*interpolation_count+offset,getSample<tex>(y*interpolation_count+offset,wave),param);
+	} else {
+		const float v = (y - sample_count/interpolation_count) == x);
+		deriv[x][y] = mu*v;
 	}
+
 }
 
 //Fit should be a FitFunctor
@@ -107,14 +104,15 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 		//Calc F(param)
 		Window window = Fit::getWindow(threadIdx.x, sample_count);
 		int sampling_points = window.width/interpolation_count;
+		/** \TODO Generischer Implementieren für >1024 Werte */
 		calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, param, F, window.offset, sample_count, interpolation_count);
 		//for(int j = 0; j < sampling_points; j++) //std::cout << "f("<< j*interpolation_count << ")=" << F[j] << std::endl;
 		////std::cout << "F: " << std::endl;
 		//printMat(F, 1, sampling_points+numberOfParams);
 		//handleLastError();
 		//Calc F'(param)
-		dim3 blockSize(32,32);
-		dim3 gridSize(ceil((float) numberOfParams/32), ceil((float) sampling_points+numberOfParams/32));
+		dim3 blockSize(32,32); /** TODO: Blocksize reduzieren */
+		dim3 gridSize(ceil((float) numberOfParams/32.f), ceil(static_cast<float>(sampling_points+numberOfParams)/32.f));
 		calcDerivF<Fit, tex><<<gridSize,blockSize>>>(i, param, mu, deriv_F, window.offset, sample_count, interpolation_count);
 		//handleLastError();
 	
@@ -125,10 +123,11 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 	
 		//Solve minimization problem
 		//calc A^T*A => G
+		/** TODO Mat Wrapper */
 		transpose(deriv_F, sampling_points+numberOfParams, numberOfParams);
 		//printMat(deriv_F, numberOfParams, sampling_points+numberOfParams);
 		//handleLastError();
-	
+		/** TODO: Blocksize reduzieren, linearisieren */
 		orthogonalMatProd(deriv_F, G, numberOfParams, sampling_points+numberOfParams);
 		//handleLastError();
 		////std::cout << "G: " << std::endl;

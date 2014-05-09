@@ -1,5 +1,5 @@
 CXX = nvcc
-CFLAGS = -g -arch=compute_35 -code=sm_35 
+CFLAGS = -g -arch=compute_35 -code=sm_35 -Xptxas=-v
 LFLAGS = -lpthread -rdc=true -lcudadevrt 
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
 
@@ -19,9 +19,9 @@ Node.o: Node.cu Node.h LevMarq.h UtilKernels.h GaussJordan.h Constants.h FitFunc
 
 .PHONY: sync
 sync: all
-	rsync -a --progress . rossendorf:~/build
-	 
+	rsync -a --progress . rossendorf:~/build 
 	ssh rossendorf "rsync -a --progress build/ hypnos2:~/build"
+
 .PHONY: run
 run: all
 	./DSP
