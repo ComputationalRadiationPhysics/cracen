@@ -1,10 +1,10 @@
 CXX = nvcc
-CFLAGS = -g -arch=compute_30 -code=sm_30
+CFLAGS = -g -arch=compute_30 -code=sm_30 -Xptxas=-v
 LFLAGS = -lpthread
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
 
 MatMulTest: MatMulTest.cu ../UtilKernels.h Util.h
-	nvcc -arch=compute_30 -code=sm_30 -o MatMulTest MatMulTest.cu
+	nvcc -arch=compute_30 -code=sm_30 -Xptxas=-v -o MatMulTest MatMulTest.cu
 	./MatMulTest
 
 GaussJordanTest: GaussJordanTest.cu ../GaussJordan.h Util.h

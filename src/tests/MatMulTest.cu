@@ -26,8 +26,9 @@ template <class T>
 
 int main(int argc, char** argv) {
     srand( ( unsigned ) time( NULL ) );
+    int h2;
+	int w1 = h2 = 10000, h1 = 3, w2= 3;
 	cudaDeviceReset();
-	int w1 = 1025, h1 = 1, w2= 1, h2 = 1025;
 	thrust::device_vector<TYPE> A(w1*h1), B(w2*h2), C(h1*w2), D(h1*w2), AT(w1*h1);
 	
 	random_mat(A,w1,h1);
@@ -51,7 +52,7 @@ int main(int argc, char** argv) {
 	std::cout << "Test Mat Prod" << std::endl;
 	bool passed = true;
 	for(int i = 0; i < h1*w2; i++) {
-		if(C[i] / D[i] > 1.0001 || C[i] / D[i] < 0.9999) {
+		if(C[i] != D[i]) {
 			std::cout << "Element " << i << " (" << C[i] << "!=" << D[i] << ") is incorrect!" << std::endl;
 			getchar();
 			passed = false;
