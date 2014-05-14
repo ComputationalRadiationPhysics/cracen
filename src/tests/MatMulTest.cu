@@ -4,6 +4,7 @@
 #include "Util.h"
 #include <cstdio>
 
+typedef int TYPE;
 template <class T>
 void cpuMatMul(thrust::device_vector<T>& A, thrust::device_vector<T>& B, thrust::device_vector<T>& C, int lcols, int lrows, int rcols, int rrows ) {
 	for ( uint32_t i = 0; i < lrows; i++ ) {
@@ -17,22 +18,27 @@ void cpuMatMul(thrust::device_vector<T>& A, thrust::device_vector<T>& B, thrust:
 
 }
 
-/* __global__ */ void gpuMatProduct(float* a, float* b, float* c, unsigned int lc, unsigned int lr, unsigned int rc, unsigned int rr) {
-	MatrixAccess<float> left(a, lc, lr), right(b, rc, rr), result(c,rc,lr);
+template <class T>
+/* __global__ */ void gpuMatProduct(T* a, T* b, T* c, unsigned int lc, unsigned int lr, unsigned int rc, unsigned int rr) {
+	MatrixAccess<TYPE> left(a, lc, lr), right(b, rc, rr), result(c,rc,lr);
 	MatMul(result, left, right);
 }
 
 int main(int argc, char** argv) {
+    srand( ( unsigned ) time( NULL ) );
 	cudaDeviceReset();
-	int w1 = 250000, h1 = 1, w2= 1, h2 = 250000;
-	thrust::device_vector<float> A(w1*h1), B(w2*h2), C(h1*w2), D(h1*w2), AT(w1*h1);
+	int w1 = 1025, h1 = 1, w2= 1, h2 = 1025;
+	thrust::device_vector<TYPE> A(w1*h1), B(w2*h2), C(h1*w2), D(h1*w2), AT(w1*h1);
 	
 	random_mat(A,w1,h1);
 	
 	random_mat(B,w2,h2);
 	
-	for(int i = 0; i < w1; i++) A[i] = i;
-	for(int i = 0; i < w1; i++) B[i] = i;
+	//for(int i = 0; i < w1; i++) A[i] = i;
+	//for(int i = 0; i < w1; i++) B[i] = i;
+	
+	//printMat(A, h1, w1);
+	//printMat(B, h2, w2);
 	
 	std::cout << "CPU Mat Prod" << std::endl;
 	cpuMatMul(A,B,D,w1,h1,w2,h2);
@@ -43,13 +49,15 @@ int main(int argc, char** argv) {
 	cudaDeviceSynchronize();
 	handleLastError();
 	std::cout << "Test Mat Prod" << std::endl;
+	bool passed = true;
 	for(int i = 0; i < h1*w2; i++) {
 		if(C[i] / D[i] > 1.0001 || C[i] / D[i] < 0.9999) {
 			std::cout << "Element " << i << " (" << C[i] << "!=" << D[i] << ") is incorrect!" << std::endl;
 			getchar();
+			passed = false;
 		}
 	}
-	
+	if(passed) std::cout << "TEST PASSED!" << std::endl;
 	/*
 	std::cout << "Test Orthogonal Product" << std::endl;
 	

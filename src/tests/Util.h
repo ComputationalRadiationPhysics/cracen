@@ -20,11 +20,9 @@ void printMat(thrust::device_vector<c>& mat, int rows, int cols) {
 template <class T>
 static inline void random_mat(thrust::device_vector<T> &matrix, int rows, int cols )
 {
-    srand( ( unsigned ) time( NULL ) );
-
     for ( int i = 0; i < rows * cols; ++i)
     {
-        matrix[ i ] = static_cast<T>(rand());// % 50 - 25;
+        matrix[ i ] = static_cast<T>(rand()) % 50 - 25;
     }
 }
 
