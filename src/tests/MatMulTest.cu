@@ -59,15 +59,15 @@ int main(int argc, char** argv) {
 		}
 	}
 	if(passed) std::cout << "TEST PASSED!" << std::endl;
-	/*
+	
 	std::cout << "Test Orthogonal Product" << std::endl;
 	
-	for(int i = 0; i < w; i++) {
-		for(int j = 0; j < h; j++) {
-			AT[i*h+j] = A[j*w+i];
+	/*
+	for(int i = 0; i < w1; i++) {
+		for(int j = 0; j < h1; j++) {
+			AT[i*h1+j] = A[j*w1+i];
 		}
 	}
-	
 	//cpuMatMul(A,AT,D,50,100,100,50);
 	//orthogonalMatProd(pcast(A), pcast(C), 50, 100);
 	cpuMatMul(A,AT,D,h,w,w,h);

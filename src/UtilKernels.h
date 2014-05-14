@@ -2,10 +2,8 @@
 #define UTILKERNELS_H
 
 #include <cstdio>
-#define DEBUG_ENABLED
 
-//#define DEVICE __device__ __forceinline__
-#define DEVICE __device__ __host__
+#define DEVICE __device__ __forceinline__
 #ifdef DEBUG_ENABLED
 #define handleLastError() handle_error( cudaGetLastError(),"Kernel Error occured:\"", __LINE__, __FILE__)
 #else
@@ -77,17 +75,28 @@ DEVICE uint2 trans(uint2& input) {
 	return make_uint2(input.y, input.x);
 }
 
-template <class T, uint2 (*AccessMode)(uint2&) = identity>
+template <class T = float, uint2 (*AccessMode)(uint2&) = identity>
 class MatrixAccess {
 private:
 	unsigned int rows, cols;
 	T* mat;
+	bool init;
 public:
 	DEVICE MatrixAccess(T* mat, unsigned int cols, unsigned int rows) : 
 		rows(rows),
 		cols(cols),
-		mat(mat)
+		mat(mat),
+		init(false)
 	{}
+	DEVICE MatrixAccess(unsigned int cols, unsigned int rows) : 
+		rows(rows),
+		cols(cols),
+		mat(new T[cols*rows]),
+		init(true)
+	{}
+	DEVICE ~MatrixAccess() {
+		if(init) delete mat;
+	}
 	DEVICE MatrixAccess<T, trans> transpose() {
 		return MatrixAccess<T, trans>(mat, cols, rows);
 	}
@@ -105,16 +114,13 @@ public:
 		return mat;
 	}
 };
-/* DEVICE */ unsigned int calcAlignment(unsigned int var) {
-	#ifdef __CUDA_CC__
-		int msb = 31 - __clz(var);
-	#else
-		int msb = 31 - __builtin_clz(var);
-	#endif
+
+DEVICE unsigned int calcAlignment(unsigned int var) {
+	int msb = 31 - __clz(var);
 	return (var == (1 << msb) ? var: 1 << msb+1);
 }
 template <class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
-/* DEVICE */ void MatMul(MatrixAccess1& result, MatrixAccess2& lhs, MatrixAccess3& rhs) {
+DEVICE void MatMul(MatrixAccess1& result, MatrixAccess2& lhs, MatrixAccess3& rhs) {
 	#ifdef DEBUG_ENABLED
 	if(lhs.getCols() != rhs.getRows() && rhs.getCols() != result.getCols() && lhs.getRows() != result.getRows()) {
 		printf("Can not multiply %ux%u with %ux%u to %ux%u matrix.\n", 
@@ -130,7 +136,7 @@ template <class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
 	bsy = min(bsy, 4);
 	gsx = rhs.getCols();
 	gsy = ceil(static_cast<float>(lhs.getRows())/bsy);
-	std::cout << "bs(" << bsx << ", " << bsy << "), gs(" << gsx << "," << gsy << ")" << std::endl;
+	//std::cout << "bs(" << bsx << ", " << bsy << "), gs(" << gsx << "," << gsy << ")" << std::endl;
 	dim3 blockSize(bsx,bsy);
 	dim3 gridSize(gsx, gsy);
 	switch(bsx) {

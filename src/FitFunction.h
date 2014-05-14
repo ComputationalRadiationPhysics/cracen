@@ -8,6 +8,7 @@
 /*!
  * \brief fit function in the form 0 = f(x,y)
  */
+const unsigned int numberOfParams = 3;
 
 template <unsigned int order, unsigned int tex>
 class Polynom:public FitFunctor<order+1, tex> {
@@ -57,6 +58,7 @@ public:
 		return Window(400,100);
 	}
 };
+
 /* End user definitions*/
 
 #endif

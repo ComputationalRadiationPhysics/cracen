@@ -24,4 +24,10 @@ public:
 	static __device__ Window getWindow(int dataset, int sample_count); // = 0;
 };
 
+template<unsigned int numberOfParams>
+struct FitData {
+	float param[FitFunction::numberOfParams()];
+	int status;
+	FitData() {}
+};
 #endif

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 	cudaStream_t stream;
 	
 	cudaStreamCreate(&stream);
-	levenbergMarquardt<Polynom<2, 0>, 0>(sample_count, 1000, 1, 50);
+	levenbergMarquardt<Polynom<2, 0>, 0>(stream, sample_count, 1000, 1, 50);
 	
 	return 0;
 }

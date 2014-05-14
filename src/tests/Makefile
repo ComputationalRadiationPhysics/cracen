@@ -1,6 +1,6 @@
 CXX = nvcc
 CFLAGS = -g -arch=compute_30 -code=sm_30 -Xptxas=-v
-LFLAGS = -lpthread
+LFLAGS = -lpthread -rdc=true -lcudadevrt 
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
 
 MatMulTest: MatMulTest.cu ../UtilKernels.h Util.h
@@ -12,7 +12,7 @@ GaussJordanTest: GaussJordanTest.cu ../GaussJordan.h Util.h
 	./GaussJordanTest
 
 LevMarqTest: LevMarqTest.cu ../LevMarq.h ../GaussJordan.h Util.h ../UtilKernels.h
-	nvcc -arch=compute_30 -code=sm_30 -o LevMarqTest LevMarqTest.cu
+	nvcc -arch=compute_35 -code=sm_35 -rdc=true -lcudadevrt  -o LevMarqTest LevMarqTest.cu
 
 LapTest: LapTest.cu ../GaussJordan.h ../UtilKernels.h
 	nvcc  -arch=compute_30 -code=sm_30 -o LapTest LapTest.cu

@@ -97,8 +97,6 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
 			if(tex == 6) {
 				tex = 0;
 				/* Start kernel */
-				//TODO: LevenbergMarquardt als Kernel starten und jedem Kernel eigenen Stream zuweisen streams[0] bis streams[5]
-				
 				levenbergMarquardt<WindowPolynom<2, 0>, 0>(streams[0], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
 				levenbergMarquardt<WindowPolynom<2, 1>, 1>(streams[1], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
 				levenbergMarquardt<WindowPolynom<2, 2>, 2>(streams[2], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);

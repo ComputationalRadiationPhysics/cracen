@@ -2,6 +2,7 @@
 
 #ifndef LEVMARQ_H
 #define LEVMARQ_H
+#define DEBUG_ENABLED
 
 #include <cstdio>
 #include "Types.h"
@@ -58,14 +59,13 @@ template <class Fit, unsigned int tex>
 __global__ void calcDerivF(int wave, float* param, float mu, float* deriv_F, const unsigned int offset, const unsigned sample_count, const unsigned int interpolation_count) {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
-	MatrixAccess<float> deriv(Fit::numberOfParams(), deriv_F);
 	
 	if(!(y < sample_count/interpolation_count+Fit::numberOfParams() && x < Fit::numberOfParams())) return;
 	if(y*interpolation_count < sample_count) {
-		deriv[x][y] = Fit::derivation(x,y*interpolation_count+offset,getSample<tex>(y*interpolation_count+offset,wave),param);
+		deriv_F[x+y*Fit::numberOfParams()] = Fit::derivation(x,y*interpolation_count+offset,getSample<tex>(y*interpolation_count+offset,wave),param);
 	} else {
-		const float v = (y - sample_count/interpolation_count) == x);
-		deriv[x][y] = mu*v;
+		const float v = ((y - sample_count/interpolation_count) == x);
+		deriv_F[x+y*Fit::numberOfParams()] = mu*v;
 	}
 
 }
@@ -74,22 +74,24 @@ __global__ void calcDerivF(int wave, float* param, float mu, float* deriv_F, con
 template <class Fit, unsigned int tex>
 __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_window_size, const unsigned int waveform, const unsigned int interpolation_count) {
 	unsigned int numberOfParams = Fit::numberOfParams();
-	//TODO: Speicher freigeben
-	float* F 		 = new float[max_window_size+numberOfParams];
-	float* b 		 = new float[numberOfParams];
-	float* s 		 = new float[numberOfParams];
-	float* deriv_F 	 = new float[(max_window_size+numberOfParams)*numberOfParams];
-	float* param	 = new float[numberOfParams];
-	float* param2	 = new float[numberOfParams];
-	float* G		 = new float[(numberOfParams)*(numberOfParams)];
-	float* G_inverse = new float[(numberOfParams)*(numberOfParams)];	
-	float* F1 		 = new float[max_window_size+numberOfParams];
-	float* u1 		 = new float;
-	float* u2 		 = new float;
-	float* u3 		 = new float;	
+	
+	MatrixAccess<> F(1, max_window_size+numberOfParams);
+	MatrixAccess<> F1(1, max_window_size+numberOfParams);
+	MatrixAccess<> b(1, numberOfParams);
+	MatrixAccess<> s(1, numberOfParams);
+	MatrixAccess<> A(numberOfParams, (max_window_size+numberOfParams));
+	MatrixAccess<float, trans> AT = A.transpose();
+	MatrixAccess<> G(numberOfParams, numberOfParams);
+	MatrixAccess<> G_inverse(numberOfParams, numberOfParams);
+	MatrixAccess<> param(1, numberOfParams);
+	MatrixAccess<> param2(1, numberOfParams);
+	MatrixAccess<> u1(1,1), u2(1,1), u3(1,1);
 	
 	float mu;
-	for(int i = 0; i < numberOfParams; i++) param[i] = 0;		
+	for(int j = 0; j < numberOfParams; j++) {
+		uint2 c = make_uint2(0,j);
+		param[c] = 0;		
+	}
 					 
 	int i = waveform;
 	////std::cout << "Sample: " << i << std::endl;
@@ -105,7 +107,7 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 		Window window = Fit::getWindow(threadIdx.x, sample_count);
 		int sampling_points = window.width/interpolation_count;
 		/** \TODO Generischer Implementieren für >1024 Werte */
-		calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, param, F, window.offset, sample_count, interpolation_count);
+		calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, param.getRawPointer(), F.getRawPointer(), window.offset, sample_count, interpolation_count);
 		//for(int j = 0; j < sampling_points; j++) //std::cout << "f("<< j*interpolation_count << ")=" << F[j] << std::endl;
 		////std::cout << "F: " << std::endl;
 		//printMat(F, 1, sampling_points+numberOfParams);
@@ -113,7 +115,7 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 		//Calc F'(param)
 		dim3 blockSize(32,32); /** TODO: Blocksize reduzieren */
 		dim3 gridSize(ceil((float) numberOfParams/32.f), ceil(static_cast<float>(sampling_points+numberOfParams)/32.f));
-		calcDerivF<Fit, tex><<<gridSize,blockSize>>>(i, param, mu, deriv_F, window.offset, sample_count, interpolation_count);
+		calcDerivF<Fit, tex><<<gridSize,blockSize>>>(i, param.getRawPointer(), mu, A.getRawPointer(), window.offset, sample_count, interpolation_count);
 		//handleLastError();
 	
 		////std::cout << "F': " << std::endl;
@@ -123,72 +125,58 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 	
 		//Solve minimization problem
 		//calc A^T*A => G
-		/** TODO Mat Wrapper */
-		transpose(deriv_F, sampling_points+numberOfParams, numberOfParams);
-		//printMat(deriv_F, numberOfParams, sampling_points+numberOfParams);
-		//handleLastError();
-		/** TODO: Blocksize reduzieren, linearisieren */
-		orthogonalMatProd(deriv_F, G, numberOfParams, sampling_points+numberOfParams);
-		//handleLastError();
-		////std::cout << "G: " << std::endl;
-		//printMat(G, numberOfParams, numberOfParams);
-
+		MatMul(G, AT, A);
 		//calc G^-1
-		gaussJordan(G, G_inverse, numberOfParams);
-		//handleLastError();
-		////std::cout << "G^-1: " << std::endl;
-		//printMat(G_inverse, numberOfParams, numberOfParams);
-	
+		gaussJordan(G_inverse, G);
+
 		//calc A^T*F => b
-		matProduct(deriv_F, F, b, numberOfParams, sampling_points+numberOfParams, sampling_points+numberOfParams, 1);
-		//handleLastError();
-		////std::cout << "b" << std::endl;
-		//printMat(b,1, numberOfParams);
+		MatMul(b, AT, F);
 		
 		//calc G^-1*b => s
-		matProduct(G_inverse, b, s, numberOfParams, numberOfParams, numberOfParams, 1);
-		//handleLastError();
-		
-		////std::cout << "s" << std::endl;
-		//printMat(s,1, numberOfParams);
+		MatMul(s, G_inverse, b);
 		
 		/* Abschnitt 3 */
 	
 		//Fold F(param)
-		matProduct(F, F, u1, 1, sampling_points+numberOfParams, sampling_points+numberOfParams, 1);
+		MatMul(u1, F, F);
 		//handleLastError();
 		//std::cout << "u1=" << u1;
 	
 		//Calc F(param+s)
 
-		for(int j = 0; j < numberOfParams; j++) param2[j] = param[j] + s[j];
+		for(int j = 0; j < numberOfParams; j++) {
+			uint2 c = make_uint2(0,j);
+			param2[c] = param[c] + s[c];
+		}
 		//Fold F(param+s)
-		calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, param2, F1, window.offset, sample_count, interpolation_count);
-		matProduct(F1, F1, u2,1, sampling_points, sampling_points, 1);
+		calcF<Fit, tex><<<1,sampling_points+numberOfParams>>>(i, param2.getRawPointer(), F1.getRawPointer(), window.offset, sample_count, interpolation_count);
+		MatMul(u2, F1, F1);
 		//handleLastError();
 		//std::cout << ";u2=" << u2;
 	
 
 		//Calc F'(param)*s
-		transpose(deriv_F, numberOfParams, sampling_points+numberOfParams);
-		matProduct(deriv_F, s, F1, sampling_points, numberOfParams, numberOfParams, 1);
+		MatMul(F1, A, s);
 
 		//handleLastError();
 		////std::cout << "F'*s" << std::endl;
 		//printMat(F1, 1, sampling_points);
 		//Calc F(param) + F'(param)*s'
 		//Fold F'(param)*s
-		for(int j = 0; j < sampling_points; j++) F1[j] = -1*F[j]+F1[j];
+		for(int j = 0; j < sampling_points; j++) {
+			uint2 c = make_uint2(0,j);
+			F1[c] = -1*F[c]+F1[c];
+		}
 		////std::cout << "F'*s+F:" << std::endl;
 		//printMat(F1, 1, sampling_points);
 
-		matProduct(F1, F1, u3, 1, sampling_points, sampling_points, 1);
+		MatMul(u3, F1, F1);
 		//handleLastError();
 		//std::cout << ";u3=" << u3 << std::endl;
 	
 		//calc roh
 
-		roh = (*u1-*u2)/(*u1-*u3);
+		roh = (u1[make_uint2(0,0)]-u2[make_uint2(0,0)])/(u1[make_uint2(0,0)]-u3[make_uint2(0,0)]);
 		//std::cout << "roh=" << roh << ", mu=" << mu << std::endl;
 		//std::cout << "plot [0:1]";
 		/*
@@ -202,7 +190,9 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 			//s verwerfen, mu erhöhen
 			mu *= 2;
 		} else  {
-			for(int j = 0; j < numberOfParams; j++) param[j] = param[j] + s[j];
+			for(uint2 j = make_uint2(0,0); j.x < numberOfParams; j.x++) {
+				param[j] = param[j] + s[j];
+			} 
 			if( roh >= 0.8){
 				mu /= 2;
 			}
@@ -211,14 +201,14 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 		//std::cout << "Sample: " << i << std::endl;
 	//decide if s is accepted or discarded
 	if(waveform == 0) {
-		for(int j = 0; j < numberOfParams; j++) {
+		for(uint2 j = make_uint2(0,0); j.x < numberOfParams; j.x++) {
 			float p = param[j];
 			printf("(%f)*x**%i",p,j);
-			if(j != numberOfParams-1) printf("+");
+			if(j.x != numberOfParams-1) printf("+");
 		}
 		printf("\n");
 	}
-	} while(*u1/(sample_count/interpolation_count) > 1e-3 && mu > 1e-3 && counter < 25);
+	} while(u1[make_uint2(0,0)]/(sample_count/interpolation_count) > 1e-3 && mu > 1e-3 && counter < 25);
 	/*	
 	for(int j = 0; j < numberOfParams; j++) {
 		float p = param[j];
@@ -227,18 +217,6 @@ __global__ void levMarqIt(const unsigned sample_count, const unsigned int max_wi
 	}
 	printf("\n");
 	*/
-	delete F;
-	delete b;
-	delete s;
-	delete deriv_F;
-	delete param;
-	delete param2;
-	delete G;
-	delete G_inverse;	
-	delete F1;
-	delete u1;
-	delete u2;
-	delete u3;	
 	
 	/*
 	if(counter >= 25) return;
@@ -255,11 +233,11 @@ __global__ void dispatch(const unsigned sample_count, const unsigned int max_win
 }
 
 template <class Fit, unsigned int tex>
-int levenbergMarquardt(cudaStream_t& stream, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
+int levenbergMarquardt(cudaStream_t& stream, fitData* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
 	dim3 gs(1,1,1);
 	dim3 bs(chunk_count,1,1);
-	printf("asd");
-	dispatch<Fit,tex><<<gs,bs, 0, stream>>>(sample_count,max_window_size,interpolation_count);
+	results = new fitData<Fit>[sample_count];
+	dispatch<Fit,tex><<<gs,bs, 0, stream>>>(results, sample_count,max_window_size,interpolation_count);
 	
 	return 0;
 }
