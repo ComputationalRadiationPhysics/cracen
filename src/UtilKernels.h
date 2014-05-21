@@ -5,7 +5,7 @@
 
 #define DEVICE __device__ __forceinline__
 #ifdef DEBUG_ENABLED
-#define handleLastError() handle_error( cudaGetLastError(),"Kernel Error occured:\"", __LINE__, __FILE__)
+#define handleLastError() cudaDeviceSynchronize(); handle_error( cudaGetLastError(),"Kernel Error occured:\"", __LINE__, __FILE__)
 #else
 #define handleLastError()
 #endif
@@ -59,7 +59,7 @@ __global__ void matProdKernel(T* left, T* right, T* result, int lrows, int lcols
 			__syncthreads();
 		}
 		//Teilergebniss in Register speichern
-		if(threadIdx.x +threadIdx.y == 0 && blockIdx.x+blockIdx.y == 0) printf("%i += %i\n", res, sleft[0][threadIdx.y]);
+		//if(threadIdx.x +threadIdx.y == 0 && blockIdx.x+blockIdx.y == 0) printf("%i += %i\n", res, sleft[0][threadIdx.y]);
 		if(threadIdx.x == 0) res += sleft[0][threadIdx.y];
 		__syncthreads();
 	}
@@ -97,17 +97,23 @@ public:
 	DEVICE ~MatrixAccess() {
 		if(init) delete mat;
 	}
+	//TODO: Transposing a matrix two times will not lead to the original matrix
 	DEVICE MatrixAccess<T, trans> transpose() {
 		return MatrixAccess<T, trans>(mat, cols, rows);
 	}
 	DEVICE T& operator[](uint2 pos) {
+		pos = AccessMode(pos);		
 		return mat[pos.y*cols+pos.x];
 	}
 	DEVICE unsigned int getRows() {
-		return rows;
+		uint2 dim = make_uint2(cols, rows);
+		dim = AccessMode(dim);
+		return dim.y;
 	}
 	DEVICE unsigned int getCols() {
-		return cols;
+		uint2 dim = make_uint2(cols, rows);
+		dim = AccessMode(dim);
+		return dim.x;
 	}
 	
 	DEVICE T* getRawPointer() {
@@ -214,4 +220,26 @@ DEVICE void MatMul(MatrixAccess1& result, MatrixAccess2& lhs, MatrixAccess3& rhs
 	}
 }
 
+template <class Mat>
+DEVICE void printMat(Mat& mat) {
+	for(int j = 0; j < mat.getRows(); j++) {
+		for(int i = 0; i < mat.getCols(); i++) {
+			printf("%f ",mat[make_uint2(i,j)]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+
+template <class Mat>
+DEVICE void printIntMat(Mat& mat) {
+	for(int j = 0; j < mat.getRows(); j++) {
+		for(int i = 0; i < mat.getCols(); i++) {
+			printf("%i ",mat[make_uint2(i,j)]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
 #endif

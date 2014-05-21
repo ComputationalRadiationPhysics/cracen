@@ -1,21 +1,24 @@
 CXX = nvcc
-CFLAGS = -g -arch=compute_30 -code=sm_30 -Xptxas=-v
+CFLAGS = -arch=compute_35 -code=sm_35 -rdc=true -lcudadevrt
 LFLAGS = -lpthread -rdc=true -lcudadevrt 
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
 
+export CPLUS_INCLUDE_PATH=
+
 MatMulTest: MatMulTest.cu ../UtilKernels.h Util.h
-	nvcc -arch=compute_30 -code=sm_30 -Xptxas=-v -o MatMulTest MatMulTest.cu
+	nvcc $(CFLAGS) -o MatMulTest MatMulTest.cu
 	./MatMulTest
 
 GaussJordanTest: GaussJordanTest.cu ../GaussJordan.h Util.h
-	nvcc -arch=compute_30 -code=sm_30 -o GaussJordanTest GaussJordanTest.cu
+	nvcc $(CFLAGS) -o GaussJordanTest GaussJordanTest.cu
 	./GaussJordanTest
 
 LevMarqTest: LevMarqTest.cu ../LevMarq.h ../GaussJordan.h Util.h ../UtilKernels.h
-	nvcc -arch=compute_35 -code=sm_35 -rdc=true -lcudadevrt  -o LevMarqTest LevMarqTest.cu
-
+	nvcc $(CFLAGS) -o LevMarqTest LevMarqTest.cu
+	./LevMarqTest
+	
 LapTest: LapTest.cu ../GaussJordan.h ../UtilKernels.h
-	nvcc  -arch=compute_30 -code=sm_30 -o LapTest LapTest.cu
+	nvcc  $(CFLAGS) -o LapTest LapTest.cu
 	./LapTest
 	
 run: LevMarqTest
@@ -31,3 +34,6 @@ sync:
 clean:
 	@rm -f *.o
 	@rm -f *~
+	@rm LevMarqTest
+	@rm GaussJordanTest
+	@rm MatMulTest

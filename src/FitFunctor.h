@@ -14,20 +14,20 @@ struct Window {
 	{}
 };
 
-template <unsigned int paramCount, unsigned int tex>
+template <unsigned int paramCount>
 class FitFunctor {
 public:
-	static inline __device__ __host__ unsigned int numberOfParams() { return paramCount;}
-	static __device__ float modelFunction(float x, float y, float* param); // = 0;
-	static __device__ float derivation(unsigned int param, float x, float y, float* params); // = 0;	
+	typedef struct {
+		int quality;
+		float params[paramCount];
+	} Output;
 	
-	static __device__ Window getWindow(int dataset, int sample_count); // = 0;
-};
-
-template<unsigned int numberOfParams>
-struct FitData {
-	float param[FitFunction::numberOfParams()];
-	int status;
-	FitData() {}
+	typedef float paramArray[paramCount];
+	
+	static DEVICE __host__ unsigned int numberOfParams() { return paramCount;}
+	static DEVICE float modelFunction(float x, float y, float* param); // = 0;
+	static DEVICE float derivation(unsigned int param, float x, float y, float* params); // = 0;	
+	
+	static DEVICE Window getWindow(int dataset, int sample_count); // = 0;
 };
 #endif

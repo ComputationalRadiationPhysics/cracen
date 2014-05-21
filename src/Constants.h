@@ -8,6 +8,7 @@
  *  \brief This File holds all configurations and constants. 
  */
 
+const unsigned int numberOfParams = 3;
 /*! \var SAMPLE_COUNT 
  *  \brief Number of samples per event */
 const unsigned int SAMPLE_COUNT = 1000;

@@ -8,31 +8,29 @@
 /*!
  * \brief fit function in the form 0 = f(x,y)
  */
-const unsigned int numberOfParams = 3;
+//const unsigned int numberOfParams = 3;
 
-template <unsigned int order, unsigned int tex>
-class Polynom:public FitFunctor<order+1, tex> {
+template <unsigned int order>
+class Polynom:public FitFunctor<order+1> {
 public:
-	static __device__ inline float modelFunction(float x, float y, float *param) {
-		//x /= 1000;
+	static DEVICE float modelFunction(float x, float y, float *param) {
 		float res = 0;
 		#pragma loop unroll
-		for(int i = 0; i < order+1; i++) res += param[i]*pow(x,i);
+		for(int i = 0; i <= order; i++) res += param[i]*pow(x,i);
 		res -= y;
 		return res;
 	}
-	static __device__ float derivation(int param, float x, float y, float *params) {
-		//x/=1000;
+	static DEVICE float derivation(int param, float x, float y, float *params) {
 		return pow(x, param);
 	}
 
-	static __device__ Window getWindow(int dataset, int sample_count) { 
-		return Window(0, sample_count-1);
+	static DEVICE Window getWindow(int dataset, int sample_count) { 
+		return Window(0, sample_count);
 	}
 };
 
-template <unsigned int order, unsigned int tex>
-class WindowPolynom:public Polynom<order, tex> {
+template <unsigned int order>
+class WindowPolynom:public Polynom<order> {
 public:
 	static __device__ Window getWindow(int dataset, int sample_count) {
 		/*

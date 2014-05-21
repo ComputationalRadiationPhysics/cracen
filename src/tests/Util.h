@@ -1,3 +1,6 @@
+#ifndef UTIL_H
+#define UTIL_H
+
 #include <thrust/device_vector.h>
 
 template <class c>
@@ -26,3 +29,4 @@ static inline void random_mat(thrust::device_vector<T> &matrix, int rows, int co
     }
 }
 
+#endif

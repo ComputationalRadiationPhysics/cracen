@@ -46,7 +46,7 @@ void Node::run() {
 	
 	//TODO: REDUCE MAGIC NUMBERS
 	std::vector<cudaArray*> texArrays;
-	std::vector<fitData*> d_result;
+	std::vector<FitData<numberOfParams>*> d_result;
 	cudaStream_t streams[6];
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<DATATYPE>();
 	for(int i = 0; i <= 5; i++) {
@@ -55,7 +55,7 @@ void Node::run() {
 		d_result.push_back(NULL);
 		cudaStreamCreate(&streams[i]);
 		cudaMallocArray(&texArrays[i], &channelDesc, SAMPLE_COUNT, CHUNK_COUNT);
-		cudaMalloc((void**)&d_result[i], sizeof(struct fitData) * SAMPLE_COUNT);	
+		cudaMalloc((void**)&d_result[i], sizeof(FitData<numberOfParams>) * SAMPLE_COUNT);	
 	}
 	cudaBindTextureToArray(dataTexture0, texArrays[0]);
 	cudaBindTextureToArray(dataTexture1, texArrays[1]);
@@ -65,7 +65,7 @@ void Node::run() {
 	cudaBindTextureToArray(dataTexture5, texArrays[5]);
 	int tex = 0;
 	while(!iBuffer->isFinished()) {
-		fitData result[6][CHUNK_COUNT];
+		FitData<numberOfParams> result[6][CHUNK_COUNT];
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
 		/* Block ringbuffer */
@@ -89,7 +89,7 @@ http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sy
              */
 			iBuffer->freeTail();
 
-			cudaMemcpyAsync(d_result[tex], result[tex], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyHostToDevice, streams[tex]);
+			//cudaMemcpyAsync(d_result[tex], result[tex], sizeof(FitData<numberOfParams>) * CHUNK_COUNT, cudaMemcpyHostToDevice, streams[tex]);
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 			
 			++tex;

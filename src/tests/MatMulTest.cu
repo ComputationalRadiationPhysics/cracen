@@ -19,15 +19,24 @@ void cpuMatMul(thrust::device_vector<T>& A, thrust::device_vector<T>& B, thrust:
 }
 
 template <class T>
-/* __global__ */ void gpuMatProduct(T* a, T* b, T* c, unsigned int lc, unsigned int lr, unsigned int rc, unsigned int rr) {
+__global__ void gpuMatProduct(T* a, T* b, T* c, unsigned int lc, unsigned int lr, unsigned int rc, unsigned int rr) {
 	MatrixAccess<TYPE> left(a, lc, lr), right(b, rc, rr), result(c,rc,lr);
+	MatMul(result, left, right);
+}
+template <class T>
+__global__ void gpuOrthogonalMatProduct(T* a, T* c, unsigned int cols, unsigned int rows) {
+	MatrixAccess<TYPE> right(a, cols, rows), result(c,cols,cols);
+	MatrixAccess<T, trans> left = right.transpose();
+	printIntMat(left);
+	printIntMat(right);
+	printf("lcols=%u, lrows%u, rcols=%u, rrows=%u\n", left.getCols(), left.getRows(), right.getCols(), right.getRows());
 	MatMul(result, left, right);
 }
 
 int main(int argc, char** argv) {
     srand( ( unsigned ) time( NULL ) );
     int h2;
-	int w1 = h2 = 10000, h1 = 3, w2= 3;
+	int w1 = h2 = 5, h1 = 3, w2= 3;
 	cudaDeviceReset();
 	thrust::device_vector<TYPE> A(w1*h1), B(w2*h2), C(h1*w2), D(h1*w2), AT(w1*h1);
 	
@@ -35,7 +44,7 @@ int main(int argc, char** argv) {
 	
 	random_mat(B,w2,h2);
 	
-	//for(int i = 0; i < w1; i++) A[i] = i;
+	for(int i = 0; i < w1*h1; i++) A[i] = i;
 	//for(int i = 0; i < w1; i++) B[i] = i;
 	
 	//printMat(A, h1, w1);
@@ -45,7 +54,7 @@ int main(int argc, char** argv) {
 	cpuMatMul(A,B,D,w1,h1,w2,h2);
 	
 	std::cout << "GPU Mat Prod" << std::endl;
-	gpuMatProduct(pcast(A), pcast(B), pcast(C), w1,h1,w2,h2);
+	gpuMatProduct<<<1,1>>>(pcast(A), pcast(B), pcast(C), w1,h1,w2,h2);
 	
 	cudaDeviceSynchronize();
 	handleLastError();
@@ -62,31 +71,31 @@ int main(int argc, char** argv) {
 	
 	std::cout << "Test Orthogonal Product" << std::endl;
 	
-	/*
+	
+	thrust::device_vector<TYPE> C2(w1*w1), D2(w1*w1);
 	for(int i = 0; i < w1; i++) {
 		for(int j = 0; j < h1; j++) {
 			AT[i*h1+j] = A[j*w1+i];
 		}
 	}
-	//cpuMatMul(A,AT,D,50,100,100,50);
-	//orthogonalMatProd(pcast(A), pcast(C), 50, 100);
-	cpuMatMul(A,AT,D,h,w,w,h);
-	
-	handleLastError();
-	orthogonalMatProd(pcast(A), pcast(C), h, w);
+	cpuMatMul(AT,A,D2,h1,w1,w1,h1);	
+	gpuOrthogonalMatProduct<<<1,1>>>(pcast(A), pcast(C2), w1, h1);
 	handleLastError();
 	
-	std::cout << "Test Mat Prod" << std::endl;
-	for(int i = 0; i < h*w; i++) {
-		if(C[i]!=D[i]) {
-			std::cout << "Element " << i << " (" << C[i] << "!=" << D[i] << ") is incorrect!" << std::endl;
+	std::cout << "Test Orthogonal Mat Prod" << std::endl;
+	passed = true;
+	for(int i = 0; i < h1*w2; i++) {
+		if(C2[i] != D2[i]) {
+			std::cout << "Element " << i << " (" << C2[i] << "!=" << D2[i] << ") is incorrect!" << std::endl;
 			getchar();
+			passed = false;
 		}
 	}
-	*/
-	//printMat(A, h, w);
-	//printMat(AT, w, h);
-	//printMat(C, h, h);
-	//printMat(D, h, h);
+	if(passed) std::cout << "TEST PASSED!" << std::endl;
+	printMat(A, h1, w1);
+	printMat(AT, w1, h1);
+	printMat(C2, w1, w1);
+	printMat(D2, w1, w1);
+	
 	return 0;
 }
