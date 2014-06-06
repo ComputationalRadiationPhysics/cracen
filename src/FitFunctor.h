@@ -23,11 +23,11 @@ public:
 	} Output;
 	
 	typedef float paramArray[paramCount];
+	const static unsigned int numberOfParams = paramCount;
 	
-	static DEVICE __host__ unsigned int numberOfParams() { return paramCount;}
 	static DEVICE float modelFunction(float x, float y, float* param); // = 0;
 	static DEVICE float derivation(unsigned int param, float x, float y, float* params); // = 0;	
 	
-	static DEVICE Window getWindow(int dataset, int sample_count); // = 0;
+	static DEVICE Window getWindow(cudaTextureObject_t texObj, int dataset, int sample_count); // = 0;
 };
 #endif

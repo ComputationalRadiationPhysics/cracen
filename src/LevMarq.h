@@ -26,7 +26,7 @@ template <class Fit>
 __global__ void calcF(cudaTextureObject_t texObj, int wave, float* param, float* F, unsigned int offset, const unsigned int sample_count, const unsigned int interpolation_count) {
 	if(threadIdx.x*interpolation_count < sample_count) {
 		float x = threadIdx.x*interpolation_count+offset;
-		float y = getSample(texObj,x,wave);
+		float y = getSample(texObj,x+0.5,wave);
 		F[threadIdx.x] = -1*Fit::modelFunction(x,y,param);
 	} else {
 		F[threadIdx.x] = 0;
@@ -38,19 +38,19 @@ __global__ void calcDerivF(cudaTextureObject_t texObj, int wave, float* param, f
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	if(!(y < sample_count/interpolation_count+Fit::numberOfParams() && x < Fit::numberOfParams())) return;
+	if(!(y < sample_count/interpolation_count+Fit::numberOfParams && x < Fit::numberOfParams)) return;
 	if(y*interpolation_count < sample_count) {
-		deriv_F[x+y*Fit::numberOfParams()] = Fit::derivation(x,y*interpolation_count+offset,getSample(texObj, y*interpolation_count+offset,wave),param);
+		deriv_F[x+y*Fit::numberOfParams] = Fit::derivation(x,y*interpolation_count+offset,getSample(texObj, y*interpolation_count+offset,wave),param);
 	} else {
 		const float v = ((y - sample_count/interpolation_count) == x);
-		deriv_F[x+y*Fit::numberOfParams()] = mu*v;
+		deriv_F[x+y*Fit::numberOfParams] = mu*v;
 	}
 
 }
 
 template <class Fit>
-__global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_count, const unsigned int max_window_size, const unsigned int waveform, const unsigned int interpolation_count) {
-	unsigned int numberOfParams = Fit::numberOfParams();
+__global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int waveform, const unsigned int interpolation_count) {
+	const unsigned int numberOfParams = Fit::numberOfParams;
 
 	MatrixAccess<> F(1, max_window_size+numberOfParams);
 	MatrixAccess<> F1(1, max_window_size+numberOfParams);
@@ -63,6 +63,8 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_coun
 	MatrixAccess<> param(1, numberOfParams);
 	MatrixAccess<> param2(1, numberOfParams);
 	MatrixAccess<> u1(1,1), u2(1,1), u3(1,1);
+	MatrixAccess<float, trans> FT = F.transpose();
+	MatrixAccess<float, trans> F1T = F1.transpose();
 
 	float mu;
 	for(uint2 j = make_uint2(0,0); j.y < numberOfParams; j.y++) {
@@ -70,24 +72,21 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_coun
 	}
 					 
 	int i = waveform;
-	////std::cout << "Sample: " << i << std::endl;
 	float roh;
 	mu = 1;
 	int counter = 0;
 	do {
 		counter++;
-		////std::cout << "param:" << std::endl;
-		//printMat(param, 1 , numberOfParams);
 		/* Abschnitt 1 */
 		//Calc F(param)
-		Window window = Fit::getWindow(threadIdx.x, sample_count);
+		Window window = Fit::getWindow(texObj, threadIdx.x, sample_count);
 		int sampling_points = window.width/interpolation_count;
 		/** \TODO Generischer Implementieren für >1024 Werte */
 		dim3 gs(1,1);
 		dim3 bs(sampling_points+numberOfParams,1);
 		calcF<Fit><<<gs,bs>>>(texObj, i, param.getRawPointer(), F.getRawPointer(), window.offset, sample_count, interpolation_count);
-		printf("F:\n");
-		printMat(F);
+		//printf("F:\n");
+		//printMat(F);
 		//for(int j = 0; j < sampling_points; j++) //std::cout << "f("<< j*interpolation_count << ")=" << F[j] << std::endl;
 		////std::cout << "F: " << std::endl;
 		//printMat(F, 1, sampling_points+numberOfParams);
@@ -121,14 +120,14 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_coun
 		
 		//calc G^-1*b => s
 		MatMul(s, G_inverse, b);
-		printf("s:\n");
-		printMat(s);
+		//printf("s:\n");
+		//printMat(s);
 		/* Abschnitt 3 */
 
 		//Fold F(param)
-		MatrixAccess<float, trans> FT = F.transpose();
 		MatMul(u1, FT, F);
-
+		
+		//printMat(u1);
 		//Calc F(param+s)
 		for(int j = 0; j < numberOfParams; j++) {
 			uint2 c = make_uint2(0,j);
@@ -136,7 +135,6 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_coun
 		}
 		
 		//Fold F(param+s)
-		MatrixAccess<float, trans> F1T = F1.transpose();
 		calcF<Fit><<<1,sampling_points+numberOfParams>>>(texObj, i, param2.getRawPointer(), F1.getRawPointer(), window.offset, sample_count, interpolation_count);
 		MatMul(u2, F1T, F1);
 
@@ -152,17 +150,17 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_coun
 		MatMul(u3, F1T, F1);
 
 		//calc roh
-		printMat(u1);
-		printf("u1=%f, u2=%f, u3=%f\n", u1[make_uint2(0,0)], u2[make_uint2(0,0)], u3[make_uint2(0,0)]);
+		//printMat(u1);
+		//printf("u1=%f, u2=%f, u3=%f\n", u1[make_uint2(0,0)], u2[make_uint2(0,0)], u3[make_uint2(0,0)]);
 		roh = (u1[make_uint2(0,0)]-u2[make_uint2(0,0)])/(u1[make_uint2(0,0)]-u3[make_uint2(0,0)]);
-		printf("roh=%f, mu=%f\n", roh, mu);
+		//printf("roh=%f, mu=%f\n", roh, mu);
 		/*
 		for(uint2 j = make_uint2(0,0); j.y < numberOfParams; j.y++) {
 			float p = param[j];
 			printf("(%f)*x**%i",p,j.y);
 			if(j.y != numberOfParams-1) printf("+");
 		}
-		printf("\n");
+		//printf("\n");
 		*/
 		//std::cout << std::endl;
 		//decide if s is accepted or discarded
@@ -177,33 +175,45 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, const unsigned sample_coun
 				mu /= 2;
 			}
 		}
-		printf("param:\n");
-		printMat(param);		
+		//printf("param:\n");
+		//printMat(param);		
 	} while(u1[make_uint2(0,0)]/(sample_count/interpolation_count) > 1e-5 && mu > 1e-5 && counter < 25);
-
+	
 	for(uint2 j = make_uint2(0,0); j.y < numberOfParams; j.y++) {
 		float p = param[j];
-		printf("(%f)*x**%i",p,j.y);
-		if(j.y != numberOfParams-1) printf("+");
+		results[waveform].param[j.y] = p;
 	}
-	printf("\n");
+	
+	F.finalize();
+	F1.finalize();
+	b.finalize();
+	s.finalize();
+	A.finalize();
+	G.finalize();
+	G_inverse.finalize();
+	param.finalize();
+	param2.finalize();
+	u1.finalize();
+	u2.finalize();
+	u3.finalize();
+
 	return;
 }
 
 template <class Fit>
-__global__ void dispatch(cudaTextureObject_t texObj, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
+__global__ void dispatch(cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
 	//Start Levenberg Marquard algorithm on a single date
-	printf("Dispatch %i\n", threadIdx.x);
-	levMarqIt<Fit><<<1,1>>>(texObj, sample_count, max_window_size, threadIdx.x, interpolation_count);
+	//printf("Dispatch %i\n", threadIdx.x);
+	levMarqIt<Fit><<<1,1>>>(texObj, results, sample_count, max_window_size, threadIdx.x, interpolation_count);
 }
 
 template <class Fit>
-int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
+int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
 	dim3 gs(1,1);
 	dim3 bs(chunk_count,1);
-	printf("LevMarq %i\n", chunk_count);
+	//printf("LevMarq %i\n", chunk_count);
 	//FitData<numberOfParams>* results = new FitData<numberOfParams>[sample_count];
-	dispatch<Fit><<<gs,bs, 0, stream>>>(texObj, sample_count,max_window_size,interpolation_count);
+	dispatch<Fit><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count);
 	handleLastError();
 	return 0;
 }

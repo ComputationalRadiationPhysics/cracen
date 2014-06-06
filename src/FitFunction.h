@@ -16,7 +16,10 @@ public:
 	static DEVICE float modelFunction(float x, float y, float *param) {
 		float res = 0;
 		#pragma loop unroll
-		for(int i = 0; i <= order; i++) res += param[i]*pow(x,i);
+		for(int i = 0; i <= order; i++) {
+			if(i%2 == 0) res += param[i]*pow(x,i);
+			else		 res += param[i]*x*pow(x,i-1);		
+		}
 		res -= y;
 		return res;
 	}
@@ -24,22 +27,25 @@ public:
 		return pow(x, param);
 	}
 
-	static DEVICE Window getWindow(int dataset, int sample_count) { 
+	static DEVICE Window getWindow(cudaTextureObject_t texObj, int dataset, int sample_count) {
 		return Window(0, sample_count);
 	}
 };
 
 template <unsigned int order>
 class WindowPolynom:public Polynom<order> {
+private:
+	static DEVICE float getSample(cudaTextureObject_t texObj, float I, int INDEXDATASET) {
+		return tex2D<float>(texObj, I, INDEXDATASET);
+	}
 public:
-	static __device__ Window getWindow(int dataset, int sample_count) {
-		/*
+	static DEVICE Window getWindow(cudaTextureObject_t texObj, int dataset, int sample_count) {
 		int pos = 2;
-		float value = getSample<tex>(0,dataset)+getSample<tex>(1,dataset)+getSample<tex>(2,dataset)+getSample<tex>(3,dataset)+getSample<tex>(4,dataset);
+		float value = getSample(texObj, 0,dataset)+getSample(texObj, 1,dataset)+getSample(texObj, 2,dataset)+getSample(texObj, 3,dataset)+getSample(texObj, 4,dataset);
 		float max = value/5;
 		for(int i = 3; i < sample_count-2; i++) {
-			value += getSample<tex>(i+2,dataset);
-			value -= getSample<tex>(i-2,dataset);
+			value += getSample(texObj, i+2,dataset);
+			value -= getSample(texObj, i-2,dataset);
 			if(value/5 > max) {
 				max = value/5;
 				pos = i;
@@ -52,8 +58,6 @@ public:
 			return Window(0, 100);
 		}
 		return Window(pos-50, 100);
-		*/
-		return Window(400,100);
 	}
 };
 

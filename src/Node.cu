@@ -22,118 +22,90 @@ void Node::run() {
 	*/
 	/* Initialise device */
 	cudaSetDevice(deviceIdentifier);
-	std::cout << "Device " << deviceIdentifier << " initialised." << std::endl;
 	
-	/* Set texture parameter */
-	dataTexture0.filterMode=FILTER_MODE;
-	dataTexture0.addressMode[0] = cudaAddressModeClamp;
-	dataTexture0.addressMode[1] = cudaAddressModeClamp;
-	dataTexture1.filterMode=FILTER_MODE;
-	dataTexture1.addressMode[0] = cudaAddressModeClamp;
-	dataTexture1.addressMode[1] = cudaAddressModeClamp;
-	dataTexture2.filterMode=FILTER_MODE;
-	dataTexture2.addressMode[0] = cudaAddressModeClamp;
-	dataTexture2.addressMode[1] = cudaAddressModeClamp;
-	dataTexture3.filterMode=FILTER_MODE;
-	dataTexture3.addressMode[0] = cudaAddressModeClamp;
-	dataTexture3.addressMode[1] = cudaAddressModeClamp;
-	dataTexture4.filterMode=FILTER_MODE;
-	dataTexture4.addressMode[0] = cudaAddressModeClamp;
-	dataTexture4.addressMode[1] = cudaAddressModeClamp;
-	dataTexture5.filterMode=FILTER_MODE;
-	dataTexture5.addressMode[0] = cudaAddressModeClamp;
-	dataTexture5.addressMode[1] = cudaAddressModeClamp;
+	cudaTextureObject_t texObj[numberOfTextures];
+	cudaStream_t streams[numberOfTextures];
+	cudaArray_t texArrays[numberOfTextures];
+	bool textureEmpty[numberOfTextures];
 	
-	//TODO: REDUCE MAGIC NUMBERS
-	std::vector<cudaArray*> texArrays;
-	std::vector<FitData<numberOfParams>*> d_result;
-	cudaStream_t streams[6];
-	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<DATATYPE>();
-	for(int i = 0; i <= 5; i++) {
-		/* Allocate memory */
-		texArrays.push_back(NULL);
-		d_result.push_back(NULL);
-		cudaStreamCreate(&streams[i]);
+	// Specify texture object parameters
+	cudaTextureDesc texDesc;
+	memset(&texDesc, 0, sizeof(texDesc));
+	texDesc.addressMode[0]   = cudaAddressModeClamp;
+	texDesc.addressMode[1]   = cudaAddressModeClamp;
+	texDesc.filterMode       = cudaFilterModeLinear;
+	texDesc.readMode         = cudaReadModeElementType;
+	texDesc.normalizedCoords = 0;
+	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
+	FitData<3> results[CHUNK_COUNT];
+	typedef FitData<3> FitDataArray[numberOfTextures][CHUNK_COUNT];
+	FitData<3> *fitData;
+	cudaMalloc((void**)(&fitData), sizeof(FitDataArray));
+	#pragma loop unroll
+	for(unsigned int i = 0; i < numberOfTextures; i++) {
+		cudaStreamCreateWithFlags(&streams[i], cudaStreamNonBlocking);
 		cudaMallocArray(&texArrays[i], &channelDesc, SAMPLE_COUNT, CHUNK_COUNT);
-		cudaMalloc((void**)&d_result[i], sizeof(FitData<numberOfParams>) * SAMPLE_COUNT);	
+
+		// Specify texture
+		cudaResourceDesc resDesc;
+		memset(&resDesc, 0, sizeof(resDesc));
+		resDesc.resType = cudaResourceTypeArray;
+		resDesc.res.array.array = texArrays[i];
+
+		// Create texture object
+		cudaCreateTextureObject(&texObj[i], &resDesc, &texDesc, NULL);
+		textureEmpty[i] = true;
 	}
-	cudaBindTextureToArray(dataTexture0, texArrays[0]);
-	cudaBindTextureToArray(dataTexture1, texArrays[1]);
-	cudaBindTextureToArray(dataTexture2, texArrays[2]);
-	cudaBindTextureToArray(dataTexture3, texArrays[3]);
-	cudaBindTextureToArray(dataTexture4, texArrays[4]);
-	cudaBindTextureToArray(dataTexture5, texArrays[5]);
+	std::cout << "Device " << deviceIdentifier << " initialised." << std::endl;
 	int tex = 0;
-	while(!iBuffer->isFinished()) {
-		FitData<numberOfParams> result[6][CHUNK_COUNT];
-		
-		/* Take a chunk from ringbuffer and copy to GPU */
-		/* Block ringbuffer */
-		Chunk *c = iBuffer->reserveTailTry();
-		/* Copy to device */
-
-		if(c != NULL) {
-			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &c->front(), 
-                                   sizeof(DATATYPE) * c->size(), 
-                                   cudaMemcpyHostToDevice, streams[tex]);
-			/* Free ringbuffer 
-               This is possible because at the moment we use pageable (non-pinnend)
-               host memory for the ringbuffer.
-               In this case cudaMemcpy...Async will first copy data to a staging 
-               buffer and then return. Only copying from staging buffer to final 
-               destination is asynchronous.
-               Should we switch to pinnend host memory for the ringbuffer we must
-               not call iBuffer->freeTail() directly after cudaMemcpy..Async.
-               See 
-http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
-             */
-			iBuffer->freeTail();
-
-			//cudaMemcpyAsync(d_result[tex], result[tex], sizeof(FitData<numberOfParams>) * CHUNK_COUNT, cudaMemcpyHostToDevice, streams[tex]);
-			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-			
-			++tex;
-			/* 6 Chucks are copied to the GPU */
-			if(tex == 6) {
-				tex = 0;
-				/* Start kernel */
-				levenbergMarquardt<WindowPolynom<2, 0>, 0>(streams[0], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<2, 1>, 1>(streams[1], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<2, 2>, 2>(streams[2], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<2, 3>, 3>(streams[3], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<2, 4>, 4>(streams[4], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<2, 5>, 5>(streams[5], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
-				
-				/* Get result */
-				for(int i = 0; i <= 5; i++) {				
-					//cudaMemcpyAsync(result[i], d_result[i], sizeof(struct fitData) * CHUNK_COUNT, cudaMemcpyDeviceToHost, streams[i]);
-				}
-				for(int i = 0; i <= 5; i++) {									
-					/* Sync */
-					cudaStreamSynchronize(streams[i]);
-					/* Push result to output buffer */
-					//TODO: Start new copying and kernels here
-					for(int j = 0; j < CHUNK_COUNT; j++) {
-						if(true) { //TODO: Check for fit quality
-							//oBuffer->writeFromHost(result[i][j]);
-						}
-					}				
-				}
-			}	
+	unsigned int lastTexture = 0;
+	while(!iBuffer->isFinished() || !textureEmpty[lastTexture]) {
+		/* copy results back */
+		if(!textureEmpty[tex]) {
+			cudaStreamSynchronize(streams[tex]);
+			//cudaMemcpyAsync(results, fitData[tex], sizeof(results), cudaMemcpyDeviceToHost, streams[tex]);
+			cudaMemcpy(results, &fitData[tex*CHUNK_COUNT], sizeof(results), cudaMemcpyDeviceToHost);
+			for(int i = 0; i < CHUNK_COUNT; i++) {
+				std::cout << results[i].param[2] << "x²+" << results[i].param[1] << "x+" << results[i].param[0]<< std::endl;
+			}
+			textureEmpty[tex] = true;
+		}
+		//TODO: Racecondition
+		if(!iBuffer->isFinished()) {
+			/* Take a chunk from ringbuffer and copy to GPU */
+			/* Block ringbuffer */
+			Chunk *c = iBuffer->reserveTailTry();
+			/* Copy to device */
+			if(c != NULL) {
+				cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &c->front(), 
+		                               sizeof(DATATYPE) * c->size(), 
+		                               cudaMemcpyHostToDevice, streams[tex]);
+	  			/* Free ringbuffer 
+		           This is possible because at the moment we use pageable (non-pinnend)
+		           host memory for the ringbuffer.
+		           In this case cudaMemcpy...Async will first copy data to a staging 
+		           buffer and then return. Only copying from staging buffer to final 
+		           destination is asynchronous.
+		           Should we switch to pinnend host memory for the ringbuffer we must
+		           not call iBuffer->freeTail() directly after cudaMemcpy..Async.
+		           See 
+				   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
+		         */
+				iBuffer->freeTail();
+				std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
+				//levenbergMarquardt<Polynom<5> >(streams[tex], texObj[tex], SAMPLE_COUNT, SAMPLE_COUNT/INTERPOLATION_COUNT, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<WindowPolynom<2> >(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				lastTexture = tex;
+				tex = (tex+1)%numberOfTextures;
+				textureEmpty[tex] = false;
+			}
 		}
 	}
-	cudaUnbindTexture(dataTexture0);
-	cudaUnbindTexture(dataTexture1);
-	cudaUnbindTexture(dataTexture2);
-	cudaUnbindTexture(dataTexture3);
-	cudaUnbindTexture(dataTexture4);
-	cudaUnbindTexture(dataTexture5);
-	
-	for(int i = 0; i <= 5; i++) {
+	for(unsigned int i = 0; i < numberOfTextures; i++) {
+		cudaDestroyTextureObject(texObj[i]);
 		cudaFreeArray(texArrays[i]);
-		cudaFree(d_result[i]);
 		cudaStreamDestroy(streams[i]);
 	}
-
+	cudaFree(fitData);
 	oBuffer->producerQuit();
 }

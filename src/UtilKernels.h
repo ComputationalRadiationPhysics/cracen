@@ -13,60 +13,6 @@ void handle_error(cudaError_t err, const char* error, int line, const char* file
 	if(err != cudaSuccess) std::cerr << error << cudaGetErrorString(err) << "\" in Line " << line << " in File " << file << std::endl;
 }
 
-template<unsigned int blockSize, class T>
-__global__ void matProdKernel(T* left, T* right, T* result, int lrows, int lcols, int rrows, int rcols) {
-	//BS Blockdim.x maximal, Blockdim.y = 1;
-	__shared__ T sright[4*blockSize];
-	__shared__ T sleft[2*blockSize][4];
-	T res = 0;
-	int y = threadIdx.y+blockDim.y*blockIdx.y;
-	
-	for(int blocks = 0; blockDim.x*4*blocks < lcols; blocks++) {
-		int x = threadIdx.x+blockDim.x*4*blocks;
-
-		//Spalte der rechten Matrix in shared Mem laden
-		if(threadIdx.y == 0) {
-			sright[threadIdx.x] = right[blockIdx.x+x*rcols];
-			sright[threadIdx.x+blockDim.x] = right[blockIdx.x+(x+blockDim.x)*rcols];
-			sright[threadIdx.x+2*blockDim.x] = right[blockIdx.x+(x+2*blockDim.x)*rcols];
-			sright[threadIdx.x+3*blockDim.x] = right[blockIdx.x+(x+3*blockDim.x)*rcols];
-		}
-		__syncthreads();
-		
-		//Block der linken Matrix in shared Mem laden
-		if(x+blockDim.x < lcols) {
-			sleft[threadIdx.x][threadIdx.y]	= (left[x+y*lcols]*sright[threadIdx.x]
-											  +left[x+blockDim.x+y*lcols]*sright[threadIdx.x+blockDim.x]);
-		} else if(x < lcols) {
-			sleft[threadIdx.x][threadIdx.y] = left[x+y*lcols]*sright[threadIdx.x]+left[x+blockDim.x+y*lcols];
-		} else {
-			sleft[threadIdx.x][threadIdx.y] = 0;
-		}
-		
-		if(x+3*blockDim.x < lcols) {
-			sleft[threadIdx.x+blockDim.x][threadIdx.y] = (left[x+2*blockDim.x+y*lcols]*sright[threadIdx.x+2*blockDim.x]
-														 +left[x+3*blockDim.x+y*lcols]*sright[threadIdx.x+3*blockDim.x]);
-		} else if (x+2*blockDim.x < lcols) {
-			sleft[threadIdx.x+blockDim.x][threadIdx.y] = left[x+2*blockDim.x+y*lcols]*sright[threadIdx.x+2*blockDim.x];
-		} else {
-			sleft[threadIdx.x+blockDim.x][threadIdx.y] = 0;
-		}
-		__syncthreads();
-		
-		//Vektor folden
-		for(int i = blockDim.x; i >= 1; i>>=1) {
-			if(threadIdx.x < i) sleft[threadIdx.x][threadIdx.y] += sleft[threadIdx.x+i][threadIdx.y];
-			__syncthreads();
-		}
-		//Teilergebniss in Register speichern
-		//if(threadIdx.x +threadIdx.y == 0 && blockIdx.x+blockIdx.y == 0) printf("%i += %i\n", res, sleft[0][threadIdx.y]);
-		if(threadIdx.x == 0) res += sleft[0][threadIdx.y];
-		__syncthreads();
-	}
-	if(threadIdx.x == 0) result[blockIdx.x + y*rcols] = res;
-	//Register in Ergebniss Matrix schreiben
-}
-
 DEVICE uint2 identity(uint2& input) {
 	return input;
 }
@@ -80,22 +26,23 @@ class MatrixAccess {
 private:
 	unsigned int rows, cols;
 	T* mat;
-	bool init;
 public:
+	typedef T Type;
 	DEVICE MatrixAccess(T* mat, unsigned int cols, unsigned int rows) : 
 		rows(rows),
 		cols(cols),
-		mat(mat),
-		init(false)
+		mat(mat)
 	{}
 	DEVICE MatrixAccess(unsigned int cols, unsigned int rows) : 
 		rows(rows),
 		cols(cols),
-		mat(new T[cols*rows]),
-		init(true)
+		mat(new T[cols*rows])
 	{}
-	DEVICE ~MatrixAccess() {
-		if(init) delete mat;
+	DEVICE MatrixAccess<T, AccessMode> copy() {
+		return MatrixAccess<T, AccessMode>(mat, cols, rows);
+	}
+	DEVICE void finalize() {
+		delete mat;
 	}
 	//TODO: Transposing a matrix two times will not lead to the original matrix
 	DEVICE MatrixAccess<T, trans> transpose() {
@@ -120,6 +67,62 @@ public:
 		return mat;
 	}
 };
+
+template<unsigned int blockSize, class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
+__global__ void matProdKernel(MatrixAccess1 left, MatrixAccess2 right, MatrixAccess3 result) {
+	//BS Blockdim.x maximal, Blockdim.y = 1;
+	__shared__ typename MatrixAccess1::Type sright[4*blockSize];
+	__shared__ typename MatrixAccess1::Type sleft[2*blockSize][4];
+	
+	typename MatrixAccess1::Type res = 0;
+	
+	int y = threadIdx.y+blockDim.y*blockIdx.y;
+	
+	for(int blocks = 0; blockDim.x*4*blocks < left.getCols(); blocks++) {
+		int x = threadIdx.x+blockDim.x*4*blocks;
+
+		//Spalte der rechten Matrix in shared Mem laden
+		if(threadIdx.y == 0) {
+			sright[threadIdx.x] = right[make_uint2(blockIdx.x,x)];
+			sright[threadIdx.x+blockDim.x] = right[make_uint2(blockIdx.x,x+blockDim.x)];
+			sright[threadIdx.x+2*blockDim.x] = right[make_uint2(blockIdx.x,2*blockDim.x)];
+			sright[threadIdx.x+3*blockDim.x] = right[make_uint2(blockIdx.x,3*blockDim.x)];
+		}
+		__syncthreads();
+		
+		//Block der linken Matrix in shared Mem laden
+		if(x+blockDim.x < left.getCols()) {
+			sleft[threadIdx.x][threadIdx.y]	= (left[make_uint2(x,y)]*sright[threadIdx.x]
+											  +left[make_uint2(x+blockDim.x,y)]*sright[threadIdx.x+blockDim.x]);
+		} else if(x < left.getCols()) {
+			sleft[threadIdx.x][threadIdx.y] = left[make_uint2(x,y)]*sright[threadIdx.x]+left[make_uint2(x+blockDim.x,y)];
+		} else {
+			sleft[threadIdx.x][threadIdx.y] = 0;
+		}
+		
+		if(x+3*blockDim.x < left.getCols()) {
+			sleft[threadIdx.x+blockDim.x][threadIdx.y] = (left[make_uint2(x+2*blockDim.x,y)]*sright[threadIdx.x+2*blockDim.x]
+														 +left[make_uint2(x+3*blockDim.x,y)]*sright[threadIdx.x+3*blockDim.x]);
+		} else if (x+2*blockDim.x < left.getCols()) {
+			sleft[threadIdx.x+blockDim.x][threadIdx.y] = left[make_uint2(x+2*blockDim.x,y)]*sright[threadIdx.x+2*blockDim.x];
+		} else {
+			sleft[threadIdx.x+blockDim.x][threadIdx.y] = 0;
+		}
+		__syncthreads();
+		
+		//Vektor folden
+		for(int i = blockDim.x; i >= 1; i>>=1) {
+			if(threadIdx.x < i) sleft[threadIdx.x][threadIdx.y] += sleft[threadIdx.x+i][threadIdx.y];
+			__syncthreads();
+		}
+		//Teilergebniss in Register speichern
+		//if(threadIdx.x +threadIdx.y == 0 && blockIdx.x+blockIdx.y == 0) printf("%i += %i\n", res, sleft[0][threadIdx.y]);
+		if(threadIdx.x == 0) res += sleft[0][threadIdx.y];
+		__syncthreads();
+	}
+	if(threadIdx.x == 0) result[make_uint2(blockIdx.x, y)] = res;
+	//Register in Ergebniss Matrix schreiben
+}
 
 DEVICE unsigned int calcAlignment(unsigned int var) {
 	int msb = 31 - __clz(var);
@@ -148,75 +151,57 @@ DEVICE void MatMul(MatrixAccess1& result, MatrixAccess2& lhs, MatrixAccess3& rhs
 	switch(bsx) {
 		case 2:
 			matProdKernel<2><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 4:
 			matProdKernel<4><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 8:
 			matProdKernel<8><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 16:
 			matProdKernel<16><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 32:
 			matProdKernel<32><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 64: 
 			matProdKernel<64><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 128:
 			matProdKernel<128><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		case 256:
 			matProdKernel<256><<<gridSize, blockSize>>>(
-				lhs.getRawPointer(), 
-				rhs.getRawPointer(), 
-				result.getRawPointer(), 
-				lhs.getRows(), lhs.getCols(), 
-				rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 			break;
 		default:
 			matProdKernel<512><<<gridSize, blockSize>>>(
-			lhs.getRawPointer(), 
-			rhs.getRawPointer(), 
-			result.getRawPointer(), 
-			lhs.getRows(), lhs.getCols(), 
-			rhs.getRows(), rhs.getCols());
+				lhs,
+				rhs,
+				result);
 	}
 }
 
