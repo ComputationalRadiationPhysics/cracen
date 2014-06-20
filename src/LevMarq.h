@@ -92,7 +92,7 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 		//printMat(F, 1, sampling_points+numberOfParams);
 		//handleLastError();
 		//Calc F'(param)
-		dim3 blockSize(32,32); /** TODO: Blocksize reduzieren */
+		dim3 blockSize(32,32); /** TODO: Blocksize reduzieren bs(256,1), A drehen*/
 		dim3 gridSize(ceil((float) numberOfParams/32.f), ceil(static_cast<float>(sampling_points+numberOfParams)/32.f));
 		calcDerivF<Fit><<<gridSize,blockSize>>>(texObj, i, param.getRawPointer(), mu, A.getRawPointer(), window.offset, sample_count, interpolation_count);
 		//handleLastError();
@@ -130,7 +130,7 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 		//printMat(u1);
 		//Calc F(param+s)
 		for(int j = 0; j < numberOfParams; j++) {
-			uint2 c = make_uint2(0,j);
+			const uint2 c = make_uint2(0,j);
 			param2[c] = param[c] + s[c];
 		}
 		

@@ -13,15 +13,18 @@ void handle_error(cudaError_t err, const char* error, int line, const char* file
 	if(err != cudaSuccess) std::cerr << error << cudaGetErrorString(err) << "\" in Line " << line << " in File " << file << std::endl;
 }
 
-DEVICE uint2 identity(uint2& input) {
-	return input;
-}
+struct identity {
+	DEVICE uint2 operator()(uint2& input) const {
+		return input;
+	}
+};
+struct trans {
+	DEVICE uint2 operator()(uint2& input) const {
+		return make_uint2(input.y, input.x);
+	}
+};
 
-DEVICE uint2 trans(uint2& input) {
-	return make_uint2(input.y, input.x);
-}
-
-template <class T = float, uint2 (*AccessMode)(uint2&) = identity>
+template <class T = float, class AccessMode = identity>
 class MatrixAccess {
 private:
 	unsigned int rows, cols;
@@ -49,17 +52,17 @@ public:
 		return MatrixAccess<T, trans>(mat, cols, rows);
 	}
 	DEVICE T& operator[](uint2 pos) {
-		pos = AccessMode(pos);		
+		pos = AccessMode()(pos);		
 		return mat[pos.y*cols+pos.x];
 	}
-	DEVICE unsigned int getRows() {
+	DEVICE unsigned int getRows() const {
 		uint2 dim = make_uint2(cols, rows);
-		dim = AccessMode(dim);
+		dim = AccessMode()(dim);
 		return dim.y;
 	}
-	DEVICE unsigned int getCols() {
+	DEVICE unsigned int getCols() const {
 		uint2 dim = make_uint2(cols, rows);
-		dim = AccessMode(dim);
+		dim = AccessMode()(dim);
 		return dim.x;
 	}
 	
@@ -111,7 +114,7 @@ __global__ void matProdKernel(MatrixAccess1 left, MatrixAccess2 right, MatrixAcc
 		__syncthreads();
 		
 		//Vektor folden
-		for(int i = blockDim.x; i >= 1; i>>=1) {
+		for(int i = blockDim.x; i >= 1; i/=2) {
 			if(threadIdx.x < i) sleft[threadIdx.x][threadIdx.y] += sleft[threadIdx.x+i][threadIdx.y];
 			__syncthreads();
 		}
@@ -129,7 +132,7 @@ DEVICE unsigned int calcAlignment(unsigned int var) {
 	return (var == (1 << msb) ? var: 1 << msb+1);
 }
 template <class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
-DEVICE void MatMul(MatrixAccess1& result, MatrixAccess2& lhs, MatrixAccess3& rhs) {
+DEVICE void MatMul(MatrixAccess1& result, const MatrixAccess2& lhs, const MatrixAccess3& rhs) {
 	#ifdef DEBUG_ENABLED
 	if(lhs.getCols() != rhs.getRows() && rhs.getCols() != result.getCols() && lhs.getRows() != result.getRows()) {
 		printf("Can not multiply %ux%u with %ux%u to %ux%u matrix.\n", 

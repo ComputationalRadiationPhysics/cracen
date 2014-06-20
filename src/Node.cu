@@ -21,6 +21,9 @@ void Node::run() {
 	 * http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf
 	*/
 	/* Initialise device */
+	
+	typedef WindowPolynom<2> Fit;
+	const unsigned int window_size = 100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
 	cudaSetDevice(deviceIdentifier);
 	
 	cudaTextureObject_t texObj[numberOfTextures];
@@ -37,9 +40,9 @@ void Node::run() {
 	texDesc.readMode         = cudaReadModeElementType;
 	texDesc.normalizedCoords = 0;
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
-	FitData<3> results[CHUNK_COUNT];
-	typedef FitData<3> FitDataArray[numberOfTextures][CHUNK_COUNT];
-	FitData<3> *fitData;
+	FitData<Fit::numberOfParams> results[CHUNK_COUNT];
+	typedef FitData<Fit::numberOfParams> FitDataArray[numberOfTextures][CHUNK_COUNT];
+	FitData<Fit::numberOfParams> *fitData;
 	cudaMalloc((void**)(&fitData), sizeof(FitDataArray));
 	#pragma loop unroll
 	for(unsigned int i = 0; i < numberOfTextures; i++) {
@@ -62,11 +65,14 @@ void Node::run() {
 	while(!iBuffer->isFinished() || !textureEmpty[lastTexture]) {
 		/* copy results back */
 		if(!textureEmpty[tex]) {
+			cudaMemcpyAsync(results, &fitData[tex*CHUNK_COUNT], sizeof(results), cudaMemcpyDeviceToHost, streams[tex]);
 			cudaStreamSynchronize(streams[tex]);
-			//cudaMemcpyAsync(results, fitData[tex], sizeof(results), cudaMemcpyDeviceToHost, streams[tex]);
-			cudaMemcpy(results, &fitData[tex*CHUNK_COUNT], sizeof(results), cudaMemcpyDeviceToHost);
+			//cudaMemcpy(results, &fitData[tex*CHUNK_COUNT], sizeof(results), cudaMemcpyDeviceToHost);
 			for(int i = 0; i < CHUNK_COUNT; i++) {
-				std::cout << results[i].param[2] << "x²+" << results[i].param[1] << "x+" << results[i].param[0]<< std::endl;
+				for(int p = 0; p < Fit::numberOfParams; p++) {
+					std::cout << results[i].param[p] << "*x^" << p << "+";
+				}
+				std::cout << std::endl;
 			}
 			textureEmpty[tex] = true;
 		}
@@ -93,8 +99,7 @@ void Node::run() {
 		         */
 				iBuffer->freeTail();
 				std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-				//levenbergMarquardt<Polynom<5> >(streams[tex], texObj[tex], SAMPLE_COUNT, SAMPLE_COUNT/INTERPOLATION_COUNT, CHUNK_COUNT, INTERPOLATION_COUNT);
-				levenbergMarquardt<WindowPolynom<2> >(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, 100, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<Fit>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT);
 				lastTexture = tex;
 				tex = (tex+1)%numberOfTextures;
 				textureEmpty[tex] = false;
