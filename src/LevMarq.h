@@ -33,6 +33,8 @@ __global__ void calcF(cudaTextureObject_t texObj, int wave, float* param, float*
 	}
 }
 
+
+
 template <class Fit>
 __global__ void calcDerivF(cudaTextureObject_t texObj, int wave, float* param, float mu, float* deriv_F, const unsigned int offset, const unsigned sample_count, const unsigned int interpolation_count) {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;

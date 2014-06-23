@@ -5,7 +5,7 @@
 
 template <class c>
 c* pcast(thrust::device_vector<c>& dev) {
-	return thrust::raw_pointer_cast(&dev[0]);
+	return thrust::raw_pointer_cast(dev.data());
 }
 
 template <class c>
