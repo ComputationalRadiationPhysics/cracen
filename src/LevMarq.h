@@ -22,36 +22,39 @@ DEVICE float getSample(cudaTextureObject_t texObj, float I, int INDEXDATASET) {
 	return tex2D<float>(texObj, I, INDEXDATASET);
 }
 
-template <class Fit>
-__global__ void calcF(cudaTextureObject_t texObj, int wave, float* param, float* F, unsigned int offset, const unsigned int sample_count, const unsigned int interpolation_count) {
-	if(threadIdx.x*interpolation_count < sample_count) {
-		float x = threadIdx.x*interpolation_count+offset;
-		float y = getSample(texObj,x+0.5,wave);
-		F[threadIdx.x] = -1*Fit::modelFunction(x,y,param);
-	} else {
-		F[threadIdx.x] = 0;
+template <class Fit, unsigned int bs>
+DEVICE void calcF(cudaTextureObject_t texObj, float* param, float* F, const Window& window, const unsigned int sample_count, const unsigned int interpolation_count) {
+	for(int i = 0; i*bs*interpolation_count < sample_count) {
+		int x = (threadIdx.x+i*bs)*interpolation_count+offset
+		if(x < window.offset+window.width) {
+			float xval = static_cast<float>(x);
+			float yval = getSample(texObj,x+0.5,blockIdx.x);
+			F[threadIdx.x+i*bs] = -1*Fit::modelFunction(xval,yval,param);
+		} else {
+			F[threadIdx.x+i*bs] = 0;
+		}	
 	}
 }
 
 
 
-template <class Fit>
-__global__ void calcDerivF(cudaTextureObject_t texObj, int wave, float* param, float mu, float* deriv_F, const unsigned int offset, const unsigned sample_count, const unsigned int interpolation_count) {
-	int x = threadIdx.x + blockIdx.x * blockDim.x;
-	int y = threadIdx.y + blockIdx.y * blockDim.y;
+template <class Fit, unsigned int bs>
+DEVICE void calcDerivF(cudaTextureObject_t texObj, float* param, float mu, float* deriv_F, const Window& window, const unsigned sample_count, const unsigned int interpolation_count) {
+	for(int i = threadIdx.x*interpolation_count; i < Fit::numberOfParams*(window.width/interpolation_count+numberOfParams); i+=bs*interpolation_count) {
+		int x = i%numberOfParams;
+		int y = i/numberOfParams;
 
-	if(!(y < sample_count/interpolation_count+Fit::numberOfParams && x < Fit::numberOfParams)) return;
-	if(y*interpolation_count < sample_count) {
-		deriv_F[x+y*Fit::numberOfParams] = Fit::derivation(x,y*interpolation_count+offset,getSample(texObj, y*interpolation_count+offset,wave),param);
-	} else {
-		const float v = ((y - sample_count/interpolation_count) == x);
-		deriv_F[x+y*Fit::numberOfParams] = mu*v;
+		if(y/interpolation_count < window.width) {
+			deriv_F[x+y*Fit::numberOfParams] = Fit::derivation(x,i,getSample(texObj, i, blockIdx.x),param);
+		} else {
+			const float v = ((y/interpolation_count - window.width/interpolation_count) == x);
+			deriv_F[x+y*Fit::numberOfParams] = mu*v;
+		}
 	}
-
 }
 
-template <class Fit>
-__global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int waveform, const unsigned int interpolation_count) {
+template <class Fit, unsigned int bs>
+__global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
 	const unsigned int numberOfParams = Fit::numberOfParams;
 
 	MatrixAccess<> F(1, max_window_size+numberOfParams);
@@ -68,68 +71,37 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 	MatrixAccess<float, trans> FT = F.transpose();
 	MatrixAccess<float, trans> F1T = F1.transpose();
 
-	float mu;
-	for(uint2 j = make_uint2(0,0); j.y < numberOfParams; j.y++) {
-		param[j] = 0;		
-	}
-					 
-	int i = waveform;
-	float roh;
-	mu = 1;
+	float mu = 1, roh;
 	int counter = 0;
+	if(threadIdx.x < Fit::numberOfParams) param[make_uint2(0,threadIdx.x)] = 0;		
+	__syncthreads();
+					 
+	int i = blockIdx.x;
 	do {
 		counter++;
 		/* Abschnitt 1 */
 		//Calc F(param)
 		Window window = Fit::getWindow(texObj, threadIdx.x, sample_count);
 		int sampling_points = window.width/interpolation_count;
-		/** \TODO Generischer Implementieren für >1024 Werte */
-		dim3 gs(1,1);
-		dim3 bs(sampling_points+numberOfParams,1);
-		calcF<Fit><<<gs,bs>>>(texObj, i, param.getRawPointer(), F.getRawPointer(), window.offset, sample_count, interpolation_count);
-		//printf("F:\n");
-		//printMat(F);
-		//for(int j = 0; j < sampling_points; j++) //std::cout << "f("<< j*interpolation_count << ")=" << F[j] << std::endl;
-		////std::cout << "F: " << std::endl;
-		//printMat(F, 1, sampling_points+numberOfParams);
-		//handleLastError();
+		calcF<Fit, bs>(texObj, i, param.getRawPointer(), F.getRawPointer(), window, sample_count, interpolation_count);
 		//Calc F'(param)
-		dim3 blockSize(32,32); /** TODO: Blocksize reduzieren bs(256,1), A drehen*/
-		dim3 gridSize(ceil((float) numberOfParams/32.f), ceil(static_cast<float>(sampling_points+numberOfParams)/32.f));
-		calcDerivF<Fit><<<gridSize,blockSize>>>(texObj, i, param.getRawPointer(), mu, A.getRawPointer(), window.offset, sample_count, interpolation_count);
-		//handleLastError();
-		////std::cout << "F': " << std::endl;
-		//printMat(deriv_F, sampling_points+numberOfParams, numberOfParams);
+		calcDerivF<Fit, bs>(texObj, i, param.getRawPointer(), mu, A.getRawPointer(), window, sample_count, interpolation_count);
 
 		/* Abschnitt 2 */
 
 		//Solve minimization problem
 		//calc A^T*A => G
-		MatMul(G, AT, A);
-		//printf("G:\n");
-		//printMat(G);
+		matProdKernel<bs>(G, AT, A);
 		//calc G^-1
-		
 		gaussJordan(G_inverse, G);
-		//printf("G_inverse:\n");
-		//printMat(G_inverse);
-		//calc A^T*F => b
-		
-		MatMul(b, AT, F);
-	
-		//printf("b:\n");
-		//printMat(b);
-		
+		//calc A^T*F => b		
+		matProdKernel<bs>(b, AT, F);
 		//calc G^-1*b => s
-		MatMul(s, G_inverse, b);
-		//printf("s:\n");
-		//printMat(s);
+		matProdKernel<bs>(s, G_inverse, b);
 		/* Abschnitt 3 */
-
-		//Fold F(param)
-		MatMul(u1, FT, F);
+		//Reduce F(param)
+		matProdKernel<bs>(u1, FT, F);
 		
-		//printMat(u1);
 		//Calc F(param+s)
 		for(int j = 0; j < numberOfParams; j++) {
 			const uint2 c = make_uint2(0,j);
@@ -138,10 +110,10 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 		
 		//Fold F(param+s)
 		calcF<Fit><<<1,sampling_points+numberOfParams>>>(texObj, i, param2.getRawPointer(), F1.getRawPointer(), window.offset, sample_count, interpolation_count);
-		MatMul(u2, F1T, F1);
+		matProdKernel<bs>(u2, F1T, F1);
 
 		//Calc F'(param)*s
-		MatMul(F1, A, s);
+		matProdKernel<bs>(F1, A, s);
 
 		//Calc F(param) + F'(param)*s'
 		//Fold F'(param)*s
@@ -149,22 +121,11 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 			uint2 c = make_uint2(0,j);
 			F1[c] = -1*F[c]+F1[c];
 		}
-		MatMul(u3, F1T, F1);
+		matProdKernel<bs>(u3, F1T, F1);
 
 		//calc roh
-		//printMat(u1);
-		//printf("u1=%f, u2=%f, u3=%f\n", u1[make_uint2(0,0)], u2[make_uint2(0,0)], u3[make_uint2(0,0)]);
 		roh = (u1[make_uint2(0,0)]-u2[make_uint2(0,0)])/(u1[make_uint2(0,0)]-u3[make_uint2(0,0)]);
-		//printf("roh=%f, mu=%f\n", roh, mu);
-		/*
-		for(uint2 j = make_uint2(0,0); j.y < numberOfParams; j.y++) {
-			float p = param[j];
-			printf("(%f)*x**%i",p,j.y);
-			if(j.y != numberOfParams-1) printf("+");
-		}
-		//printf("\n");
-		*/
-		//std::cout << std::endl;
+
 		//decide if s is accepted or discarded
 		if(roh <= 0.2) {
 			//s verwerfen, mu erhöhen
@@ -177,8 +138,6 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 				mu /= 2;
 			}
 		}
-		//printf("param:\n");
-		//printMat(param);		
 	} while(u1[make_uint2(0,0)]/(sample_count/interpolation_count) > 1e-5 && mu > 1e-5 && counter < 25);
 	
 	for(uint2 j = make_uint2(0,0); j.y < numberOfParams; j.y++) {
@@ -218,6 +177,7 @@ int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData
 	dispatch<Fit><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count);
 	handleLastError();
 	return 0;
+
 }
 
 #endif

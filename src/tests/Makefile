@@ -9,10 +9,6 @@ MatMulTest: MatMulTest.cu ../UtilKernels.h Util.h
 	nvcc $(CFLAGS) -o MatMulTest MatMulTest.cu
 	./MatMulTest
 
-GaussJordanTest: GaussJordanTest.cu ../GaussJordan.h Util.h
-	nvcc $(CFLAGS) -o GaussJordanTest GaussJordanTest.cu
-	./GaussJordanTest
-
 LevMarqTest: LevMarqTest.cu ../LevMarq.h ../GaussJordan.h Util.h ../UtilKernels.h
 	nvcc $(CFLAGS) -o LevMarqTest LevMarqTest.cu
 	./LevMarqTest
@@ -20,6 +16,10 @@ LevMarqTest: LevMarqTest.cu ../LevMarq.h ../GaussJordan.h Util.h ../UtilKernels.
 LapTest: LapTest.cu ../GaussJordan.h ../UtilKernels.h
 	nvcc  $(CFLAGS) -o LapTest LapTest.cu
 	./LapTest
+
+GaussJordanTest: GaussJordanTest.cu ../UtilKernels.h ../GaussJordan.h
+	nvcc $(CFLAGS) -o GaussJordanTest GaussJordanTest.cu
+	./GaussJordanTest
 	
 run: LevMarqTest
 	./LevMarqTest
