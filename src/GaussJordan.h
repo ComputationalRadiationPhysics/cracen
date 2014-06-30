@@ -2,7 +2,7 @@
 #include "UtilKernels.h"
 
 template <class Fit, unsigned int bs, class MatrixAccess1, class MatrixAccess2>
-DEVICE void gaussJordan(MatrixAccess1& input, MatrixAccess2& result) {
+DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
 	const unsigned int dim = input.getCols();
 	__shared__ float dynamicMem[Fit::numberOfParams*Fit::numberOfParams*2];
 	MatrixAccess<float> mat(dynamicMem, 2*dim, dim);

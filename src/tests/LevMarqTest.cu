@@ -25,7 +25,7 @@ __global__ void testKernel(cudaTextureObject_t texObj, float* F, float* param) {
 	*/
 }
 int main(int argc, char** argv) {
-	const int sample_count = 1000;
+	const int sample_count = 10;
 	float sample_data[sample_count];
 	cudaArray_t texArray;
 	for(int i = 0; i < sample_count; i++) {
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 	cudaStreamCreate(&stream);
 	dim3 gs(1,1);
 	dim3 bs(sample_count+3,1);
-	levMarqIt<Polynom<2> ><<<1,1>>>(texObj, fitData, sample_count, sample_count, 0, 1);
+	levenbergMarquardt<Polynom<2> >(stream, texObj, fitData, sample_count, sample_count, 1, 1);
 	cudaDeviceSynchronize();
 	handleLastError();
 	FitData<3> results[1];

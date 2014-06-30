@@ -50,6 +50,7 @@ private:
 	T* mat;
 public:
 	typedef T Type;
+	DEVICE MatrixAccess() {}
 	DEVICE MatrixAccess(T* mat, unsigned int cols, unsigned int rows) : 
 		rows(rows),
 		cols(cols),
@@ -94,7 +95,7 @@ public:
 				for(int y = 0; y < rows; y++) {
 					uint2 pos = make_uint2(x,y);
 					pos = AccessMode()(pos);
-					printf("%i ", mat[pos.y*cols+pos.x]);
+					printf("%f ", mat[pos.y*cols+pos.x]);
 				}
 				printf("\n");
 			}
@@ -108,8 +109,6 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 	__shared__ typename MatrixAccess1::Type sright[4*blockSize];
 	__shared__ typename MatrixAccess1::Type sleft[2*blockSize];
 	
-	left.print();
-	right.print();
 	#ifdef DEBUG_ENABLED
 	if(left.getCols() != right.getRows() && right.getCols() != result.getCols() && left.getRows() != result.getRows()) {
 		printf("Can not multiply %ux%u with %ux%u to %ux%u matrix.\n", 
@@ -126,10 +125,14 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 				int x = threadIdx.x+blockSize*4*blocks;
 
 				//Spalte der rechten Matrix in shared Mem laden
-				sright[threadIdx.x] = right[make_uint2(xr,x)];
-				sright[threadIdx.x+blockSize] = right[make_uint2(xr,x+blockSize)];
-				sright[threadIdx.x+2*blockSize] = right[make_uint2(xr,x+2*blockSize)];
-				sright[threadIdx.x+3*blockSize] = right[make_uint2(xr,x+3*blockSize)];
+				if(x < right.getRows()) sright[threadIdx.x] = right[make_uint2(xr,x)];
+				else sright[threadIdx.x] = 0;
+				if(x+blockSize < right.getRows()) sright[threadIdx.x+blockSize] = right[make_uint2(xr,x+blockSize)];
+				else sright[threadIdx.x+blockSize] = 0;
+				if(x+2*blockSize < right.getRows()) sright[threadIdx.x+2*blockSize] = right[make_uint2(xr,x+2*blockSize)];
+				else sright[threadIdx.x+2*blockSize] = 0;
+				if(x+3*blockSize < right.getRows()) sright[threadIdx.x+3*blockSize] = right[make_uint2(xr,x+3*blockSize)];
+				else sright[threadIdx.x+3*blockSize] = 0;
 				//printf("right:%f\n",right[make_uint2(xr,x)]);
 				//printf("left:%f\n",left[make_uint2(xr,x)]);
 				__syncthreads();
@@ -170,20 +173,24 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 	}
 }
 
-template <class Mat>
-DEVICE void printMat(Mat& mat) {
+template <typename T, class AccessMode>
+DEVICE void printMat(MatrixAccess<T, AccessMode>& mat) {
+	printf("{");
 	for(int j = 0; j < mat.getRows(); j++) {
+		printf("{");
 		for(int i = 0; i < mat.getCols(); i++) {
-			printf("%f ",mat[make_uint2(i,j)]);
+			printf("%f",mat[make_uint2(i,j)]);
+			if(i<mat.getCols()-1) printf(", ");
 		}
-		printf("\n");
+		printf("}");
+		if(j<mat.getRows()-1) printf(",\n");
 	}
-	printf("\n");
+	printf("}\n");
 }
 
 
-template <class Mat>
-DEVICE void printIntMat(Mat& mat) {
+template <typename T, class AccessMode>
+DEVICE void printIntMat(MatrixAccess<T, AccessMode>& mat) {
 	for(int j = 0; j < mat.getRows(); j++) {
 		for(int i = 0; i < mat.getCols(); i++) {
 			printf("%i ",mat[make_uint2(i,j)]);
