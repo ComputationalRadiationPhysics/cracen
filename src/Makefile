@@ -22,8 +22,8 @@ sync:
 	rsync -a --progress . rossendorf:~/build 
 	ssh rossendorf "rsync -a --progress build/ hypnos2:~/build"
 
-.PHONY: run
-run: all
+.PHONY: run 
+run: clean all
 	./DSP
 
 .PHONY: clean

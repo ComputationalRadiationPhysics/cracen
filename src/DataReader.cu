@@ -80,6 +80,11 @@ void DataReader::readToBuffer()
         // read waveform data
         int j = 0;
         while (not fs.eof()) {
+            /*
+            static int xxii = 0;
+            xxii++;
+            if(xxii>=128) break;
+            */
             // reading directly into the vector seems legitimate
             // http://stackoverflow.com/questions/2780365/using-read-directly-into-a-c-stdvector
             fs.read(reinterpret_cast<char*>(&channelBuffer[0]), 

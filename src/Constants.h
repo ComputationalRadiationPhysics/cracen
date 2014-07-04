@@ -14,7 +14,7 @@ const unsigned int numberOfParams = 3;
 const unsigned int SAMPLE_COUNT = 1000;
 /*! \var CHUNK_COUNT 
  *  \brief Number of events copied to the GPU in one step */
-const unsigned int CHUNK_COUNT = 100;
+const unsigned int CHUNK_COUNT = 128;
 /*! \var CHUNK_BUFFER_COUNT
  *  \brief  Number of chunks in the input buffer */
 const unsigned int CHUNK_BUFFER_COUNT = 2048;

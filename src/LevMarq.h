@@ -2,7 +2,7 @@
 
 #ifndef LEVMARQ_H
 #define LEVMARQ_H
-#define DEBUG_ENABLED
+//#define DEBUG_ENABLED
 
 #include <stdio.h>
 #include "Types.h"
@@ -63,22 +63,28 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 	const unsigned int numberOfParams = Fit::numberOfParams;
 	__shared__ MatrixAccess<> G,G_inverse,u1,u2,u3,AT,FT,F1T;
 	__shared__ MatrixAccess<float, trans> F,F1,b,s,A,param,param2,param_last_it;
+	__shared__ float sleft[bs];
+	__shared__ float b_shared[numberOfParams], s_shared[numberOfParams], G_shared[numberOfParams*numberOfParams], 
+					 G_inverse_shared[numberOfParams*numberOfParams],
+					 param_shared[numberOfParams], param2_shared[numberOfParams], param_last_it_shared[numberOfParams],
+					 u1_shared[1], u2_shared[1], u3_shared[1];
+					 
 	__shared__ bool finished;
 	if(threadIdx.x == 0) {
 		F = MatrixAccess<float, trans>(max_window_size+numberOfParams, 1);
-		b = MatrixAccess<float, trans>(numberOfParams, 1);
-		s = MatrixAccess<float, trans>(numberOfParams, 1);
+		b = MatrixAccess<float, trans>(b_shared, numberOfParams, 1);
+		s = MatrixAccess<float, trans>(s_shared, numberOfParams, 1);
 		A = MatrixAccess<float, trans>(max_window_size+numberOfParams, numberOfParams);
 		F1 = MatrixAccess<float, trans>(max_window_size+numberOfParams, 1);
 		AT = A.transpose();
-		G = MatrixAccess<>(numberOfParams, numberOfParams);
-		G_inverse = MatrixAccess<>(numberOfParams, numberOfParams);
-		param = MatrixAccess<float, trans>(numberOfParams, 1);
-		param2 = MatrixAccess<float, trans>(numberOfParams, 1);
-		param_last_it = MatrixAccess<float, trans>(numberOfParams, 1);
-		u1 = MatrixAccess<>(1,1);
-		u2 = MatrixAccess<>(1,1);
-		u3 = MatrixAccess<>(1,1);
+		G = MatrixAccess<>(G_shared, numberOfParams, numberOfParams);
+		G_inverse = MatrixAccess<>(G_inverse_shared, numberOfParams, numberOfParams);
+		param = MatrixAccess<float, trans>(param_shared, numberOfParams, 1);
+		param2 = MatrixAccess<float, trans>(param2_shared, numberOfParams, 1);
+		param_last_it = MatrixAccess<float, trans>(param_last_it_shared, numberOfParams, 1);
+		u1 = MatrixAccess<>(u1_shared, 1,1);
+		u2 = MatrixAccess<>(u2_shared, 1,1);
+		u3 = MatrixAccess<>(u3_shared, 1,1);
 		FT = F.transpose();
 		F1T = F1.transpose();
 	}	
@@ -102,16 +108,16 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 
 		//Solve minimization problem
 		//calc A^T*A => G
-		matProdKernel<bs>(G, AT, A);
+		matProdKernel<bs>(G, AT, A, sleft);
 		//calc G^-1
 		gaussJordan<Fit,bs>(G_inverse, G);
 		//calc A^T*F => b		
-		matProdKernel<bs>(b, AT, F);
+		matProdKernel<bs>(b, AT, F, sleft);
 		//calc G^-1*b => s
-		matProdKernel<bs>(s, G_inverse, b);
+		matProdKernel<bs>(s, G_inverse, b, sleft);
 		/* Abschnitt 3 */
 		//Reduce F(param)
-		matProdKernel<bs>(u1, FT, F);
+		matProdKernel<bs>(u1, FT, F, sleft);
 		
 		//Calc F(param+s)
 		const uint2 c = make_uint2(0,threadIdx.x);
@@ -120,10 +126,10 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 		
 		//Fold F(param+s)
 		calcF<Fit, bs>(texObj, param2.getRawPointer(), F1.getRawPointer(), window, sample_count, interpolation_count);
-		matProdKernel<bs>(u2, F1T, F1);
+		matProdKernel<bs>(u2, F1T, F1, sleft);
 
 		//Calc F'(param)*s
-		matProdKernel<bs>(F1, A, s);
+		matProdKernel<bs>(F1, A, s, sleft);
 
 		//Calc F(param) + F'(param)*s'
 		//Fold F'(param)*s
@@ -133,7 +139,7 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 		}
 		if(threadIdx.x == 0) finished = true;
 		__syncthreads();
-		matProdKernel<bs>(u3, F1T, F1);
+		matProdKernel<bs>(u3, F1T, F1, sleft);
 
 		//calc roh
 		roh = (u1[make_uint2(0,0)]-u2[make_uint2(0,0)])/(u1[make_uint2(0,0)]-u3[make_uint2(0,0)]);
@@ -163,16 +169,7 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 	if(threadIdx.x == 0) {
 		F.finalize();
 		F1.finalize();
-		b.finalize();
-		s.finalize();
 		A.finalize();
-		G.finalize();
-		G_inverse.finalize();
-		param.finalize();
-		param2.finalize();
-		u1.finalize();
-		u2.finalize();
-		u3.finalize();
 	}
 	
 	return;

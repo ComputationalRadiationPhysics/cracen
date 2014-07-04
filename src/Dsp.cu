@@ -5,6 +5,7 @@
 #include "OutputStream.h"
 #include "Constants.h"
 #include "DataReader.h"
+#include "TimeInterval.h"
 
 int main(int argc, char* argv[]) {
 	
@@ -12,6 +13,7 @@ int main(int argc, char* argv[]) {
 	int numberOfDevices;
 	cudaError_t err;
 	err = cudaGetDeviceCount(&numberOfDevices);
+	numberOfDevices = 1;
 	
 	/* Check the cuda runtime environment */
 	if(err != cudaSuccess) {
@@ -52,6 +54,8 @@ int main(int argc, char* argv[]) {
     std::cout << "DataReader created." << std::endl;
 
 	std::vector<Node*> devices;
+	TimeIntervall ti;
+	ti.toggleStart();
 	for(int i = 0; i < numberOfDevices; i++) {
 		/* Start threads to handle Nodes */
 		devices.push_back(new Node(i, &inputBuffer, os.getBuffer()));
@@ -64,6 +68,8 @@ int main(int argc, char* argv[]) {
 
 	//Make sure all results are written back
 	os.join();
-	
+	ti.toggleEnd();
+	std::cout << "Time: " << ti.printInterval() << std::endl;
+	std::cout << "Throuput: " << 382/(ti.getInterval()/1000) << "MiB/s."<< std::endl;
 	return 0;
 }

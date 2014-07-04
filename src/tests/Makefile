@@ -38,6 +38,6 @@ sync:
 clean:
 	@rm -f *.o
 	@rm -f *~
-	@rm LevMarqTest
-	@rm GaussJordanTest
-	@rm MatMulTest
+	@rm -f LevMarqTest
+	@rm -f GaussJordanTest
+	@rm -f MatMulTest
