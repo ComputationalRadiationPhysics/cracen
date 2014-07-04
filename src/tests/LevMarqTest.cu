@@ -7,23 +7,6 @@
 typedef float DATATYPE;
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
 
-
-__global__ void testFetch(cudaTextureObject_t texObj) {
-	for(float j = 0; j <= 10; j++) {
-		//float i = tex2D<float>(texObj, j, 0.0f);
-		float i = getSample(texObj, j, 0);
-		printf("Wert = %f", i);
-	}
-}
-__global__ void testKernel(cudaTextureObject_t texObj, float* F, float* param) {
-	testFetch<<<1,1>>>(texObj);
-	/*
-	dim3 gs(1,1);
-	dim3 bs(10+3,1);
-	unsigned int sample_count = 10;
-	calcF<Polynom<2> ><<<gs, bs>>>(0, texObj, param, F, 0, sample_count, 1);
-	*/
-}
 int main(int argc, char** argv) {
 	const int sample_count = 10;
 	float sample_data[sample_count];

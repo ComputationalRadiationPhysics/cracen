@@ -2,7 +2,7 @@
 
 /* defines how the output is written into the output file */
 std::ostream& operator<<(std::ostream& lhs, const Output& rhs) {
-	//lhs << rhs.status << "	" << rhs.startValue << "	" << rhs.endValue << "	" << rhs.extremumPos  << "	" << rhs.extremumValue;
+	lhs << rhs.param[0] << " " << rhs.param[1] << " " << rhs.param[2];
 	return lhs;
 }
 

@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#define DEVICE __device__ __forceinline__
+#define DEVICE __device__
 #ifdef DEBUG_ENABLED
 #define handleLastError() cudaDeviceSynchronize(); handle_error( cudaGetLastError(),"Kernel Error occured:\"", __LINE__, __FILE__)
 #else
@@ -139,7 +139,7 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 				//Block der linken Matrix in shared Mem laden
 				if(x+blockSize < left.getCols()) {
 					sleft[threadIdx.x]	= (left[make_uint2(x,y)]*sright[threadIdx.x]
-													  +left[make_uint2(x+blockSize,y)]*sright[threadIdx.x+blockSize]);
+										  +left[make_uint2(x+blockSize,y)]*sright[threadIdx.x+blockSize]);
 				} else if(x < left.getCols()) {
 					sleft[threadIdx.x] = left[make_uint2(x,y)]*sright[threadIdx.x];
 				} else {
@@ -171,6 +171,7 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 			}
 		}
 	}
+	__syncthreads();
 }
 
 template <typename T, class AccessMode>

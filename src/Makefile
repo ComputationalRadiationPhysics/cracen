@@ -1,6 +1,6 @@
 CXX = nvcc
-CFLAGS = -g -G -arch=compute_35 -code=sm_35 -Xptxas=-v
-LFLAGS = -lpthread -rdc=true -lcudadevrt 
+CFLAGS = -arch=compute_35 -code=sm_35 -Xptxas=-v -O3 --keep --keep-dir ../tmp --source-in-ptx -lineinfo
+LFLAGS = -lpthread # -rdc=true -lcudadevrt 
 OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
 export CPLUS_INCLUDE_PATH=
 

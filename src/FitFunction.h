@@ -40,17 +40,7 @@ private:
 	}
 public:
 	static DEVICE Window getWindow(cudaTextureObject_t texObj, int dataset, int sample_count) {
-		int pos = 2;
-		float value = getSample(texObj, 0,dataset)+getSample(texObj, 1,dataset)+getSample(texObj, 2,dataset)+getSample(texObj, 3,dataset)+getSample(texObj, 4,dataset);
-		float max = value/5;
-		for(int i = 3; i < sample_count-2; i++) {
-			value += getSample(texObj, i+2,dataset);
-			value -= getSample(texObj, i-2,dataset);
-			if(value/5 > max) {
-				max = value/5;
-				pos = i;
-			}
-		}
+		int pos = sample_count / 2;
 		if(pos > sample_count - 50) {
 			return Window(sample_count-101, 100);
 		}

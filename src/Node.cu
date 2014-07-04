@@ -67,12 +67,8 @@ void Node::run() {
 		if(!textureEmpty[tex]) {
 			cudaMemcpyAsync(results, &fitData[tex*CHUNK_COUNT], sizeof(results), cudaMemcpyDeviceToHost, streams[tex]);
 			cudaStreamSynchronize(streams[tex]);
-			//cudaMemcpy(results, &fitData[tex*CHUNK_COUNT], sizeof(results), cudaMemcpyDeviceToHost);
 			for(int i = 0; i < CHUNK_COUNT; i++) {
-				for(int p = 0; p < Fit::numberOfParams; p++) {
-					std::cout << results[i].param[p] << "*x^" << p << "+";
-				}
-				std::cout << std::endl;
+					oBuffer->writeFromHost(results[i]);
 			}
 			textureEmpty[tex] = true;
 		}

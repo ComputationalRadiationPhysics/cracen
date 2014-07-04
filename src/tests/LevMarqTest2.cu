@@ -23,7 +23,6 @@ public:
 				return -2*(x-params[0]);
 			case 1:
 				float f = (sqr(x)+sqr(y));
-				printf("f=%f, b=%f, x=%f, y=%f\n",f, params[1], x ,y);
 				return (sqr(x)+sqr(y))*expf(params[1]*(sqr(x)+sqr(y)));
 		}
 		return 0;
@@ -80,7 +79,7 @@ int main(int argc, char** argv) {
 	handleLastError();
 	FitData<2> results[1];
 	cudaMemcpy(results, fitData, sizeof(results), cudaMemcpyDeviceToHost);
-	//std::cout << results->param[2] << "x²+" << results->param[1] << "x+" << results->param[0]<< std::endl;
+	std::cout << "a=" << results->param[0] << ", b=" << results->param[1] << std::endl;
 	
 	std::cout << "Test done." << std::endl;
 	cudaDestroyTextureObject(texObj);
