@@ -71,34 +71,33 @@ void Node::run() {
 			}
 			textureEmpty[tex] = true;
 		}
-		//TODO: Racecondition
-		if(!iBuffer->isFinished()) {
-			/* Take a chunk from ringbuffer and copy to GPU */
-			/* Block ringbuffer */
-			Chunk *c = iBuffer->reserveTailTry();
-			/* Copy to device */
-			if(c != NULL) {
-				cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &c->front(), 
-		                               sizeof(DATATYPE) * c->size(), 
-		                               cudaMemcpyHostToDevice, streams[tex]);
-	  			/* Free ringbuffer 
-		           This is possible because at the moment we use pageable (non-pinnend)
-		           host memory for the ringbuffer.
-		           In this case cudaMemcpy...Async will first copy data to a staging 
-		           buffer and then return. Only copying from staging buffer to final 
-		           destination is asynchronous.
-		           Should we switch to pinnend host memory for the ringbuffer we must
-		           not call iBuffer->freeTail() directly after cudaMemcpy..Async.
-		           See 
-				   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
-		         */
-				iBuffer->freeTail();
-				std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-				levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT);
-				lastTexture = tex;
-				tex = (tex+1)%numberOfTextures;
-				textureEmpty[tex] = false;
-			}
+		
+		/* Take a chunk from ringbuffer and copy to GPU */
+		/* Block ringbuffer */
+		Chunk *c = iBuffer->reserveTailTry();
+		/* Copy to device */
+		if(c != NULL) {
+			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &c->front(), 
+	                               sizeof(DATATYPE) * c->size(), 
+	                               cudaMemcpyHostToDevice, streams[tex]);
+  			/* Free ringbuffer 
+	           This is possible because at the moment we use pageable (non-pinnend)
+	           host memory for the ringbuffer.
+	           In this case cudaMemcpy...Async will first copy data to a staging 
+	           buffer and then return. Only copying from staging buffer to final 
+	           destination is asynchronous.
+	           Should we switch to pinnend host memory for the ringbuffer we must
+	           not call iBuffer->freeTail() directly after cudaMemcpy..Async.
+	           See 
+			   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
+	         */
+			iBuffer->freeTail();
+			/*  for correct output the iBuffer->getSize() should be in the critical section */
+			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
+			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT);
+			lastTexture = tex;
+			tex = (tex+1)%numberOfTextures;
+			textureEmpty[tex] = false;
 		}
 	}
 	for(unsigned int i = 0; i < numberOfTextures; i++) {
