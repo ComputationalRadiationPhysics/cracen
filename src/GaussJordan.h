@@ -26,9 +26,8 @@ DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
 	}
 	#endif
 
-	//TODO everything below this line
-	int x = threadIdx.x%(2*dim);
-	int y = threadIdx.x/(2*dim);
+	const int x = threadIdx.x%(2*dim);
+	const int y = threadIdx.x/(2*dim);
 
 	//Copy into shared mem
 	if(y < dim) {
@@ -43,25 +42,30 @@ DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
 	
 	for(int i = 0; i < dim; i++) {
 		//Normalize line
-		float factor = mat[make_uint2(i,i)];
-		__syncthreads();
+		const float factor1 = mat[make_uint2(i,i)];
 		if(y == 0 && x < 2*dim) {
 			uint2 c = make_uint2(x,i);
-			mat[c] = mat[c]/factor;
+			mat[c] = mat[c]/factor1;
 		}
 		
-		uint2 c1 = make_uint2(i,y), c2 = make_uint2(x,y), c3 = make_uint2(x,i);
-		if(y < dim) factor = mat[c1];
 		__syncthreads();
-		//Reduce left column from input
-		if(y != i && x < 2*dim && y < dim) {
-			mat[c2] = mat[c2]-factor*mat[c3];
+		const uint2 c1 = make_uint2(i,y);
+		const uint2 c2 = make_uint2(x,y);
+		const uint2 c3 = make_uint2(x,i);
+		if(y < dim) {
+			const float factor2 = mat[c1];
+			//Reduce left column from input
+			if(y != i && x < 2*dim) {
+				mat[c2] = mat[c2]-factor2*mat[c3];
+			}
 		}
 		__syncthreads();
 	}
 	
 	//Copy result back
 	//printf("%f\n",mat[x+dim][y]);
-	uint2 c1 = make_uint2(x,y), c2 = make_uint2(x+dim, y);
+	const uint2 c1 = make_uint2(x,y);
+	const uint2 c2 = make_uint2(x+dim, y);
 	if(y < dim && x < dim) result[c1] = mat[c2];
+	__syncthreads();
 }

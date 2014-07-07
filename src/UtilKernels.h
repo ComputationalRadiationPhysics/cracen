@@ -9,17 +9,18 @@
 #else
 #define handleLastError()
 #endif
+
 void handle_error(cudaError_t err, const char* error, int line, const char* file) {
 	if(err != cudaSuccess) std::cerr << error << cudaGetErrorString(err) << "\" in Line " << line << " in File " << file << std::endl;
 }
 
 struct identity {
-	DEVICE uint2 operator()(uint2& input) const {
+	DEVICE uint2 operator()(const uint2& input) const {
 		return input;
 	}
 };
 struct trans {
-	DEVICE uint2 operator()(uint2& input) const {
+	DEVICE uint2 operator()(const uint2& input) const {
 		return make_uint2(input.y, input.x);
 	}
 };
@@ -51,28 +52,29 @@ private:
 public:
 	typedef T Type;
 	DEVICE MatrixAccess() {}
-	DEVICE MatrixAccess(T* mat, unsigned int cols, unsigned int rows) : 
+	DEVICE MatrixAccess(T* mat, const unsigned int cols, const unsigned int rows) : 
 		rows(rows),
 		cols(cols),
 		mat(mat)
 	{}
-	DEVICE MatrixAccess(unsigned int cols, unsigned int rows) : 
+	DEVICE MatrixAccess(const unsigned int cols, const unsigned int rows) : 
 		rows(rows),
 		cols(cols),
 		mat(new T[cols*rows])
 	{}
-	DEVICE MatrixAccess<T, AccessMode> copy() {
-		return MatrixAccess<T, AccessMode>(mat, cols, rows);
-	}
 	DEVICE void finalize() {
 		delete mat;
 	}
 	DEVICE typename GetTransposed<This>::type transpose() {
 		return typename GetTransposed<This>::type(mat, cols, rows);
 	}
-	DEVICE T& operator[](uint2 pos) {
-		pos = AccessMode()(pos);		
-		return mat[pos.y*cols+pos.x];
+	DEVICE T& operator[](const uint2 pos) {
+		const uint2 pos2 = AccessMode()(pos);		
+		return mat[pos2.y*cols+pos2.x];
+	}
+	DEVICE const T& operator[](const uint2 pos) const {
+		const uint2 pos2 = AccessMode()(pos);		
+		return mat[pos2.y*cols+pos2.x];
 	}
 	DEVICE unsigned int getRows() const {
 		uint2 dim = make_uint2(cols, rows);
@@ -85,15 +87,15 @@ public:
 		return dim.x;
 	}
 	
-	DEVICE T* getRawPointer() {
+	DEVICE T* getRawPointer() const {
 		return mat;
 	}
-	
-	DEVICE void print() {
+	#if DEBUG_ENABLED
+	DEVICE void print() const {
 		if(threadIdx.x == 0) {
 			for(int x = 0; x < cols; x++) {
 				for(int y = 0; y < rows; y++) {
-					uint2 pos = make_uint2(x,y);
+					const uint2 pos = make_uint2(x,y);
 					pos = AccessMode()(pos);
 					printf("%f ", mat[pos.y*cols+pos.x]);
 				}
@@ -101,12 +103,11 @@ public:
 			}
 		}
 	}
+	#endif
 };
 
 template<unsigned int blockSize, class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
-DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAccess2& right, typename MatrixAccess1::Type* sleft) {
-	//BS Blockdim.x maximal, Blockdim.y = 1;
-	
+DEVICE void matProdKernel(MatrixAccess3& result, const MatrixAccess1& left, const MatrixAccess2& right, typename MatrixAccess1::Type* sleft) {	
 	#ifdef DEBUG_ENABLED
 	if(left.getCols() != right.getRows() && right.getCols() != result.getCols() && left.getRows() != result.getRows()) {
 		printf("Can not multiply %ux%u with %ux%u to %ux%u matrix.\n", 
@@ -121,7 +122,7 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 			typename MatrixAccess1::Type sright;
 			sright = 0;
 			for(int blocks = 0; blockSize*4*blocks < left.getCols(); blocks++) {
-				int x = threadIdx.x+blockSize*4*blocks;
+				const int x = threadIdx.x+blockSize*4*blocks;
 
 				//Spalte der rechten Matrix in shared Mem laden
 				for(int i = 0; i < 4; ++i) {
@@ -149,6 +150,7 @@ DEVICE void matProdKernel(MatrixAccess3& result, MatrixAccess1& left, MatrixAcce
 	__syncthreads();
 }
 
+#ifdef DEBUG_ENABLED
 template <typename T, class AccessMode>
 DEVICE void printMat(MatrixAccess<T, AccessMode>& mat) {
 	printf("{");
@@ -175,4 +177,6 @@ DEVICE void printIntMat(MatrixAccess<T, AccessMode>& mat) {
 	}
 	printf("\n");
 }
+#endif
+
 #endif

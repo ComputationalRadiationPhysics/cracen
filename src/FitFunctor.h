@@ -27,9 +27,9 @@ public:
 	typedef float paramArray[paramCount];
 	const static unsigned int numberOfParams = paramCount;
 	
-	static DEVICE float modelFunction(float x, float y, float* param); // = 0;
-	static DEVICE float derivation(unsigned int param, float x, float y, float* params); // = 0;	
+	static DEVICE float modelFunction(const float x, const float y, const float * const param); // = 0;
+	static DEVICE float derivation(const unsigned int param, const float x, const float y, const float * const params); // = 0;	
 	
-	static DEVICE Window getWindow(cudaTextureObject_t texObj, int dataset, int sample_count); // = 0;
+	static DEVICE Window getWindow(const cudaTextureObject_t texObj, const int dataset, const int sample_count); // = 0;
 };
 #endif

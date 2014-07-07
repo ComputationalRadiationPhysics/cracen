@@ -18,17 +18,17 @@
  */
 
 
-DEVICE float getSample(cudaTextureObject_t texObj, float I, int INDEXDATASET) {
+DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
 	return tex2D<float>(texObj, I+0.5, INDEXDATASET);
 }
 
 template <class Fit, unsigned int bs>
-DEVICE void calcF(cudaTextureObject_t texObj, float* param, float* F, const Window& window, const unsigned int sample_count, const unsigned int interpolation_count) {
+DEVICE void calcF(const cudaTextureObject_t texObj, const float* const param, float * const F, const Window& window, const unsigned int sample_count, const unsigned int interpolation_count) {
 	for(int i = threadIdx.x; i < window.width+Fit::numberOfParams; i++) {
-		int x = i*interpolation_count+window.offset;
+		const int x = i*interpolation_count+window.offset;
 		if(i < window.width) {
-			float xval = static_cast<float>(x);
-			float yval = getSample(texObj,x,blockIdx.x);
+			const float xval = static_cast<float>(x);
+			const float yval = getSample(texObj,x,blockIdx.x);
 			F[i] = -1*Fit::modelFunction(xval,yval,param);
 		} else {
 			F[i] = 0;
@@ -40,10 +40,10 @@ DEVICE void calcF(cudaTextureObject_t texObj, float* param, float* F, const Wind
 
 
 template <class Fit, unsigned int bs, class MatrixAccess>
-DEVICE void calcDerivF(cudaTextureObject_t texObj, float* param, float mu, MatrixAccess& deriv_F, const Window& window, const unsigned sample_count, const unsigned int interpolation_count) {
+DEVICE void calcDerivF(const cudaTextureObject_t texObj, const float * const param, const float mu, MatrixAccess& deriv_F, const Window& window, const unsigned sample_count, const unsigned int interpolation_count) {
 	for(int i = threadIdx.x; i < Fit::numberOfParams*(window.width+Fit::numberOfParams); i+=bs) {
-		int x = i%Fit::numberOfParams;
-		int y = i/Fit::numberOfParams;
+		const int x = i%Fit::numberOfParams;
+		const int y = i/Fit::numberOfParams;
 		
 		if(y < window.width) {
 			deriv_F[make_uint2(x,y)] = Fit::derivation(x,window.offset+y*interpolation_count,getSample(texObj, window.offset+y*interpolation_count, blockIdx.x),param);
@@ -59,7 +59,7 @@ DEVICE void calcDerivF(cudaTextureObject_t texObj, float* param, float mu, Matri
 }
 
 template <class Fit, unsigned int bs>
-__global__ void levMarqIt(cudaTextureObject_t texObj, FitData* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
+__global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
 	const unsigned int numberOfParams = Fit::numberOfParams;
 	__shared__ MatrixAccess<> G,G_inverse,u1,u2,u3,AT,FT,F1T;
 	__shared__ MatrixAccess<float, trans> F,F1,b,s,A,param,param2,param_last_it;
@@ -99,8 +99,8 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData* results, const un
 		/* Abschnitt 1 */
 		//Calc F(param)
 		
-		Window window = Fit::getWindow(texObj, threadIdx.x, sample_count);
-		int sampling_points = window.width/interpolation_count;
+		const Window window = Fit::getWindow(texObj, threadIdx.x, sample_count);
+		const int sampling_points = window.width/interpolation_count;
 		calcF<Fit, bs>(texObj, param.getRawPointer(), F.getRawPointer(), window, sample_count, interpolation_count);
 		//Calc F'(param)
 		calcDerivF<Fit, bs>(texObj, param.getRawPointer(), mu, A, window, sample_count, interpolation_count);
@@ -162,7 +162,7 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData* results, const un
 	} while(!finished && counter < 25);
 	
 		if(threadIdx.x < numberOfParams) {
-			float p = param[make_uint2(0,threadIdx.x)];
+			const float p = param[make_uint2(0,threadIdx.x)];
 			results[blockIdx.x].param[threadIdx.x] = p;
 		}
 	
@@ -178,8 +178,8 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData* results, const un
 template <class Fit>
 int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
 	const unsigned int bsx = 256;
-	dim3 gs(chunk_count,1);
-	dim3 bs(bsx,1);
+	const dim3 gs(chunk_count,1);
+	const dim3 bs(bsx,1);
 	levMarqIt<Fit,bsx><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count);
 	handleLastError();
 	return 0;
