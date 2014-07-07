@@ -12,9 +12,8 @@
 typedef float DATATYPE;
 typedef short int MeasureType;
 
-template<unsigned int numberOfParams>
 struct FitData {
-	float param[numberOfParams];
+	float param[FitFunction::numberOfParams];
 	int status;
 	FitData() {}
 };
@@ -22,7 +21,7 @@ struct FitData {
 //typedef std::vector<DATATYPE> Wform;
 typedef std::vector<DATATYPE> Chunk;
 typedef Ringbuffer<Chunk> InputBuffer;
-typedef FitData<numberOfParams> Output;
+typedef FitData Output;
 typedef Ringbuffer<Output> OutputBuffer;
 
 #endif

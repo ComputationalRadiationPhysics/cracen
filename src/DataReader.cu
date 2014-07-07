@@ -58,13 +58,6 @@ int DataReader::readHeader(const std::string& filename,
      	errorcode = 4;
     }
     
-    if(nSample > MAXCOUNTDATA) {
-    	std::cerr << "Resolution of the Waveforms exceed the compute capability of you graphics card." << std::endl;
-    	std::cerr << "Maximum number of samples is:" << MAXCOUNTDATA << std::endl;
-    	std::cerr << "Abort." << std::endl;
-	 	errorcode = 5;
-    }
-    
     fs.close();
     return errorcode; 
 }

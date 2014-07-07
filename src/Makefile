@@ -1,31 +1,31 @@
-CXX = nvcc
-CFLAGS = -arch=compute_35 -code=sm_35 -Xptxas=-v -O3 --keep --keep-dir ../tmp --source-in-ptx -lineinfo
-LFLAGS = -lpthread # -rdc=true -lcudadevrt 
-_OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o
+CFLAGS = 
+CUDA_FLAGS = -arch=compute_35 -code=sm_35 -Xptxas=-v -O3 --keep --keep-dir ../tmp --source-in-ptx -lineinfo # -rdc=true -lcudadevrt 
+LFLAGS = -lpthread
+_OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o StopWatch.o
 BUILD_PATH = ../build
 OBJECTS = $(patsubst %,$(BUILD_PATH)/%,$(_OBJECTS))
 export CPLUS_INCLUDE_PATH=
 
 all: $(OBJECTS)
-	$(CXX) $(CFLAGS) $(LFLAGS) -o DSP $(OBJECTS)
+	nvcc $(LFLAGS) $(CUDA_FLAGS) -o DSP $(OBJECTS)
 
 $(BUILD_PATH)/Dsp.o: Dsp.cu
-	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ Dsp.cu
+	nvcc $(CUDA_FLAGS) $(LFLAGS) -c -o $@ Dsp.cu
 	
 $(BUILD_PATH)/Node.o: Node.cu Node.h LevMarq.h UtilKernels.h GaussJordan.h Constants.h FitFunction.h FitFunctor.h
-	$(CXX) $(CFLAGS) $(LFLAGS) -dc -o $@ Node.cu
+	nvcc $(CUDA_FLAGS) $(LFLAGS) -dc -o $@ Node.cu
 	
 $(BUILD_PATH)/%.o: %.cu %.h
-	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
-	
+	nvcc $(CUDA_FLAGS) $(LFLAGS) -c -o $@ $<
+
 
 .PHONY: sync
 sync:
-	rsync -a --progress . rossendorf:~/build 
-	ssh rossendorf "rsync -a --progress build/ hypnos2:~/build"
+	rsync -a --progress . rossendorf:~/DSP/src
+	ssh rossendorf "rsync -a --progress DSP/src hypnos2:~/DSP"
 
 .PHONY: run 
-run: clean all
+run: all
 	./DSP
 
 .PHONY: clean

@@ -1,7 +1,7 @@
 #include "Node.h"
+#include "Constants.h"
 #include "LevMarq.h"
 #include <vector>
-#include "FitFunction.h"
 
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
 
@@ -22,7 +22,6 @@ void Node::run() {
 	*/
 	/* Initialise device */
 	
-	typedef WindowPolynom<2> Fit;
 	const unsigned int window_size = 100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
 	cudaSetDevice(deviceIdentifier);
 	
@@ -40,9 +39,9 @@ void Node::run() {
 	texDesc.readMode         = cudaReadModeElementType;
 	texDesc.normalizedCoords = 0;
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
-	FitData<Fit::numberOfParams> results[CHUNK_COUNT];
-	typedef FitData<Fit::numberOfParams> FitDataArray[numberOfTextures][CHUNK_COUNT];
-	FitData<Fit::numberOfParams> *fitData;
+	FitData results[CHUNK_COUNT];
+	typedef FitData FitDataArray[numberOfTextures][CHUNK_COUNT];
+	FitData *fitData;
 	cudaMalloc((void**)(&fitData), sizeof(FitDataArray));
 	#pragma loop unroll
 	for(unsigned int i = 0; i < numberOfTextures; i++) {
@@ -95,7 +94,7 @@ void Node::run() {
 		         */
 				iBuffer->freeTail();
 				std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-				levenbergMarquardt<Fit>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT);
+				levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT);
 				lastTexture = tex;
 				tex = (tex+1)%numberOfTextures;
 				textureEmpty[tex] = false;

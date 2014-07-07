@@ -1,10 +1,12 @@
 #ifndef FITFUNCTOR_H
 #define FITFUNCTOR_H
 
+#define DEVICE __device__ //__forceinline__
+
 struct Window {
 	unsigned int offset, width;
 	Window() : offset(0), width(0) {};
-	__device__ __host__ Window(unsigned int offset, unsigned int width) : 
+	DEVICE Window(unsigned int offset, unsigned int width) : 
 		offset(offset),
 		width(width) 
 	{}

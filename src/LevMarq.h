@@ -41,7 +41,7 @@ DEVICE void calcF(cudaTextureObject_t texObj, float* param, float* F, const Wind
 
 template <class Fit, unsigned int bs, class MatrixAccess>
 DEVICE void calcDerivF(cudaTextureObject_t texObj, float* param, float mu, MatrixAccess& deriv_F, const Window& window, const unsigned sample_count, const unsigned int interpolation_count) {
-	for(int i = threadIdx.x; i < Fit::numberOfParams*(window.width+numberOfParams); i+=bs) {
+	for(int i = threadIdx.x; i < Fit::numberOfParams*(window.width+Fit::numberOfParams); i+=bs) {
 		int x = i%Fit::numberOfParams;
 		int y = i/Fit::numberOfParams;
 		
@@ -59,7 +59,7 @@ DEVICE void calcDerivF(cudaTextureObject_t texObj, float* param, float mu, Matri
 }
 
 template <class Fit, unsigned int bs>
-__global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
+__global__ void levMarqIt(cudaTextureObject_t texObj, FitData* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
 	const unsigned int numberOfParams = Fit::numberOfParams;
 	__shared__ MatrixAccess<> G,G_inverse,u1,u2,u3,AT,FT,F1T;
 	__shared__ MatrixAccess<float, trans> F,F1,b,s,A,param,param2,param_last_it;
@@ -176,7 +176,7 @@ __global__ void levMarqIt(cudaTextureObject_t texObj, FitData<Fit::numberOfParam
 }
 
 template <class Fit>
-int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData<Fit::numberOfParams>* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
+int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
 	const unsigned int bsx = 256;
 	dim3 gs(chunk_count,1);
 	dim3 bs(bsx,1);
