@@ -90,7 +90,7 @@ public:
 	DEVICE T* getRawPointer() const {
 		return mat;
 	}
-	#if DEBUG_ENABLED
+	#ifdef DEBUG_ENABLED
 	DEVICE void print() const {
 		if(threadIdx.x == 0) {
 			for(int x = 0; x < cols; x++) {
@@ -106,7 +106,7 @@ public:
 	#endif
 };
 
-template<unsigned int blockSize, class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
+template<unsigned int blockSize, unsigned int scalar, class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
 DEVICE void matProdKernel(MatrixAccess3& result, const MatrixAccess1& left, const MatrixAccess2& right, typename MatrixAccess1::Type* sleft) {	
 	#ifdef DEBUG_ENABLED
 	if(left.getCols() != right.getRows() && right.getCols() != result.getCols() && left.getRows() != result.getRows()) {
@@ -118,32 +118,29 @@ DEVICE void matProdKernel(MatrixAccess3& result, const MatrixAccess1& left, cons
 	#endif
 	
 	for(int xr = 0; xr < right.getCols(); xr++) {
-		for(int y = 0; y < left.getRows(); y++) {
-			typename MatrixAccess1::Type sright;
-			sright = 0;
-			for(int blocks = 0; blockSize*4*blocks < left.getCols(); blocks++) {
-				const int x = threadIdx.x+blockSize*4*blocks;
-
+		for(int y = 0; y < left.getRows(); y+=scalar) {
+			for(int i = 0; i < scalar; i++) sleft[threadIdx.x+i*blockSize] = 0;
+			for(int blocks = 0; blockSize*blocks < left.getCols(); blocks++) {
+				const int x = threadIdx.x+blockSize*blocks;
 				//Spalte der rechten Matrix in shared Mem laden
-				for(int i = 0; i < 4; ++i) {
-					const int j = x+i*blockSize;
-					const int valid = j < right.getRows();
-					const int address = j*valid;
-					sright += valid*right[make_uint2(xr,address)]*left[make_uint2(address,y)];	
+				for(int i = 0; i < scalar; i++ ) {
+					if(x < right.getRows() && y + i < left.getRows()) {
+						const typename MatrixAccess1::Type right_reg = right[make_uint2(xr,x)];
+						sleft[threadIdx.x+i*blockSize] += right_reg*left[make_uint2(x,y+i)];	
+					}
 				}
-				
-				//Teilergebniss in Register speichern
-				//if(threadIdx.x +threadIdx.y == 0 && blockIdx.x+blockIdx.y == 0) printf("%i += %i\n", res, sleft[0][threadIdx.y]);
 			}
-			sleft[threadIdx.x] = sright;
 			//Vektor folden
 			for(int i = blockSize/2; i >= 1; i/=2) {
-				if(threadIdx.x < i) sleft[threadIdx.x] += sleft[threadIdx.x+i];
+				for(int s = 0; s < scalar; s++) {
+					if(threadIdx.x < i) sleft[threadIdx.x+s*blockSize] += sleft[threadIdx.x+i+s*blockSize];
+				}
 				__syncthreads();
 			}
 			//Register in Ergebniss Matrix schreiben
-			if(threadIdx.x == 0) {
-				result[make_uint2(xr, y)] = sleft[0];
+			
+			if(threadIdx.x < scalar && y+threadIdx.x < result.getRows()) {
+				result[make_uint2(xr, y+threadIdx.x)] = sleft[threadIdx.x*blockSize];
 			}
 		}
 	}

@@ -23,7 +23,7 @@ const unsigned int CHUNK_BUFFER_COUNT = 2048;
 const unsigned int INTERPOLATION_COUNT = 1;
 
 const std::string OUTPUT_FILENAME = "results.txt";
-const std::string FILENAME_TESTFILE = "../data/Al_25keV-259.cdb";
+const std::string FILENAME_TESTFILE = "../data/Al_25keV-1.cdb";
 
 typedef WindowPolynom<2> FitFunction;
 

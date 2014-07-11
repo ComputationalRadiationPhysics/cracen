@@ -13,11 +13,9 @@
 /*!
  * \brief getSample returns the y value of a given sample index
  * \param I sample index
- * \param INDEXDATASET index of the current dataset (GPU mode) or not used (CPU mode)
+ * \param INDEXDATASET index of the current dataset
  * \return y value
  */
-
-
 DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
 	return tex2D<float>(texObj, I+0.5, INDEXDATASET);
 }
@@ -59,29 +57,30 @@ DEVICE void calcDerivF(const cudaTextureObject_t texObj, const float * const par
 }
 
 template <class Fit, unsigned int bs>
-__global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count) {
+__global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count, float* mem) {
 	const unsigned int numberOfParams = Fit::numberOfParams;
+	const unsigned int SPACE = ((max_window_size+numberOfParams)*2+(max_window_size+numberOfParams)*numberOfParams);
+	const unsigned int memOffset = blockIdx.x*SPACE;
 	__shared__ MatrixAccess<> G,G_inverse,u1,u2,u3,AT,FT,F1T;
 	__shared__ MatrixAccess<float, trans> F,F1,b,s,A,param,param2,param_last_it;
-	__shared__ float sleft[bs];
+	__shared__ float sleft[bs*Fit::numberOfParams];
 	__shared__ float b_shared[numberOfParams], s_shared[numberOfParams], G_shared[numberOfParams*numberOfParams], 
 					 G_inverse_shared[numberOfParams*numberOfParams],
-					 param_shared[numberOfParams], param2_shared[numberOfParams], param_last_it_shared[numberOfParams],
+					 param_shared[numberOfParams], param2_shared[numberOfParams],
 					 u1_shared[1], u2_shared[1], u3_shared[1];
 					 
 	__shared__ bool finished;
 	if(threadIdx.x == 0) {
-		F = MatrixAccess<float, trans>(max_window_size+numberOfParams, 1);
+		F = MatrixAccess<float, trans>(&mem[memOffset], max_window_size+numberOfParams, 1);
 		b = MatrixAccess<float, trans>(b_shared, numberOfParams, 1);
 		s = MatrixAccess<float, trans>(s_shared, numberOfParams, 1);
-		A = MatrixAccess<float, trans>(max_window_size+numberOfParams, numberOfParams);
-		F1 = MatrixAccess<float, trans>(max_window_size+numberOfParams, 1);
+		A = MatrixAccess<float, trans>(&mem[memOffset+max_window_size+numberOfParams], max_window_size+numberOfParams, numberOfParams);
+		F1 = MatrixAccess<float, trans>(&mem[memOffset+(max_window_size+numberOfParams)*(numberOfParams+1)], max_window_size+numberOfParams, 1);
 		AT = A.transpose();
 		G = MatrixAccess<>(G_shared, numberOfParams, numberOfParams);
 		G_inverse = MatrixAccess<>(G_inverse_shared, numberOfParams, numberOfParams);
 		param = MatrixAccess<float, trans>(param_shared, numberOfParams, 1);
 		param2 = MatrixAccess<float, trans>(param2_shared, numberOfParams, 1);
-		param_last_it = MatrixAccess<float, trans>(param_last_it_shared, numberOfParams, 1);
 		u1 = MatrixAccess<>(u1_shared, 1,1);
 		u2 = MatrixAccess<>(u2_shared, 1,1);
 		u3 = MatrixAccess<>(u3_shared, 1,1);
@@ -108,16 +107,16 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 
 		//Solve minimization problem
 		//calc A^T*A => G
-		matProdKernel<bs>(G, AT, A, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(G, AT, A, sleft);
 		//calc G^-1
 		gaussJordan<Fit,bs>(G_inverse, G);
 		//calc A^T*F => b		
-		matProdKernel<bs>(b, AT, F, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(b, AT, F, sleft);
 		//calc G^-1*b => s
-		matProdKernel<bs>(s, G_inverse, b, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(s, G_inverse, b, sleft);
 		/* Abschnitt 3 */
 		//Reduce F(param)
-		matProdKernel<bs>(u1, FT, F, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(u1, FT, F, sleft);
 		
 		//Calc F(param+s)
 		const uint2 c = make_uint2(0,threadIdx.x);
@@ -126,10 +125,10 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		
 		//Fold F(param+s)
 		calcF<Fit, bs>(texObj, param2.getRawPointer(), F1.getRawPointer(), window, sample_count, interpolation_count);
-		matProdKernel<bs>(u2, F1T, F1, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(u2, F1T, F1, sleft);
 
 		//Calc F'(param)*s
-		matProdKernel<bs>(F1, A, s, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(F1, A, s, sleft);
 
 		//Calc F(param) + F'(param)*s'
 		//Fold F'(param)*s
@@ -139,7 +138,7 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		}
 		if(threadIdx.x == 0) finished = true;
 		__syncthreads();
-		matProdKernel<bs>(u3, F1T, F1, sleft);
+		matProdKernel<bs, Fit::numberOfParams>(u3, F1T, F1, sleft);
 
 		//calc roh
 		roh = (u1[make_uint2(0,0)]-u2[make_uint2(0,0)])/(u1[make_uint2(0,0)]-u3[make_uint2(0,0)]);
@@ -177,10 +176,13 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 
 template <class Fit>
 int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData* results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int chunk_count, const unsigned int interpolation_count) {
+	const unsigned int SPACE = ((max_window_size+Fit::numberOfParams)*2+(max_window_size+Fit::numberOfParams)*Fit::numberOfParams);
 	const unsigned int bsx = 256;
 	const dim3 gs(chunk_count,1);
 	const dim3 bs(bsx,1);
-	levMarqIt<Fit,bsx><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count);
+	float* mem;
+	cudaMalloc((void**) &mem, SPACE*chunk_count);
+	levMarqIt<Fit,bsx><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count, mem);
 	handleLastError();
 	return 0;
 

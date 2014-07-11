@@ -21,8 +21,8 @@ int main(int argc, char** argv) {
 	//cudaMalloc((void**)&d_result[i], sizeof(struct fitData) * SAMPLE_COUNT);
 	cudaMemcpyToArray(texArray, 0, 0, sample_data, sizeof(DATATYPE) * sample_count, cudaMemcpyHostToDevice);
 	
-	FitData<3> *fitData;
-	cudaMalloc((void**)(&fitData), sizeof(FitData<3>));
+	FitData *fitData;
+	cudaMalloc((void**)(&fitData), sizeof(FitData));
 	
 	// Specify texture
 	cudaResourceDesc resDesc;
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 	levenbergMarquardt<Polynom<2> >(stream, texObj, fitData, sample_count, sample_count, 1, 1);
 	cudaDeviceSynchronize();
 	handleLastError();
-	FitData<3> results[1];
+	FitData results[1];
 	cudaMemcpy(results, fitData, sizeof(results), cudaMemcpyDeviceToHost);
 	std::cout << results->param[2] << "x²+" << results->param[1] << "x+" << results->param[0]<< std::endl;
 	

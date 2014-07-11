@@ -20,24 +20,24 @@ void cpuMatMul(thrust::device_vector<T>& A, thrust::device_vector<T>& B, thrust:
 
 template <class T>
 __global__ void gpuMatProduct(T* a, T* b, T* c, unsigned int lc, unsigned int lr, unsigned int rc, unsigned int rr) {
-	__shared__ T sleft[256];
+	__shared__ T sleft[256*4];
 
 	MatrixAccess<T> left(a, lc, lr), right(b, rc, rr), result(c,rc,lr);
-	matProdKernel<256>(result, left, right, sleft);
+	matProdKernel<256, 3>(result, left, right, sleft);
 }
 template <class T>
 __global__ void gpuOrthogonalMatProduct(T* a, T* c, unsigned int cols, unsigned int rows) {
-	__shared__ T sleft[256];
+	__shared__ T sleft[256*4];
 
 	MatrixAccess<TYPE> right(a, cols, rows), result(c,cols,cols);
 	MatrixAccess<T, trans> left = right.transpose();
-	matProdKernel<256>(result, left, right, sleft);
+	matProdKernel<256, 3>(result, left, right, sleft);
 }
 
 int main(int argc, char** argv) {
     srand( ( unsigned ) time( NULL ) );
     int h2;
-	int w1 = h2 = 500, h1 = 20, w2=20;
+	int w1 = h2 = 5, h1 = 4, w2=1;
 	cudaDeviceReset();
 	thrust::device_vector<TYPE> A(w1*h1), B(w2*h2), C(h1*w2), D(h1*w2), AT(w1*h1);
 	
@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
 	gpuMatProduct<<<1,256>>>(pcast(A), pcast(B), pcast(C), w1,h1,w2,h2);
 	
 	
-	//printMat(C, h1, w2);
-	//printMat(D, h1, w2);
+	printMat(C, h1, w2);
+	printMat(D, h1, w2);
 	
 	cudaDeviceSynchronize();
 	handleLastError();

@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 	int numberOfDevices;
 	cudaError_t err;
 	err = cudaGetDeviceCount(&numberOfDevices);
-	
+	numberOfDevices = 1;
 	/* Check the cuda runtime environment */
 	if(err != cudaSuccess) {
 		std::cerr << "Something went wrong during the creation the context, or no Cuda capable devices are installed on the system." << std::endl;
