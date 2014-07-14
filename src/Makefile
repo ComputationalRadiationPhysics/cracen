@@ -1,3 +1,4 @@
+CXX = nvcc
 CFLAGS = 
 CUDA_FLAGS = -arch=compute_35 -code=sm_35 -Xptxas=-v -O3 --keep --keep-dir ../tmp --source-in-ptx -lineinfo # -rdc=true -lcudadevrt 
 LFLAGS = -lpthread
@@ -7,16 +8,16 @@ OBJECTS = $(patsubst %,$(BUILD_PATH)/%,$(_OBJECTS))
 export CPLUS_INCLUDE_PATH=
 
 all: $(OBJECTS)
-	nvcc $(LFLAGS) $(CUDA_FLAGS) -o DSP $(OBJECTS)
+	$(CXX) $(LFLAGS) $(CUDA_FLAGS) -o DSP $(OBJECTS)
 
 $(BUILD_PATH)/Dsp.o: Dsp.cu
-	nvcc $(CUDA_FLAGS) $(LFLAGS) -c -o $@ Dsp.cu
+	$(CXX) $(CUDA_FLAGS) $(LFLAGS) -c -o $@ Dsp.cu
 	
 $(BUILD_PATH)/Node.o: Node.cu Node.h LevMarq.h UtilKernels.h GaussJordan.h Constants.h FitFunction.h FitFunctor.h
-	nvcc $(CUDA_FLAGS) $(LFLAGS) -dc -o $@ Node.cu
+	$(CXX) $(CUDA_FLAGS) $(LFLAGS) -dc -o $@ Node.cu
 	
 $(BUILD_PATH)/%.o: %.cu %.h
-	nvcc $(CUDA_FLAGS) $(LFLAGS) -c -o $@ $<
+	$(CXX) $(CUDA_FLAGS) $(LFLAGS) -c -o $@ $<
 
 
 .PHONY: sync

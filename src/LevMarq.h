@@ -74,8 +74,8 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		F = MatrixAccess<float, trans>(&mem[memOffset], max_window_size+numberOfParams, 1);
 		b = MatrixAccess<float, trans>(b_shared, numberOfParams, 1);
 		s = MatrixAccess<float, trans>(s_shared, numberOfParams, 1);
-		A = MatrixAccess<float, trans>(&mem[memOffset+max_window_size+numberOfParams], max_window_size+numberOfParams, numberOfParams);
-		F1 = MatrixAccess<float, trans>(&mem[memOffset+(max_window_size+numberOfParams)*(numberOfParams+1)], max_window_size+numberOfParams, 1);
+		F1 = MatrixAccess<float, trans>(&mem[memOffset+max_window_size+numberOfParams], max_window_size+numberOfParams, 1);
+		A = MatrixAccess<float, trans>(&mem[memOffset+(max_window_size+numberOfParams)*2], max_window_size+numberOfParams, numberOfParams);
 		AT = A.transpose();
 		G = MatrixAccess<>(G_shared, numberOfParams, numberOfParams);
 		G_inverse = MatrixAccess<>(G_inverse_shared, numberOfParams, numberOfParams);
@@ -164,13 +164,6 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 			const float p = param[make_uint2(0,threadIdx.x)];
 			results[blockIdx.x].param[threadIdx.x] = p;
 		}
-	
-	if(threadIdx.x == 0) {
-		F.finalize();
-		F1.finalize();
-		A.finalize();
-	}
-	
 	return;
 }
 
@@ -181,9 +174,10 @@ int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData
 	const dim3 gs(chunk_count,1);
 	const dim3 bs(bsx,1);
 	float* mem;
-	cudaMalloc((void**) &mem, SPACE*chunk_count);
+	cudaMalloc((void**) &mem, SPACE*chunk_count*sizeof(float));
 	levMarqIt<Fit,bsx><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count, mem);
 	handleLastError();
+	cudaFree(mem);
 	return 0;
 
 }
