@@ -1,11 +1,11 @@
 #include <vector>
 #include <iostream>
 
-#include "Node.h"
-#include "OutputStream.h"
-#include "Constants.h"
-#include "DataReader.h"
-#include "StopWatch.h"
+#include "Node.hpp"
+#include "OutputStream.hpp"
+#include "Constants.hpp"
+#include "DataReader.hpp"
+#include "StopWatch.hpp"
 
 int main(int argc, char* argv[]) {
 	
@@ -54,6 +54,8 @@ int main(int argc, char* argv[]) {
 
 	std::vector<Node*> devices;
 	StopWatch sw;
+	reader.readToBuffer();
+	std::cout << "Data read." << std::endl;
 	sw.start();
 	for(int i = 0; i < numberOfDevices; i++) {
 		/* Start threads to handle Nodes */
@@ -62,8 +64,6 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Nodes created." << std::endl;
 		
-	reader.readToBuffer();
-	std::cout << "Data read." << std::endl;
 
 	//Make sure all results are written back
 	os.join();

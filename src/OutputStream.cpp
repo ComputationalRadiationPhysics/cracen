@@ -1,26 +1,24 @@
-#include "OutputStream.h"
+#include "OutputStream.hpp"
+#include <boost/property_tree/json_parser.hpp>
 
 /* defines how the output is written into the output file */
-std::ostream& operator<<(std::ostream& lhs, const Output& rhs) {
-	lhs << rhs.param[0] << " " << rhs.param[1] << " " << rhs.param[2];
-	return lhs;
-}
 
 void OutputStream::run() {
-	file << "status	startValue	endValue	extremumPos	extremumValue" << std::endl;
+	using boost::property_tree::ptree;
+	ptree pt;
+	ptree array;
 	while(!oBuffer.isFinished()) {
 		Output* o = oBuffer.reserveTailTry();
 		if(o != NULL) {
-			file << (*o) << std::endl;
+			o->save(array);
 			oBuffer.freeTail();
 		}
 	}
-	/* Close Filestream */
-	file.close();
+	pt.add_child("fits", array);
+   write_json("results.txt", pt);
 }
 
 OutputStream::OutputStream(const std::string& file, int producer) :
-	file(file.c_str(), std::ofstream::out),
     oBuffer(CHUNK_BUFFER_COUNT, producer),
 	done(false)
 {

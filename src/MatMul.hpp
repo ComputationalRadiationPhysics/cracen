@@ -1,18 +1,5 @@
-#ifndef UTILKERNELS_H
-#define UTILKERNELS_H
-
-#include <cstdio>
-
-#define DEVICE __device__
-#ifdef DEBUG_ENABLED
-#define handleLastError() cudaDeviceSynchronize(); handle_error( cudaGetLastError(),"Kernel Error occured:\"", __LINE__, __FILE__)
-#else
-#define handleLastError()
-#endif
-
-void handle_error(cudaError_t err, const char* error, int line, const char* file) {
-	if(err != cudaSuccess) std::cerr << error << cudaGetErrorString(err) << "\" in Line " << line << " in File " << file << std::endl;
-}
+#ifndef MATMUL_HPP
+#define MATMUL_HPP
 
 struct identity {
 	DEVICE uint2 operator()(const uint2& input) const {
@@ -123,13 +110,15 @@ DEVICE void matProdKernel(MatrixAccess3& result, const MatrixAccess1& left, cons
 			for(int blocks = 0; blockSize*blocks < left.getCols(); blocks++) {
 				const int x = threadIdx.x+blockSize*blocks;
 				//Spalte der rechten Matrix in shared Mem laden
+				typename MatrixAccess1::Type right_reg = 0;
+				if(x < right.getRows()) right_reg = right[make_uint2(xr,x)];
 				for(int i = 0; i < scalar; i++ ) {
 					if(x < right.getRows() && y + i < left.getRows()) {
-						const typename MatrixAccess1::Type right_reg = right[make_uint2(xr,x)];
 						sleft[threadIdx.x+i*blockSize] += right_reg*left[make_uint2(x,y+i)];	
 					}
 				}
 			}
+			__syncthreads();
 			//Vektor folden
 			for(int i = blockSize/2; i >= 1; i/=2) {
 				for(int s = 0; s < scalar; s++) {
@@ -147,33 +136,32 @@ DEVICE void matProdKernel(MatrixAccess3& result, const MatrixAccess1& left, cons
 	__syncthreads();
 }
 
-#ifdef DEBUG_ENABLED
-template <typename T, class AccessMode>
-DEVICE void printMat(MatrixAccess<T, AccessMode>& mat) {
-	printf("{");
-	for(int j = 0; j < mat.getRows(); j++) {
-		printf("{");
-		for(int i = 0; i < mat.getCols(); i++) {
-			printf("%f",mat[make_uint2(i,j)]);
-			if(i<mat.getCols()-1) printf(", ");
-		}
-		printf("}");
-		if(j<mat.getRows()-1) printf(",\n");
+template<unsigned int blockSize, unsigned int scalar, class MatrixAccess1, class MatrixAccess2, class MatrixAccess3>
+DEVICE void matProdKernel2(MatrixAccess3& result, const MatrixAccess1& left, const MatrixAccess2& right, typename MatrixAccess1::Type* sleft) {	
+	#ifdef DEBUG_ENABLED
+	if(left.getCols() != right.getRows() && right.getCols() != result.getCols() && left.getRows() != result.getRows()) {
+		printf("Can not multiply %ux%u with %ux%u to %ux%u matrix.\n", 
+			left.getCols(),    left.getRows(), 
+			right.getCols(),    right.getRows(), 
+			result.getCols(), result.getRows());
 	}
-	printf("}\n");
-}
+	#endif
+	
+	for(int xr = 0; xr < right.getCols(); xr++) {
+		for(int y = threadIdx.x; y < left.getRows(); y+=blockSize) {
+			typename MatrixAccess1::Type right_reg = 0;
+			for(int x = 0; x < right.getRows(); x++) {
+				
+				//Spalte der rechten Matrix in shared Mem laden
+				
+				right_reg += right[make_uint2(xr,x)]*left[make_uint2(x,y)];
+			}
 
-
-template <typename T, class AccessMode>
-DEVICE void printIntMat(MatrixAccess<T, AccessMode>& mat) {
-	for(int j = 0; j < mat.getRows(); j++) {
-		for(int i = 0; i < mat.getCols(); i++) {
-			printf("%i ",mat[make_uint2(i,j)]);
+			result[make_uint2(xr, y)]=right_reg;
 		}
-		printf("\n");
+		
 	}
-	printf("\n");
+	__syncthreads();
 }
-#endif
 
 #endif

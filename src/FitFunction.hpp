@@ -1,7 +1,7 @@
-#ifndef FITFUNCTION_H
-#define FITFUNCTION_H
+#ifndef FITFUNCTION_HPP
+#define FITFUNCTION_HPP
 
-#include "FitFunctor.h"
+#include "FitFunctor.hpp"
 /* User definitions */
 
 
@@ -12,6 +12,7 @@
 template <unsigned int order>
 class Polynom:public FitFunctor<order+1> {
 public:
+	#ifdef __CUDACC__
 	static DEVICE float modelFunction(const float x, const float y, const float * const param) {
 		float res = 0;
 		for(int i = 0; i <= order; i++) {
@@ -28,10 +29,12 @@ public:
 	static DEVICE Window getWindow(const cudaTextureObject_t texObj, const int dataset, const int sample_count) {
 		return Window(0, sample_count);
 	}
+	#endif
 };
 
 template <unsigned int order>
 class WindowPolynom:public Polynom<order> {
+	#ifdef __CUDACC__
 private:
 	static DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
 		return tex2D<float>(texObj, I+0.5, INDEXDATASET);
@@ -47,6 +50,7 @@ public:
 		}
 		return Window(pos-50, 100);
 	}
+	#endif
 };
 
 /* End user definitions*/

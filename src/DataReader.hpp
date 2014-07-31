@@ -1,13 +1,13 @@
-#ifndef DATAREADER_H
-#define DATAREADER_H
+#ifndef DATAREADER_HPP
+#define DATAREADER_HPP
 
 #include <iostream>
 #include <fstream> 
 #include <string> 
 #include <pthread.h>
-#include "Types.h"
-#include "Constants.h"
-#include "Ringbuffer.h"
+#include "Types.hpp"
+#include "Constants.hpp"
+#include "Ringbuffer.hpp"
 
 /*! DataReader
  *  @brief Is meant as a producer for the Ringbuffer class. 

@@ -49,7 +49,12 @@ int main(int argc, char** argv) {
 	cudaStreamCreate(&stream);
 	dim3 gs(1,1);
 	dim3 bs(sample_count+3,1);
-	levenbergMarquardt<Polynom<2> >(stream, texObj, fitData, sample_count, sample_count, 1, 1);
+	float* mem;
+	const unsigned int window_size = sample_count;
+	const size_t SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
+	cudaMalloc((void**) &mem, sizeof(float)*SPACE);
+	levenbergMarquardt<Polynom<2> >(stream, texObj, fitData, sample_count, sample_count, 1, 1, mem);
+	cudaFree(mem);
 	cudaDeviceSynchronize();
 	handleLastError();
 	FitData results[1];

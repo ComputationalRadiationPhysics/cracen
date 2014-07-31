@@ -1,18 +1,17 @@
-#ifndef OUTPUTSTREAM_H
-#define OUTPUTSTREAM_H
+#ifndef OUTPUTSTREAM_HPP
+#define OUTPUTSTREAM_HPP
 
 #include <fstream>
 #include <string>
-#include "Ringbuffer.h"
-#include "Types.h"
-#include "Constants.h"
+#include "Ringbuffer.hpp"
+#include "Types.hpp"
+#include "Constants.hpp"
 
 /*! Class that provides all functions to write the results of the computation  
  *  into a file.
  */
 class OutputStream {
 private:
-	std::ofstream file;
 	Ringbuffer<Output> oBuffer;
 	bool done;
 	pthread_t thread_tid;

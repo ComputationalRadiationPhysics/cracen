@@ -2,7 +2,7 @@
 #define NUDE_H
 
 #include <pthread.h>
-#include "Types.h"
+#include "Types.hpp"
 
 /*! 
  *  Each installed device should be handled by its own thread. This class provides 
@@ -11,7 +11,7 @@
  */
 class Node {
 private:
-	const static unsigned int numberOfTextures = 5;
+	const static unsigned int numberOfTextures = 3;
 	int deviceIdentifier;
 	bool finish;
 	InputBuffer* iBuffer;

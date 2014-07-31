@@ -1,6 +1,6 @@
-#include "Node.h"
-#include "Constants.h"
-#include "LevMarq.h"
+#include "Node.hpp"
+#include "Constants.hpp"
+#include "LevMarq.hpp"
 #include <vector>
 
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
@@ -61,6 +61,10 @@ void Node::run() {
 	std::cout << "Device " << deviceIdentifier << " initialised." << std::endl;
 	int tex = 0;
 	unsigned int lastTexture = 0;
+	float* mem;
+	const size_t SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
+	const size_t size = SPACE*CHUNK_COUNT;
+	cudaMalloc((void**) &mem, size*numberOfTextures*sizeof(float));
 	while(!iBuffer->isFinished() || !textureEmpty[lastTexture]) {
 		/* copy results back */
 		if(!textureEmpty[tex]) {
@@ -94,12 +98,13 @@ void Node::run() {
 			iBuffer->freeTail();
 			/*  for correct output the iBuffer->getSize() should be in the critical section */
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT);
+			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT, &mem[size*tex]);
 			lastTexture = tex;
 			tex = (tex+1)%numberOfTextures;
 			textureEmpty[tex] = false;
 		}
 	}
+	cudaFree(mem);
 	for(unsigned int i = 0; i < numberOfTextures; i++) {
 		cudaDestroyTextureObject(texObj[i]);
 		cudaFreeArray(texArrays[i]);

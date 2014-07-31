@@ -1,4 +1,4 @@
-#include "DataReader.h"
+#include "DataReader.hpp"
 
 DataReader::DataReader(const std::string& filename, InputBuffer* buffer,                       int chunksize) :
     inputFilename(filename),
@@ -104,7 +104,7 @@ void DataReader::readToBuffer()
             	Chunk *buffer = rb->reserveHead();
 		        for(int k = 0; k < nChunk*nSamp; k++) {
 		        	//(*buffer)[k] = temp[k];
-		            buffer->at(k) = temp.at(k);	
+		        	buffer->at(k) = temp.at(k);	
                 }
             	rb->freeHead();
             	j = 0;

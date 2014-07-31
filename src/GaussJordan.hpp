@@ -1,5 +1,7 @@
-#include <stdio.h>
-#include "UtilKernels.h"
+#ifndef GAUSSJORDAN_HPP
+#define GAUSSJORDAN_HPP
+
+#include "Device.hpp"
 
 template <class Fit, unsigned int bs, class MatrixAccess1, class MatrixAccess2>
 DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
@@ -69,3 +71,5 @@ DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
 	if(y < dim && x < dim) result[c1] = mat[c2];
 	__syncthreads();
 }
+
+#endif

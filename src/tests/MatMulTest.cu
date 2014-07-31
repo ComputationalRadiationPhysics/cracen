@@ -23,7 +23,7 @@ __global__ void gpuMatProduct(T* a, T* b, T* c, unsigned int lc, unsigned int lr
 	__shared__ T sleft[256*4];
 
 	MatrixAccess<T> left(a, lc, lr), right(b, rc, rr), result(c,rc,lr);
-	matProdKernel<256, 3>(result, left, right, sleft);
+	matProdKernel2<256, 1>(result, left, right, sleft);
 }
 template <class T>
 __global__ void gpuOrthogonalMatProduct(T* a, T* c, unsigned int cols, unsigned int rows) {

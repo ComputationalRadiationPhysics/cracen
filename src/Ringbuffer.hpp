@@ -1,5 +1,5 @@
-#ifndef Ringbuffer_H
-#define Ringbuffer_H
+#ifndef Ringbuffer_HPP
+#define Ringbuffer_HPP
 
 #include <vector>
 #include <iostream>
@@ -47,6 +47,9 @@ public:
     bool isEmpty();
     bool isFinished();
     void producerQuit();
+    
+    //Not for multithreaded processes! Use with extreme caution.
+    std::vector<Type>& getBuffer() {return buffer;}
 };
 
 typedef std::vector<float >Chunk;
