@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef UTIL_HPP
+#define UTIL_HPP
 
 #include <thrust/device_vector.h>
 
@@ -27,6 +27,14 @@ static inline void random_mat(thrust::device_vector<T> &matrix, int rows, int co
     {
         matrix[ i ] = static_cast<T>(rand()) % 3 - 1;
     }
+}
+
+std::ostream& operator<<(std::ostream& lhs, const FitData& rhs) {
+	for(int i = FitFunction::numberOfParams-1; i > 0; i--) {
+		lhs << rhs.param[i] << "*x**" << i << " + ";
+	}
+	lhs << rhs.param[0] << std::endl;
+	return lhs;
 }
 
 #endif

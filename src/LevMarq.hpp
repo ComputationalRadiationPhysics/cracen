@@ -8,6 +8,7 @@
 #include "GaussJordan.hpp"
 #include "FitFunctor.hpp"
 #include "CudaStopWatch.hpp"
+#include "PrintMat.hpp"
 
 /*!
  * \brief getSample returns the y value of a given sample index
@@ -38,7 +39,7 @@ DEVICE void calcF(const cudaTextureObject_t texObj, const float* const param, fl
 template <class Fit, unsigned int bs, class MatrixAccess>
 DEVICE void calcDerivF(const cudaTextureObject_t texObj, const float * const param, const float mu, MatrixAccess& deriv_F, const Window& window, const unsigned sample_count, const unsigned int interpolation_count) {
 	for(int i = threadIdx.x; i < Fit::numberOfParams*(window.width+Fit::numberOfParams); i+=bs) {
-		const int x = i%Fit::numberOfParams;
+		const float x = i%Fit::numberOfParams;
 		const int y = i/Fit::numberOfParams;
 		
 		deriv_F[make_uint2(x,y)] = 0;
@@ -89,24 +90,31 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 	__syncthreads();
 	float mu = 1, roh;
 	int counter = 0;
-	if(threadIdx.x < Fit::numberOfParams) param[make_uint2(0,threadIdx.x)] = 0;		
-	__syncthreads();
-					 
+	if(threadIdx.x < numberOfParams) {
+		param[make_uint2(0,threadIdx.x)] = 0;
+	};		
+	if(threadIdx.x == 0) {
+		param[make_uint2(0,0)] = 20000;
+		param[make_uint2(0,1)] = 600;
+		param[make_uint2(0,2)] = -30000;
+		param[make_uint2(0,3)] = 175;
+	}
+	__syncthreads();				 
 	do {
 		counter++;
 		//sw.start();
 		/* Abschnitt 1 */
 		//Calc F(param)
 		
-		const Window window = Fit::getWindow(texObj, threadIdx.x, sample_count);
+		const Window window = Fit::getWindow(texObj, blockIdx.x, sample_count);
 		const int sampling_points = window.width/interpolation_count;
 		calcF<Fit, bs>(texObj, param.getRawPointer(), F.getRawPointer(), window, sample_count, interpolation_count); //30%
 		//sw.stop(); //1
 		//Calc F'(param)
 		calcDerivF<Fit, bs>(texObj, param.getRawPointer(), mu, A, window, sample_count, interpolation_count);
+	//	if(threadIdx.x == 0 && blockIdx.x == 0) printMat(A);
 		//sw.stop(); //2
 		/* Abschnitt 2 */
-
 		//Solve minimization problem
 		//calc A^T*A => G
 		matProdKernel<bs, Fit::numberOfParams>(G, AT, A, sleft);
@@ -127,7 +135,6 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		const uint2 c = make_uint2(0,threadIdx.x);
 		if(threadIdx.x < numberOfParams) param2[c] = param[c] + s[c];
 		__syncthreads();
-		
 		//Fold F(param+s)
 		calcF<Fit, bs>(texObj, param2.getRawPointer(), F1.getRawPointer(), window, sample_count, interpolation_count); //30%
 		matProdKernel<bs, 1>(u2, F1T, F1, sleft);
@@ -146,36 +153,45 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		__syncthreads();
 		matProdKernel<bs, 1>(u3, F1T, F1, sleft);
 		//calc roh
-		roh = (u1[make_uint2(0,0)]-u2[make_uint2(0,0)])/(u1[make_uint2(0,0)]-u3[make_uint2(0,0)]);
+		const float z = u1[make_uint2(0,0)]-u2[make_uint2(0,0)];
+		const float n = u1[make_uint2(0,0)]-u3[make_uint2(0,0)];
+		roh = (z/n); //Div by 0 if not valid
 		//sw.stop(); //10
 		//decide if s is accepted or discarded
-		if(roh <= 0.2) {
+		if(roh <= 0.2 || roh != roh) {
 			//s verwerfen, mu erhöhen
 			mu *= 2;
-			if(threadIdx.x == 0) finished = false;
+			if(threadIdx.x == 0 && roh == roh) finished = false;
 		} else  {
 				uint2 j = make_uint2(0,threadIdx.x);
 				if(threadIdx.x < numberOfParams) {
 					param[j] = param[j] + s[j];
-					if(s[j] > 1e-5) finished = false;
+					if(s[j] > 1e-6) finished = false;
 				}
 			if( roh >= 0.8){
 				mu /= 2;
 			}
 		}
-
+		//if(threadIdx.x == 0 && blockIdx.x == 0) printf("roh=%f, mu=%f, u1=%f, u2=%f, u3=%f\n", roh, mu, u1_shared[0], u2_shared[0], u3_shared[0]);
 		//sw.stop();
+		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(s.transpose());
 		__syncthreads();
-	} while(!finished && counter < 50);
-	
-		if(threadIdx.x < numberOfParams) {
-			const float p = param[make_uint2(0,threadIdx.x)];
-			results[blockIdx.x].param[threadIdx.x] = p;
+	} while((!finished) && counter < 125);
+	/*
+		if(threadIdx.x == 0 && blockIdx.x == 0) {
+			printf("status=%i, ", !finished);
+			printMat(param);
 		}
-		if(threadIdx.x == numberOfParams) {
-			results[blockIdx.x].status = finished;
-		}
+	*/
+	if(threadIdx.x < numberOfParams) {
+		const float p = param[make_uint2(0,threadIdx.x)];
+		results[blockIdx.x].param[threadIdx.x] = p;
+	}
+	if(threadIdx.x == numberOfParams) {
+		results[blockIdx.x].status = !finished;
+	}
 
+	return;
 }
 
 template <class Fit>

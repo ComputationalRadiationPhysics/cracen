@@ -1,10 +1,11 @@
 CUXX = nvcc
 CXX = g++
 CFLAGS = -std=c++11 -I/opt/pkg/devel/boost/1.55.0/include/
-CUDA_FLAGS = -arch=compute_35 -code=sm_35 -Xptxas=-v -O3 \
+CUDA_FLAGS = -arch=compute_35 -code=sm_35 -Xptxas=-v -O3 -DDEBUG_ENABLED\
 #--keep --keep-dir ../tmp --source-in-ptx -lineinfo \
 #-DBOOST_NOINLINE='__attribute__ ((noinline))' \
-#-Xcudafe "--diag_suppress=boolean_controlling_expr_is_constant"
+#-Xcudafe "--diag_suppress=boolean_controlling_expr_is_constant" \
+
 LFLAGS = -lpthread 
 _OBJECTS = Node.o Dsp.o OutputStream.o DataReader.o StopWatch.o
 BUILD_PATH = ../build
@@ -26,9 +27,15 @@ $(BUILD_PATH)/%.o: %.cpp %.hpp
 
 .PHONY: sync
 sync:
+	rm -f viewer/results.txt;
 	rsync -a --delete --progress . rossendorf:~/DSP/src
 	ssh rossendorf "rsync -a --delete --progress DSP/src hypnos2:~/DSP"
 
+.PHONY: getResults
+getResults:
+	ssh rossendorf "scp hypnos:~/DSP/src/results.txt ."
+	scp rossendorf:~/results.txt viewer/results.txt
+	
 .PHONY: run 
 run: all
 	./DSP

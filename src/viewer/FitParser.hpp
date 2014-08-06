@@ -17,7 +17,7 @@ void Fits::load(const std::string &filename)
     	fit.status = pfit.second.get("status", -1.0f);
     	int i = 0;
     	BOOST_FOREACH(ptree::value_type& p, pfit.second.get_child("params")) {
-    		fit.param[i] = p.second.get<float>("");
+    		fit.param[i] = p.second.get("",0.0f);
     		i++;
     	}
     	fits.push_back(fit);

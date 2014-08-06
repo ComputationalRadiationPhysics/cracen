@@ -1,9 +1,10 @@
 #include <gtkmm.h>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <cstdlib>
-#include "../Ringbuffer.h"
-#include "../DataReader.h"
+#include "../Ringbuffer.hpp"
+#include "../DataReader.hpp"
 #include "FitParser.hpp"
 
 class MainWindow: public Gtk::Window {
@@ -18,23 +19,34 @@ private:
     int chunkIndex;
     int waveIndex;
     void drawWaveform() {
-    	std::fstream waveFile("wave.txt");
+    	std::fstream waveFile("wave.txt", std::ios::out);
     	for(int i = 0; i < SAMPLE_COUNT; i++) {
     		waveFile << waveBuffer.getBuffer()[chunkIndex][waveIndex*CHUNK_COUNT+i] << std::endl;
     	}
     	waveFile.close();
-    	std::fstream plotFile("plot.gnu", ios::out);
+    	std::fstream plotFile("plot.gnu", std::ios::out);
     	plotFile << "set terminal png size 1920,1000" << std::endl
 				 << "set output \"plot.png\"" << std::endl
 				 << "set xlabel \"time\"" << std::endl
 				 << "set ylabel \"energy\"" << std::endl
  				 << "set yrange [-32000: 32000]" << std::endl
 			     << "set xrange [0: 1000]" << std::endl
-				 << "f(x) = " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[2]<<"*x*x + " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[1]<< "*x + " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[0] << std::endl
-				 << "plot 'wave.txt' using 1 title \"Raw Data (smoothed)\" with line smooth sbezier, \\" << std::endl
-				 << "f(x) with line title \"Fit\"" << std::endl;
+ 			     << "set x2range [0: 1000]" << std::endl
+				 << "f(x) = " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[0] << "*exp(-1*((x-" << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[1] << ")/" << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[3] << ")**2) + " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[2];
+		/*
+		for(int i = 0; i < FitFunction::numberOfParams; i++) {
+			plotFile << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[i] << "*x**" << i;
+			if(i < FitFunction::numberOfParams-1) plotFile << " + ";
+		}
+		*/
+		plotFile << std::endl;
+		std::string color;
+		if(fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].status == 0) color = "green";
+		else color = "red";
+		plotFile << "plot 'wave.txt' using 1 title \"Raw Data (smoothed)\" with line smooth sbezier axes x1y1 lt rgb \"black\", \\" << std::endl
+				 << "f(x) with line title \"Fit\" axes x2y1 lt rgb \"" << color << "\"" << std::endl;
 		plotFile.close();
-    	std::system("gnuplot plot.gnu", ios::out);
+    	std::system("gnuplot plot.gnu");
 		image->set("plot.png");
     }
 public:
@@ -45,13 +57,14 @@ public:
 	
 	void Button_1_Click() {
 		std::cout << "Button " << 1 << " clicked." << std::endl;
-		if(chunkIndex >= 0) chunkIndex -= 1;
+		if(chunkIndex > 0) chunkIndex -= 1;
+		else waveIndex = 0;
 		drawWaveform();
 
 	}
 	void Button_2_Click() {
 		std::cout << "Button " << 2 << " clicked." << std::endl;
-		if(waveIndex >= 0) waveIndex -= 1;
+		if(waveIndex > 0) waveIndex -= 1;
 		drawWaveform();
 	}
 	void Button_3_Click() {

@@ -1,8 +1,9 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-#include <ostream>
+#include <string>
 #include <vector>
+#include <iostream>
 #include "Constants.hpp"
 #include "Ringbuffer.hpp"
 #ifndef __CUDACC__
@@ -27,9 +28,11 @@ struct FitData {
 		ptree thisFit;
 		ptree params;
 		thisFit.put("status", status);
-		BOOST_FOREACH(float name, param) {
+		for(int i = 0; i < FitFunction::numberOfParams; i++) {
 			ptree value;
-			value.put("", name);
+			std::ostringstream out;
+			out << std::setprecision(12) << param[i];
+			value.put("", out.str());
 			params.push_back(std::make_pair("", value));
 		}
 		thisFit.add_child("params", params);

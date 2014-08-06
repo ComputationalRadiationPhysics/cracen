@@ -1,24 +1,36 @@
 #include <iostream>
 #include <thrust/device_vector.h>
-#include "../LevMarq.h"
-#include "../FitFunction.h"
-#include "Util.h"
+#include "../LevMarq.hpp"
+#include "../FitFunction.hpp"
+#include "Util.hpp"
+#include "Wave.hpp"
 
 typedef float DATATYPE;
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
+const unsigned int ORDER = 6;
+
+template <unsigned int order>
+float poly(float x) {
+	float res;
+	for(int i = 0; i <= order; i++) {
+		res += std::pow(x,i);
+	}
+	return res;
+}
+
 
 int main(int argc, char** argv) {
-	const int sample_count = 10;
+	const int sample_count = 1000;
 	float sample_data[sample_count];
 	cudaArray_t texArray;
 	for(int i = 0; i < sample_count; i++) {
-		sample_data[i] = i*i+i+1;
-		//std::cout << "sample_data[" << i << "] = " << sample_data[i] << std::endl;
+		const float x = static_cast<float>(i)/sample_count;
+		sample_data[i] = firstWave[i]; //poly<ORDER>(x)
+		std::cout << "sample_data[" << i << "] = " << sample_data[i] << std::endl;
 	}
 	
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
 	cudaMallocArray(&texArray, &channelDesc, sample_count, 1);
-	//cudaMalloc((void**)&d_result[i], sizeof(struct fitData) * SAMPLE_COUNT);
 	cudaMemcpyToArray(texArray, 0, 0, sample_data, sizeof(DATATYPE) * sample_count, cudaMemcpyHostToDevice);
 	
 	FitData *fitData;
@@ -38,29 +50,30 @@ int main(int argc, char** argv) {
 	texDesc.filterMode       = cudaFilterModeLinear;
 	texDesc.readMode         = cudaReadModeElementType;
 	texDesc.normalizedCoords = 0;
-
+	
 	// Create texture object
 	cudaTextureObject_t texObj = 0;
 	cudaCreateTextureObject(&texObj, &resDesc, &texDesc, NULL);
 	cudaDeviceSynchronize();
 	handleLastError();
-	
+	std::cout << "Texture Object created." << std::endl;
 	cudaStream_t stream;
 	cudaStreamCreate(&stream);
-	dim3 gs(1,1);
-	dim3 bs(sample_count+3,1);
 	float* mem;
 	const unsigned int window_size = sample_count;
-	const size_t SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
+	const size_t SPACE = ((window_size+Polynom<ORDER>::numberOfParams)*2+(window_size+Polynom<ORDER>::numberOfParams)*Polynom<ORDER>::numberOfParams);
 	cudaMalloc((void**) &mem, sizeof(float)*SPACE);
-	levenbergMarquardt<Polynom<2> >(stream, texObj, fitData, sample_count, sample_count, 1, 1, mem);
+	std::cout << "Kernel start." << std::endl;
+	//levenbergMarquardt<Polynom<ORDER> >(stream, texObj, fitData, sample_count, sample_count, 1, 1, mem);
+	levenbergMarquardt<Gauss>(stream, texObj, fitData, sample_count, sample_count, 1, 1, mem);
 	cudaFree(mem);
 	cudaDeviceSynchronize();
 	handleLastError();
 	FitData results[1];
 	cudaMemcpy(results, fitData, sizeof(results), cudaMemcpyDeviceToHost);
-	std::cout << results->param[2] << "x²+" << results->param[1] << "x+" << results->param[0]<< std::endl;
-	
+	std::cout << "status=" << results[0].status << std::endl;
+	//std::cout << results[0];
+	std::cout << results[0].param[0] << "*exp(-((x-" << results[0].param[1] << ")/" << results[0].param[3] << ")**2) + " <<  results[0].param[2] << std::endl;
 	std::cout << "Test done." << std::endl;
 	cudaDestroyTextureObject(texObj);
 	cudaFreeArray(texArray);

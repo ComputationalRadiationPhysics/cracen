@@ -10,7 +10,7 @@ all: $(OBJECTS)
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
 
-%.o: ../%.cpp ../%.h
+%.o: ../%.cpp ../%.hpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
 
 .PHONY: run
@@ -20,3 +20,7 @@ run: all
 .PHONY: clean
 clean:
 	rm -f *.o
+
+plot: plot.gnu
+	gnuplot plot.gnu
+	eog plot.png

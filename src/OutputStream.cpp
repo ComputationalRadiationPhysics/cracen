@@ -1,8 +1,6 @@
 #include "OutputStream.hpp"
 #include <boost/property_tree/json_parser.hpp>
 
-/* defines how the output is written into the output file */
-
 void OutputStream::run() {
 	using boost::property_tree::ptree;
 	ptree pt;

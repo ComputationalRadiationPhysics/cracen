@@ -11,7 +11,7 @@
  */
 class Node {
 private:
-	const static unsigned int numberOfTextures = 3;
+	const static unsigned int numberOfTextures = 1;
 	int deviceIdentifier;
 	bool finish;
 	InputBuffer* iBuffer;

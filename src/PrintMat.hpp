@@ -5,7 +5,7 @@
 
 #ifdef DEBUG_ENABLED
 template <typename T, class AccessMode>
-DEVICE void printMat(MatrixAccess<T, AccessMode>& mat) {
+DEVICE void printMat(MatrixAccess<T, AccessMode> mat) {
 	printf("{");
 	for(int j = 0; j < mat.getRows(); j++) {
 		printf("{");
