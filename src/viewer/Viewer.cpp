@@ -21,7 +21,7 @@ private:
     void drawWaveform() {
     	std::fstream waveFile("wave.txt", std::ios::out);
     	for(int i = 0; i < SAMPLE_COUNT; i++) {
-    		waveFile << waveBuffer.getBuffer()[chunkIndex][waveIndex*CHUNK_COUNT+i] << std::endl;
+    		waveFile << waveBuffer.getBuffer()[chunkIndex][waveIndex*SAMPLE_COUNT+i] << std::endl;
     	}
     	waveFile.close();
     	std::fstream plotFile("plot.gnu", std::ios::out);
@@ -64,13 +64,23 @@ public:
 	}
 	void Button_2_Click() {
 		std::cout << "Button " << 2 << " clicked." << std::endl;
-		if(waveIndex > 0) waveIndex -= 1;
-		drawWaveform();
+		if(waveIndex > 0) {
+			waveIndex -= 1;		
+			drawWaveform();
+		} else {
+			waveIndex = CHUNK_COUNT - 1;
+			Button_1_Click();
+		}
 	}
 	void Button_3_Click() {
 		std::cout << "Button " << 3 << " clicked." << std::endl;
-		if(waveIndex <= CHUNK_COUNT) waveIndex += 1;
-		drawWaveform();
+		if(waveIndex <= CHUNK_COUNT) {
+			waveIndex += 1;
+			drawWaveform();
+		} else {
+			waveIndex = 0;
+			Button_4_Click();
+		}
 	}
 	void Button_4_Click() {
 		std::cout << "Button " << 4 << " clicked." << std::endl;

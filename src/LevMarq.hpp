@@ -93,21 +93,16 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 	if(threadIdx.x < numberOfParams) {
 		param[make_uint2(0,threadIdx.x)] = 0;
 	};		
-	if(threadIdx.x == 0) {
-		param[make_uint2(0,0)] = 20000;
-		param[make_uint2(0,1)] = 600;
-		param[make_uint2(0,2)] = -30000;
-		param[make_uint2(0,3)] = 175;
-	}
+	
+	const Window window = Fit::getWindow(texObj, blockIdx.x, sample_count);
+	const int sampling_points = window.width/interpolation_count;
+	Fit::guessParams(texObj, param, window);
 	__syncthreads();				 
 	do {
 		counter++;
 		//sw.start();
 		/* Abschnitt 1 */
 		//Calc F(param)
-		
-		const Window window = Fit::getWindow(texObj, blockIdx.x, sample_count);
-		const int sampling_points = window.width/interpolation_count;
 		calcF<Fit, bs>(texObj, param.getRawPointer(), F.getRawPointer(), window, sample_count, interpolation_count); //30%
 		//sw.stop(); //1
 		//Calc F'(param)
@@ -176,7 +171,7 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		//sw.stop();
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(s.transpose());
 		__syncthreads();
-	} while((!finished) && counter < 125);
+	} while((!finished) && counter < 100);
 	/*
 		if(threadIdx.x == 0 && blockIdx.x == 0) {
 			printf("status=%i, ", !finished);

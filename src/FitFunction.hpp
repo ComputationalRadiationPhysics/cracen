@@ -2,7 +2,6 @@
 #define FITFUNCTION_HPP
 
 #include "FitFunctor.hpp"
-
 /* User definitions */
 
 
@@ -10,8 +9,14 @@
  * \brief fit function in the form 0 = f(x,y)
  */
 class Gauss:public FitFunctor<4> {
-public:
 	#ifdef __CUDACC__
+private:
+	static DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
+		return tex2D<float>(texObj, I+0.5, INDEXDATASET);
+	}
+public:
+
+	
 	static DEVICE float modelFunction(const float x, const float y, const float * const param) {
 		const float exp =  (x-param[1])/param[3];
 		const float e = expf(-1*exp*exp);
@@ -32,7 +37,25 @@ public:
 				return 1;
 		}
 	}
-
+	
+	template <class MatrixAccess>
+	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window) {
+		int max_x = 0;
+		if(threadIdx.x == 0) {
+			float max = -40000;
+			for(int i = 0; i < window.width; i++) {
+				if(getSample(texObj, i, blockIdx.x) > max) {
+					max = getSample(texObj, i, blockIdx.x);
+					max_x = i;
+				}
+			}
+			param[make_uint2(0,0)] = 20000;
+			param[make_uint2(0,1)] = static_cast<float>(max_x);
+			param[make_uint2(0,2)] = -30000;
+			param[make_uint2(0,3)] = 175;
+		}
+		__syncthreads();
+	}
 	static DEVICE Window getWindow(const cudaTextureObject_t texObj, const int dataset, const int sample_count) {
 		return Window(0, sample_count);
 	}
