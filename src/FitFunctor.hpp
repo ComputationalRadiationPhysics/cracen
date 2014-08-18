@@ -6,11 +6,15 @@
 struct Window {
 	unsigned int offset, width;
 	#ifdef __CUDACC__
-	Window() : offset(0), width(0) {};
+	DEVICE Window() {};
 	DEVICE Window(unsigned int offset, unsigned int width) : 
 		offset(offset),
 		width(width) 
 	{}
+	DEVICE void __forceinline__ set(unsigned int _offset, unsigned int _width) {
+		offset = _offset;
+		width = _width;
+	}
 	Window(const Window& w) :
 		offset(w.offset),
 		width(w.width)
@@ -33,7 +37,7 @@ public:
 	static DEVICE float modelFunction(const float x, const float y, const float * const param); // = 0;
 	static DEVICE float derivation(const unsigned int param, const float x, const float y, const float * const params); // = 0;	
 	
-	static DEVICE Window getWindow(const cudaTextureObject_t texObj, const int dataset, const int sample_count); // = 0;
+	static DEVICE void getWindow(const cudaTextureObject_t texObj, Window& window, const int dataset, const int sample_count); // = 0;
 	#endif
 };
 #endif

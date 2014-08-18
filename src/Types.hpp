@@ -15,12 +15,14 @@
 /*!
  * \brief input data datatype for Levenberg Marquardt (if data texture is used, can not be changed to integer types)
 */
+
 typedef float DATATYPE;
 typedef short int MeasureType;
 
 struct FitData {
 	float param[FitFunction::numberOfParams];
 	int status;
+	int woffset;
 	FitData() {};
 	#ifndef __CUDACC__
 	void save(boost::property_tree::ptree& pt) {
@@ -28,6 +30,7 @@ struct FitData {
 		ptree thisFit;
 		ptree params;
 		thisFit.put("status", status);
+		thisFit.put("woffset", woffset);
 		for(int i = 0; i < FitFunction::numberOfParams; i++) {
 			ptree value;
 			std::ostringstream out;

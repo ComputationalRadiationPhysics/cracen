@@ -24,6 +24,7 @@ private:
     		waveFile << waveBuffer.getBuffer()[chunkIndex][waveIndex*SAMPLE_COUNT+i] << std::endl;
     	}
     	waveFile.close();
+    	const int offset = fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].woffset;
     	std::fstream plotFile("plot.gnu", std::ios::out);
     	plotFile << "set terminal png size 1920,1000" << std::endl
 				 << "set output \"plot.png\"" << std::endl
@@ -32,13 +33,19 @@ private:
  				 << "set yrange [-32000: 32000]" << std::endl
 			     << "set xrange [0: 1000]" << std::endl
  			     << "set x2range [0: 1000]" << std::endl
+ 			     << "set arrow from " << offset << "," << -32000 << " to "<< offset << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
+ 			     << "set arrow from " << offset+50 << "," << -32000 << " to "<< offset+50 << "," << 32000 <<" nohead lc rgb \'blue\'" << std::endl
+ 			     << "set arrow from " << offset+100 << "," << -32000 << " to "<< offset+100 << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
+				 << "f(x) = ";
+				/*
 				 << "f(x) = " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[0] << "*exp(-1*((x-" << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[1] << ")/" << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[3] << ")**2) + " << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[2];
-		/*
+		*/
+		
 		for(int i = 0; i < FitFunction::numberOfParams; i++) {
 			plotFile << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[i] << "*x**" << i;
 			if(i < FitFunction::numberOfParams-1) plotFile << " + ";
 		}
-		*/
+		
 		plotFile << std::endl;
 		std::string color;
 		if(fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].status == 0) color = "green";
@@ -91,7 +98,7 @@ public:
 		Gtk::Window(cobject), 
 		_builder(builder),
 		waveBuffer(1000, 1, Chunk(CHUNK_COUNT*SAMPLE_COUNT)),
-		reader(std::string("../../data/Al_25keV-259.cdb"), &waveBuffer, 1000),
+		reader(std::string("../../data/Al_25keV-1.cdb"), &waveBuffer, 1000),
 		chunkIndex(0),
 		waveIndex(0)
 	{
