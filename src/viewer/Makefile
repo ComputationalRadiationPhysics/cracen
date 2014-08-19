@@ -15,7 +15,7 @@ all: $(OBJECTS)
 
 .PHONY: run
 run: all
-	./Viewer
+	./Viewer&
 	
 .PHONY: clean
 clean:

@@ -10,12 +10,9 @@
 #include "CudaStopWatch.hpp"
 #include "PrintMat.hpp"
 
-/*!
- * \brief getSample returns the y value of a given sample index
- * \param I sample index
- * \param INDEXDATASET index of the current dataset
- * \return y value
- */
+DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
+	return tex2D<float>(texObj, I+0.5, static_cast<float>(INDEXDATASET)+0.5);
+}
 
 template <class Fit, unsigned int bs, class MatrixAccess>
 DEVICE void calcF(const cudaTextureObject_t texObj, const float* const param, MatrixAccess& F, const Window& window, const unsigned int sample_count, const unsigned int interpolation_count) {

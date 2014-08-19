@@ -11,9 +11,7 @@
  */
  
 #ifdef __CUDACC__
-DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
-	return tex2D<float>(texObj, I+0.5, static_cast<float>(INDEXDATASET)+0.5);
-}
+extern DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET);
 #endif
 
 class Gauss:public FitFunctor<4> {
@@ -58,8 +56,8 @@ public:
 		}
 		__syncthreads();
 	}
-	static DEVICE Window getWindow(const cudaTextureObject_t texObj, const int dataset, const int sample_count) {
-		return Window(0, sample_count);
+	static DEVICE void getWindow(const cudaTextureObject_t texObj, Window& window, const int dataset, const int sample_count) {
+		window.set(0, sample_count);
 	}
 	#endif
 };

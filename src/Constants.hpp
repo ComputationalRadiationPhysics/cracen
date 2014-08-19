@@ -25,9 +25,9 @@ const unsigned int INTERPOLATION_COUNT = 1;
 const std::string OUTPUT_FILENAME = "results.txt";
 const std::string FILENAME_TESTFILE = "../data/Al_25keV-1.cdb";
 
-const unsigned int window_size = 100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
-//typedef Gauss FitFunction;
-typedef WindowPolynom<2> FitFunction;
+const unsigned int window_size = SAMPLE_COUNT;//100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
+typedef Gauss FitFunction;
+//typedef WindowPolynom<2> FitFunction;
 
 
 const unsigned int SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
