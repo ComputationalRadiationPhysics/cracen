@@ -38,6 +38,8 @@ public:
 	static DEVICE float derivation(const unsigned int param, const float x, const float y, const float * const params); // = 0;	
 	
 	static DEVICE void getWindow(const cudaTextureObject_t texObj, Window& window, const int dataset, const int sample_count); // = 0;
+	template <class MatrixAccess>
+	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window); // = 0;
 	#endif
 };
 #endif
