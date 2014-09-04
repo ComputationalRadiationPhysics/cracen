@@ -22,13 +22,16 @@ const unsigned int CHUNK_BUFFER_COUNT = 2048;
  *  \brief  Number of chunks in the input buffer */
 const unsigned int INTERPOLATION_COUNT = 1;
 
+const unsigned int maxNumberOfDevices = 1;
+const unsigned int pipelineDepth = 1;
+	
 const std::string OUTPUT_FILENAME = "results.txt";
 const std::string FILENAME_TESTFILE = "../data/Al_25keV-1.cdb";
 
 const unsigned int window_size = SAMPLE_COUNT;//100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
 typedef Gauss FitFunction;
 //typedef WindowPolynom<2> FitFunction;
-
+//typedef Polynom<5> FitFunction;
 
 const unsigned int SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
 #endif

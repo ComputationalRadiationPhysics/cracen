@@ -33,10 +33,10 @@ private:
  				 << "set yrange [-32000: 32000]" << std::endl
 			     << "set xrange [0: 1000]" << std::endl
  			     << "set x2range [0: 1000]" << std::endl
- 			     //<< "set arrow from " << offset << "," << -32000 << " to "<< offset << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
- 			     //<< "set arrow from " << offset+50 << "," << -32000 << " to "<< offset+50 << "," << 32000 <<" nohead lc rgb \'blue\'" << std::endl
- 			     //<< "set arrow from " << offset+100 << "," << -32000 << " to "<< offset+100 << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
-				// << "f(x) = ";
+ 		//	     << "set arrow from " << offset << "," << -32000 << " to "<< offset << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
+ 		//	     << "set arrow from " << offset+50 << "," << -32000 << " to "<< offset+50 << "," << 32000 <<" nohead lc rgb \'blue\'" << std::endl
+ 		//	     << "set arrow from " << offset+100 << "," << -32000 << " to "<< offset+100 << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
+		//		 << "f(x) = ";
 				
 				 << "f(x) = " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[0] << "*exp(-1*((x-" << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[1] << ")/" << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[3] << ")**2) + " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[2];
 		
@@ -46,6 +46,7 @@ private:
 			if(i < FitFunction::numberOfParams-1) plotFile << " + ";
 		}
 		*/
+		
 		plotFile << std::endl;
 		std::string color;
 		if(fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].status == 0) color = "green";

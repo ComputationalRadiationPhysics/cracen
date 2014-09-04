@@ -57,5 +57,16 @@ public:
 	}
 };
 
+#ifdef TIMING_ENABLED
+	#define CUDA_SW_INIT(INTERVALLS, MEMORY) CudaStopWatch<INTERVALLS> sw(MEMORY)
+	#define CUDA_SW_START() sw.start()
+	#define CUDA_SW_STOP() sw.stop()
+	#define CUDA_SW_PRINT(INTERVALLS, MEMORY, STREAM) swPrint<10><<<1,1,0, STREAM>>>(swMem)
+#else 
+	#define CUDA_SW_INIT(INTERVALLS, MEMORY)
+	#define CUDA_SW_START()
+	#define CUDA_SW_STOP()
+	#define CUDA_SW_PRINT(INTERVALLS, MEMORY, STREAM)
+#endif
 
 #endif

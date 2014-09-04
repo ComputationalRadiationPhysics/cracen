@@ -62,7 +62,7 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 					 param_shared[numberOfParams], param2_shared[numberOfParams],
 					 u1_shared[1], u2_shared[1], u3_shared[1];
 					 
-	//CudaStopWatch<10> sw(swMem);
+	CUDA_SW_INIT(10, swMem);
 					 
 	__shared__ bool finished;
 	if(threadIdx.x == 0) {
@@ -96,32 +96,33 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 	__syncthreads();
 	do {
 		counter++;
-		//sw.start();
+		CUDA_SW_START();
 		/* Abschnitt 1 */
 		//Calc F(param)
 		calcF<Fit, bs>(texObj, param.getRawPointer(), F, window, sample_count, interpolation_count); //30%
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(param.transpose());
-		//sw.stop(); //1
+		CUDA_SW_STOP(); //1
 		//Calc F'(param)
 		calcDerivF<Fit, bs>(texObj, param.getRawPointer(), mu, A, window, sample_count, interpolation_count);
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(A);
-		//sw.stop(); //2
+		CUDA_SW_STOP(); //2
 		/* Abschnitt 2 */
 		//Solve minimization problem
 		//calc A^T*A => G
 		matProdKernel<bs, Fit::numberOfParams>(G, AT, A, sleft);
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(G);
-		//sw.stop(); //3
+		CUDA_SW_STOP(); //3
 		//calc G^-1
 		gaussJordan<Fit,bs>(G_inverse, G);
-		//sw.stop(); //4
+		CUDA_SW_STOP(); //4
+		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(G_inverse);
 		//calc A^T*F => b		
 		matProdKernel<bs, Fit::numberOfParams>(b, AT, F, sleft);
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(s);
-		//sw.stop(); //5
+		CUDA_SW_STOP(); //5
 		//calc G^-1*b => s
 		matProdKernel<bs, Fit::numberOfParams>(s, G_inverse, b, sleft);
-		//sw.stop(); //6
+		CUDA_SW_STOP(); //6
 		/* Abschnitt 3 */
 		//Reduce F(param)
 		matProdKernel<bs, 1>(u1, FT, F, sleft);
@@ -132,10 +133,10 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		//Fold F(param+s)
 		calcF<Fit, bs>(texObj, param2.getRawPointer(), F1, window, sample_count, interpolation_count); //30%
 		matProdKernel<bs, 1>(u2, F1T, F1, sleft);
-		//sw.stop(); //7
+		CUDA_SW_STOP(); //7
 		//Calc F'(param)*s
 		matProdKernel2<bs, Fit::numberOfParams>(F1, A, s, sleft); //30%
-		//sw.stop(); //8
+		CUDA_SW_STOP(); //8
 		//Calc F(param) + F'(param)*s'
 		//Fold F'(param)*s
 		for(int j = threadIdx.x; j < sampling_points; j+=bs) {
@@ -143,14 +144,14 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 			F1[c] = -1*F[c]+F1[c];
 		}
 		if(threadIdx.x == 0) finished = true;
-		//sw.stop(); //9
+		CUDA_SW_STOP(); //9
 		__syncthreads();
 		matProdKernel<bs, 1>(u3, F1T, F1, sleft);
 		//calc roh
 		const float z = u1[make_uint2(0,0)]-u2[make_uint2(0,0)];
 		const float n = u1[make_uint2(0,0)]-u3[make_uint2(0,0)];
 		roh = (z/n); //Div by 0 if not valid
-		//sw.stop(); //10
+		CUDA_SW_STOP(); //10
 		//decide if s is accepted or discarded
 		if(roh <= 0.2 || roh != roh) {
 			//s verwerfen, mu erhöhen
@@ -167,17 +168,10 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 			}
 		}
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printf("roh=%f, mu=%f, u1=%f, u2=%f, u3=%f\n", roh, mu, u1_shared[0], u2_shared[0], u3_shared[0]);
-		//sw.stop();
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(param.transpose());
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(s.transpose());
 		__syncthreads();
 	} while(!finished && counter < 100);
-	/*
-		if(threadIdx.x == 0 && blockIdx.x == 0) {
-			printf("status=%i, ", !finished);
-			printMat(param);
-		}
-	*/
 	if(threadIdx.x < numberOfParams) {
 		const float p = param[make_uint2(0,threadIdx.x)];
 		results[blockIdx.x].param[threadIdx.x] = p;
@@ -199,7 +193,7 @@ int levenbergMarquardt(cudaStream_t& stream, cudaTextureObject_t texObj, FitData
 	//cudaMalloc((void**) &swMem, 10*sizeof(TickCounter));
 	//initTicks<<<1,10,0, stream>>>(swMem);
 	levMarqIt<Fit,bsx><<<gs,bs, 0, stream>>>(texObj, results, sample_count, max_window_size,interpolation_count, mem);
-	//swPrint<10><<<1,1,0, stream>>>(swMem);
+	CUDA_SW_PRINT(10,swMem, stream);
 	handleLastError();
 	//cudaFree(swMem);
 	return 0;

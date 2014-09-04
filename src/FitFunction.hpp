@@ -86,6 +86,29 @@ public:
 	static DEVICE void getWindow(const cudaTextureObject_t texObj, Window& window, const int dataset, const int sample_count) {
 		window.set(0, sample_count);
 	}
+	
+	template <class MatrixAccess>
+	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window) {
+		if(threadIdx.x == 0) {
+			float max = -40000;
+			int pos = 0;
+			for(int i = 0; i < window.width; i++) {
+				if(getSample(texObj, i, blockIdx.x) > max) {
+					max = getSample(texObj, i, blockIdx.x);
+					pos = i;
+				}
+			}
+			const float a = pos;
+			const float b = max;
+			const float c = -1; //(getSample(texObj, window.offset, blockIdx.x)-b)/((window.offset-a)*(window.offset-a));
+			param[make_uint2(0,0)] = b+c*a*a;
+			param[make_uint2(0,1)] = -2*a*c;
+			param[make_uint2(0,2)] = c;
+			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 0;
+			
+		}
+		__syncthreads();
+	}
 	#endif
 };
 
