@@ -52,7 +52,7 @@ DEVICE void calcDerivF(const cudaTextureObject_t texObj, const float * const par
 template <class Fit, unsigned int bs>
 __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count, float* mem, TickCounter* swMem = NULL) {
 	const unsigned int numberOfParams = Fit::numberOfParams;
-	const unsigned int SPACE = ((max_window_size+numberOfParams)*2+(max_window_size+numberOfParams)*numberOfParams);
+	//const unsigned int SPACE = ((max_window_size+numberOfParams)*2+(max_window_size+numberOfParams)*numberOfParams);
 	const unsigned int memOffset = blockIdx.x*SPACE;
 	__shared__ MatrixAccess<> G,G_inverse,u1,u2,u3,AT,FT,F1T;
 	__shared__ MatrixAccess<float, trans> F,F1,b,s,A,param,param2,param_last_it;
@@ -84,7 +84,7 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 	}	
 	__syncthreads();
 	float mu = 1, roh;
-	int counter = 0;
+	unsigned int counter = 0;
 	if(threadIdx.x < numberOfParams) {
 		param[make_uint2(0,threadIdx.x)] = 0;
 	};		
@@ -171,7 +171,7 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(param.transpose());
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(s.transpose());
 		__syncthreads();
-	} while(!finished && counter < 100);
+	} while(!finished && counter < MAX_ITERATIONS);
 	if(threadIdx.x < numberOfParams) {
 		const float p = param[make_uint2(0,threadIdx.x)];
 		results[blockIdx.x].param[threadIdx.x] = p;

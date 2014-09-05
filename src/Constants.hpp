@@ -27,7 +27,10 @@ const unsigned int CHUNK_BUFFER_COUNT = 200;
 /*! \var INTERPOLATION_COUNT
  *  \brief  Number of chunks in the input buffer */
 const unsigned int INTERPOLATION_COUNT = 1;
-
+/*! \var MAX_ITERATIONS
+	\brief Maximum amount of iterations levenbergMarquardt will try to fit
+*/
+const unsigned int MAX_ITERATIONS = 100;
 
 const unsigned int maxNumberOfDevices = 1;
 const unsigned int pipelineDepth = 1;

@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 	std::vector<Node*> devices;
 	StopWatch sw;
 	sw.start();
-	for(int i = 0; i < freeDevices.size(); i++) {
+	for(unsigned int i = 0; i < freeDevices.size(); i++) {
 		/* Start threads to handle Nodes */
 		devices.push_back(new Node(freeDevices[i], &inputBuffer, os.getBuffer()));
 	}
