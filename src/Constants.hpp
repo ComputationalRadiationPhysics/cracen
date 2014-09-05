@@ -17,7 +17,7 @@ const unsigned int SAMPLE_COUNT = 1000;
 const unsigned int CHUNK_COUNT = 1024;
 /*! \var CHUNK_BUFFER_COUNT
  *  \brief  Number of chunks in the input buffer */
-const unsigned int CHUNK_BUFFER_COUNT = 2048;
+const unsigned int CHUNK_BUFFER_COUNT = 100;
 /*! \var INTERPOLATION_COUNT
  *  \brief  Number of chunks in the input buffer */
 const unsigned int INTERPOLATION_COUNT = 1;

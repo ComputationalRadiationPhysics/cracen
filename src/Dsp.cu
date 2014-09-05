@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
     std::fill(dc.begin(), dc.end(), 0);
 	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, dc);
     /* Initialize output buffer (with static elements) */
-	OutputStream os(output_filename, numberOfDevices);
+	OutputStream os(output_filename, freeDevices.size());
 	
 	std::cout << "Buffer created." << std::endl;
 	
