@@ -3,20 +3,20 @@ DSP
 
 Fits model function to a set of waveforms.
 
-# Download
+## Download
 
 ```bash
   git clone https://github.com/ComputationalRadiationPhysics/DSP.git
 ```
 
-# Build
+## Build
 
 ```bash
   cd DSP/src
   make
 ```
 
-# Run
+## Run
 
 ```bash
   # in DSP/src
