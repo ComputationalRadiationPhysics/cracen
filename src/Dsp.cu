@@ -101,13 +101,13 @@ int main(int argc, char* argv[]) {
 
 	std::vector<Node*> devices;
 	StopWatch sw;
-	reader.readToBuffer();
-	std::cout << "Data read." << std::endl;
 	sw.start();
 	for(int i = 0; i < freeDevices.size(); i++) {
 		/* Start threads to handle Nodes */
 		devices.push_back(new Node(freeDevices[i], &inputBuffer, os.getBuffer()));
 	}
+	reader.readToBuffer();
+	std::cout << "Data read." << std::endl;
 	
 	std::cout << "Nodes created." << std::endl;
 		
@@ -116,6 +116,6 @@ int main(int argc, char* argv[]) {
 	os.join();
 	sw.stop();
 	std::cout << "Time: " << sw << std::endl;
-	std::cout << "Throuput: " << 382/(sw.elapsedSeconds()) << "MiB/s."<< std::endl;
+	//std::cout << "Throuput: " << 382/(sw.elapsedSeconds()) << "MiB/s."<< std::endl;
 	return 0;
 }

@@ -2,6 +2,8 @@
 #define FITFUNCTION_HPP
 
 #include "FitFunctor.hpp"
+#include "Constants.hpp"
+
 /* User definitions */
 
 #include <cstdio>
@@ -17,6 +19,7 @@ extern DEVICE float getSample(const cudaTextureObject_t texObj, const float I, c
 class Gauss:public FitFunctor<4> {
 	#ifdef __CUDACC__
 public:
+	// y = p0*e^(-1* ((x-p1)/p3)^2) + p2
 	static DEVICE float modelFunction(const float x, const float y, const float * const param) {
 		const float exp =  (x-param[1])/param[3];
 		const float e = expf(-1*exp*exp);
@@ -42,17 +45,17 @@ public:
 	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window) {
 		int max_x = 0;
 		if(threadIdx.x == 0) {
-			float max = -40000;
+			float max = RANGE_MINIMUM;
 			for(int i = window.offset; i < window.offset+window.width; i++) {
 				if(getSample(texObj, i, blockIdx.x) > max) {
 					max = getSample(texObj, i, blockIdx.x);
 					max_x = i;
 				}
 			}
-			param[make_uint2(0,0)] = 20000;
+			param[make_uint2(0,0)] = GAUSS_PARAM0;
 			param[make_uint2(0,1)] = static_cast<float>(max_x);
-			param[make_uint2(0,2)] = -30000;
-			param[make_uint2(0,3)] = 175;
+			param[make_uint2(0,2)] = GAUSS_PARAM2;
+			param[make_uint2(0,3)] = GAUSS_PARAM3;
 		}
 		__syncthreads();
 	}
@@ -90,7 +93,7 @@ public:
 	template <class MatrixAccess>
 	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window) {
 		if(threadIdx.x == 0) {
-			float max = -40000;
+			float max = RANGE_MINIMUM;
 			int pos = 0;
 			for(int i = 0; i < window.width; i++) {
 				if(getSample(texObj, i, blockIdx.x) > max) {
@@ -104,7 +107,7 @@ public:
 			param[make_uint2(0,0)] = b+c*a*a;
 			param[make_uint2(0,1)] = -2*a*c;
 			param[make_uint2(0,2)] = c;
-			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 0;
+			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1/pow(10,-1*i);
 			
 		}
 		__syncthreads();
@@ -119,7 +122,7 @@ public:
 	static DEVICE void getWindow(const cudaTextureObject_t texObj, Window& window, const int dataset, const int sample_count) {
 		int pos = 0;
 		if(threadIdx.x == 0) {
-			float max = -40000;
+			float max = RANGE_MINIMUM;
 			for(int i = 0; i < sample_count; i++) {
 				if(getSample(texObj, i, blockIdx.x) > max) {
 					max = getSample(texObj, i, blockIdx.x);
@@ -127,25 +130,26 @@ public:
 				}
 			}
 			
-			if(pos > sample_count - 50) {
-				window.set(sample_count-101, 100);
+			if(pos > sample_count - window_size/2) {
+				window.set(sample_count-window_size-1, window_size);
 			}
-			if(pos < 50) {
-				window.set(0, 100);
+			if(pos < window_size/2) {
+				window.set(0, window_size);
 			}
-			window.set(pos-50, 100);
+			window.set(pos-window_size/2, window_size);
 		}
 		__syncthreads();
 	}
 	template <class MatrixAccess>
 	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window) {
 		if(threadIdx.x == 0) {
-			const float a = window.offset+50;
+			const float a = window.offset+window_size/2;
 			const float b = getSample(texObj, a, blockIdx.x);
 			const float c = -1; //(getSample(texObj, window.offset, blockIdx.x)-b)/((window.offset-a)*(window.offset-a));
 			param[make_uint2(0,0)] = b+c*a*a;
 			param[make_uint2(0,1)] = -2*a*c;
 			param[make_uint2(0,2)] = c;
+			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1/pow(10,-1*i);
 		}
 		__syncthreads();
 	}

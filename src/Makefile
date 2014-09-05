@@ -23,18 +23,6 @@ $(BUILD_PATH)/Node.o: Node.cu Node.hpp LevMarq.hpp MatMul.hpp PrintMat.hpp Gauss
 	
 $(BUILD_PATH)/%.o: %.cpp %.hpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c -o $@ $<
-
-
-.PHONY: sync
-sync:
-	rm -f viewer/results.txt;
-	rsync -a --delete --progress . rossendorf:~/DSP/src
-	ssh rossendorf "rsync -a --delete --progress DSP/src hypnos2:~/DSP"
-
-.PHONY: getResults
-getResults:
-	ssh rossendorf "scp hypnos:~/DSP/src/results.txt ."
-	scp rossendorf:~/results.txt viewer/results.txt
 	
 .PHONY: run 
 run: all
