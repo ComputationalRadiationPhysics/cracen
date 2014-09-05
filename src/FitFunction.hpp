@@ -22,22 +22,22 @@ public:
 	// y = p0*e^(-1* ((x-p1)/p3)^2) + p2
 	static DEVICE float modelFunction(const float x, const float y, const float * const param) {
 		const float exp =  (x-param[1])/param[3];
-		const float e = expf(-1*exp*exp);
+		const float e = expf(-1.f*exp*exp);
 		return param[0]*e + param[2]- y;
 	}
 	static DEVICE float derivation(const int param, const float x, const float y, const float * const params) {
 		const float exp =  (x-params[1])/params[3];
-		const float e = expf(-1*exp*exp);
+		const float e = expf(-1.f*exp*exp);
 		
 		switch(param) {
 			case 0: 
 				return e;
 			case 1:
-				return 2*params[0]*e*(x-params[1])/(params[3]*params[3]);
+				return 2.f*params[0]*e*(x-params[1])/(params[3]*params[3]);
 			case 3:
-				return 2*params[0]*e*(-1*params[1]+x)/(params[3]*params[3]);
+				return 2.f*params[0]*e*(-1.f*params[1]+x)/(params[3]*params[3]);
 			default:
-				return 1;
+				return 1.f;
 		}
 	}
 	
@@ -105,9 +105,9 @@ public:
 			const float b = max;
 			const float c = -1; //(getSample(texObj, window.offset, blockIdx.x)-b)/((window.offset-a)*(window.offset-a));
 			param[make_uint2(0,0)] = b+c*a*a;
-			param[make_uint2(0,1)] = -2*a*c;
+			param[make_uint2(0,1)] = -2.f*a*c;
 			param[make_uint2(0,2)] = c;
-			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1/pow(10,-1*i);
+			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1.f/pow(10.f,-1*i);
 			
 		}
 		__syncthreads();
@@ -147,9 +147,9 @@ public:
 			const float b = getSample(texObj, a, blockIdx.x);
 			const float c = -1; //(getSample(texObj, window.offset, blockIdx.x)-b)/((window.offset-a)*(window.offset-a));
 			param[make_uint2(0,0)] = b+c*a*a;
-			param[make_uint2(0,1)] = -2*a*c;
+			param[make_uint2(0,1)] = -2.f*a*c;
 			param[make_uint2(0,2)] = c;
-			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1/pow(10,-1*i);
+			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1.f/pow(10.f,-1*i);
 		}
 		__syncthreads();
 	}
