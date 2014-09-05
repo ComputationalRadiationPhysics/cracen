@@ -34,4 +34,7 @@ typedef Gauss FitFunction;
 //typedef Polynom<5> FitFunction;
 
 const unsigned int SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
+
+const unsigned int MIN_COMPUTE_CAPABILITY_MAJOR = 3;
+const unsigned int MIN_COMPUTE_CAPABILITY_MINOR = 5;
 #endif

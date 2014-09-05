@@ -7,13 +7,59 @@
 #include "DataReader.hpp"
 #include "StopWatch.hpp"
 
+
+//Taken from https://github.com/ComputationalRadiationPhysics/HaseOnGpu
+//Author: Erik Zenker, Carlchristian Eckert
+std::vector<unsigned> getFreeDevices(unsigned maxGpus){
+	cudaDeviceProp prop;
+	int minMajor = MIN_COMPUTE_CAPABILITY_MAJOR;
+	int minMinor = MIN_COMPUTE_CAPABILITY_MINOR;
+	int count;
+	std::vector<unsigned> devices;
+
+	// Get number of devices
+	cudaGetDeviceCount(&count);
+
+	// Check devices for compute capability and if device is busy
+	unsigned devicesAllocated = 0;
+	for(int i=0; i < count; ++i){
+		cudaGetDeviceProperties(&prop, i);
+		if( (prop.major > minMajor) || (prop.major == minMajor && prop.minor >= minMinor) ){
+			cudaSetDevice(i);
+			int* occupy; //TODO: occupy gets allocated, but never cudaFree'd -> small memory leak!
+			if(cudaMalloc((void**) &occupy, sizeof(int)) == cudaSuccess){
+				devices.push_back(i);
+				devicesAllocated++;
+				if(devicesAllocated == maxGpus)
+					break;
+			}
+		}
+	}
+	// Exit if no device was found
+	if(devices.size() == 0){
+		std::cout << "None of the free CUDA-capable devices is sufficient!" << std::endl;
+		exit(1);
+	}
+
+	// Print device information
+	cudaSetDevice(devices.at(0));
+	std::cout << "Found " << int(devices.size()) << " available CUDA devices with Compute Capability >= " << minMajor << "." << minMinor << "):" << std::endl;
+	for(unsigned i=0; i<devices.size(); ++i){
+		cudaGetDeviceProperties(&prop, devices[i]);
+		std::cout << "[" << devices[i] << "] " << prop.name << " (Compute Capability " << prop.major << "." << prop.minor << ")" << std::endl;
+	}
+
+	return devices;
+
+}
+  
 int main(int argc, char* argv[]) {
 	
 	/* Get number of devices */
 	int numberOfDevices;
 	cudaError_t err;
 	err = cudaGetDeviceCount(&numberOfDevices);
-	if(numberOfDevices>maxNumberOfDevices) numberOfDevices = maxNumberOfDevices;
+	std::vector<unsigned> freeDevices = getFreeDevices(maxNumberOfDevices);
 	
 	/* Check the cuda runtime environment */
 	if(err != cudaSuccess) {
@@ -58,9 +104,9 @@ int main(int argc, char* argv[]) {
 	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;
 	sw.start();
-	for(int i = 0; i < numberOfDevices; i++) {
+	for(int i = 0; i < freeDevices.size(); i++) {
 		/* Start threads to handle Nodes */
-		devices.push_back(new Node(i, &inputBuffer, os.getBuffer()));
+		devices.push_back(new Node(freeDevices[i], &inputBuffer, os.getBuffer()));
 	}
 	
 	std::cout << "Nodes created." << std::endl;
