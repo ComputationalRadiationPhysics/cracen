@@ -11,15 +11,15 @@ DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
 	
 	#ifdef DEBUG_ENABLED
 	if(input.getCols() != Fit::numberOfParams) {
-		printf("Some strange error occured. Check GaussJordan.h for additional informations. Abort.'");
+		printf("Some strange error occured. Check GaussJordan.hpp for additional informations. Abort.'\n");
 		return;
 	}
 	if(input.getCols() != input.getRows()) {
-		printf("Only square matrices can be inverted. Abort");
+		printf("Only square matrices can be inverted. Abort.\n");
 		return;
 	}
 	if(input.getCols() != result.getCols() && input.getRows() != result.getRows()) {
-		printf("Result and input matrix must have the same dimensions. Abort.");
+		printf("Result and input matrix must have the same dimensions. Abort.\n");
 		return;
 	}
 	if(dim > 8) {
