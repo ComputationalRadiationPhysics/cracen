@@ -11,7 +11,7 @@ DEVICE void gaussJordan(MatrixAccess2& result, MatrixAccess1& input) {
 	
 	#ifdef DEBUG_ENABLED
 	if(input.getCols() != Fit::numberOfParams) {
-		printf("Some strange error occured. Check GaussJordan.hpp for additional informations. Abort.'\n");
+		printf("Some strange error occured. Check GaussJordan.hpp for additional informations. Abort.\n");
 		return;
 	}
 	if(input.getCols() != input.getRows()) {
