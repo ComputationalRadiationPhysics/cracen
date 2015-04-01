@@ -24,3 +24,13 @@ Fits model function to a set of waveforms.
   # or
   ./DSP <FILENAME>
 ```
+
+## Checking results
+
+You can display the fit and orginal data in one diagram with the `Viewer`
+
+```bash
+   cd src/viewer/
+   make clean
+   make run
+```
