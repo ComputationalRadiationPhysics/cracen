@@ -44,3 +44,9 @@ endif(Boost_VERSION EQUAL 105500)
 file(GLOB SRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
 cuda_add_executable(DSP "${SRCFILES}")
 target_link_libraries(DSP ${LIBS})
+
+add_custom_target (
+	run
+	command $(CMAKE_CURRENT_BUILD_DIR)/DSP
+	depends all
+)
