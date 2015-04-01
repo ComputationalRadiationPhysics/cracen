@@ -5,6 +5,12 @@ cmake_minimum_required(VERSION 3.0.1)
 set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/"
     "$ENV{CUDA_ROOT}" "$ENV{BOOST_ROOT}")
 
+###############################################################################
+# Compiler Flags
+###############################################################################
+
+set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -Wall")
+set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -Wextra")
 
 ###############################################################################
 # CUDA
@@ -45,8 +51,9 @@ file(GLOB SRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
 cuda_add_executable(DSP "${SRCFILES}")
 target_link_libraries(DSP ${LIBS})
 
-add_custom_target (
-	run
-	command $(CMAKE_CURRENT_BUILD_DIR)/DSP
-	depends all
+ADD_CUSTOM_TARGET (
+	run 
+	./${CMAKE_CURRENT_BUILD_DIR}/DSP
+	DEPENDS DSP
+	COMMENT "Executing programm." VERBATIM
 )
