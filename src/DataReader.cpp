@@ -2,8 +2,11 @@
 
 DataReader::DataReader(const std::string& filename, InputBuffer* buffer,                       int chunksize) :
     inputFilename(filename),
-    nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize),
-    rb(buffer)
+    rb(buffer),
+    nSamp(-1),
+    nSeg(-1),
+    nWf(-1),
+    nChunk(chunksize)
 {
     readHeader(filename, nSamp, nSeg, nWf);
     channelBuffer.resize(2 * nSamp);

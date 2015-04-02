@@ -15,6 +15,7 @@ private:
 	Ringbuffer<Output> oBuffer;
 	bool done;
 	pthread_t thread_tid;
+	const std::string file;
 	
 	void run();
 	static void* run_helper(void* This) { 

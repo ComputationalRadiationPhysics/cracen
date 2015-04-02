@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include <semaphore.h>
 
 /*! Ringbuffer
@@ -71,20 +72,17 @@ template <class Type>
 Ringbuffer<Type>::Ringbuffer(const unsigned int bSize, 
                              int producer,
                              Type defaultItem) :
+   	buffer(bSize),
+   	bufferSize(bSize),
 	head(0),// We write new item to this position
 	tail(0),// We read stored item from this position
 	producer(producer)
 {
     buffer.reserve(bSize);
-    for (int i=0; i<bSize; i++) {
-        // We need to push_back the defaultItem for variable size types 
-        // like std::vector. Otherwise the memory is not allocated.
-        buffer.push_back(defaultItem);
-    }
+    std::fill(buffer.begin(), buffer.end(), defaultItem);
     sem_init(&mtx, 0, 1);
     sem_init(&usage, 0, 0);
     sem_init(&space, 0, bSize);
-    bufferSize = bSize; 
 }
 
 /**
@@ -98,12 +96,12 @@ Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
 template <class Type>
 Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
                              int producer) :
+    buffer(bSize),
+    bufferSize(bSize),
     head(0),
     tail(0),
-    producer(producer),
-    bufferSize(bSize)
+    producer(producer)
 {
-    buffer.resize(bSize);
     sem_init(&mtx, 0, 1);
     sem_init(&usage, 0, 0);
     sem_init(&space, 0, bSize);
@@ -133,7 +131,7 @@ int Ringbuffer<Type>::writeFromHost(Type &inputOnHost)
     sem_wait(&mtx);     // lock buffer
     
     buffer.at(head) = inputOnHost;
-    head = ++head % bufferSize;     // move head
+    head = (head+1) % bufferSize;     // move head
 
     sem_post(&mtx);     // unlock buffer
     sem_post(&usage);   // tell them that there is something in buffer
@@ -157,7 +155,7 @@ int Ringbuffer<Type>::copyToHost(Type &outputOnHost)
     sem_wait(&mtx);     // lock buffer
     
     outputOnHost = buffer.at(tail);
-    tail = ++tail % bufferSize;     // move tail
+    tail = (tail+1) % bufferSize;     // move tail
     
     sem_post(&mtx);     // unlock buffer
     sem_post(&space);   // tell them that there is space in buffer
@@ -191,7 +189,7 @@ Type* Ringbuffer<Type>::reserveHead()
 template <class Type>
 int Ringbuffer<Type>::freeHead()
 {
-    head = ++head % bufferSize;
+    head = (head+1) % bufferSize;
     sem_post(&mtx);
     sem_post(&usage);
     return 0;
@@ -225,7 +223,7 @@ Type* Ringbuffer<Type>::reserveTailTry()
 template <class Type>
 int Ringbuffer<Type>::freeTail()
 {
-    tail = ++ tail % bufferSize;
+    tail = (tail+1) % bufferSize;
     sem_post(&mtx);
     sem_post(&space);
     return 0;

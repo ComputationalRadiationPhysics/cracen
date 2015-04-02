@@ -13,12 +13,13 @@ void OutputStream::run() {
 		}
 	}
 	pt.add_child("fits", array);
-   write_json("results.txt", pt);
+   write_json(file, pt);
 }
 
 OutputStream::OutputStream(const std::string& file, int producer) :
     oBuffer(CHUNK_BUFFER_COUNT, producer),
-	done(false)
+	done(false),
+	file(file)
 {
 	pthread_create(&thread_tid, NULL, run_helper, this);
 }
