@@ -1,9 +1,10 @@
+/*
 #include <iostream>
 #include <thrust/device_vector.h>
-#include "../UtilKernels.h"
-#include "../GaussJordan.h"
-#include "../FitFunction.h"
-#include "Util.h"
+//#include "../Device/UtilKernels.h"
+#include "../Device/GaussJordan.hpp"
+#include "../Config/FitFunctions/FitFunction.hpp"
+#include "Util.hpp"
 #include <cstdio>
 
 typedef Polynom<2> Fit;
@@ -28,3 +29,4 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
+*/

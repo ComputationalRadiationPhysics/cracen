@@ -1,3 +1,4 @@
+/*
 #include <iostream>
 #include <thrust/device_vector.h>
 #include "../LevMarq.h"
@@ -89,3 +90,4 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
+*/

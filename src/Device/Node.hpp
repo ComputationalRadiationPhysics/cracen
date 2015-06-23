@@ -2,8 +2,8 @@
 #define NUDE_H
 
 #include <pthread.h>
-#include "Types.hpp"
-#include "Constants.hpp"
+#include "../Config/Types.hpp"
+#include "../Config/Constants.hpp"
 
 /*! 
  *  Each installed device should be handled by its own thread. This class provides 

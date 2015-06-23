@@ -5,9 +5,9 @@
 #include <fstream> 
 #include <string> 
 #include <pthread.h>
-#include "Types.hpp"
-#include "Constants.hpp"
-#include "Ringbuffer.hpp"
+#include "../Config/Types.hpp"
+#include "../Config/Constants.hpp"
+#include "../Utility/Ringbuffer.hpp"
 
 /*! DataReader
  *  @brief Is meant as a producer for the Ringbuffer class. 

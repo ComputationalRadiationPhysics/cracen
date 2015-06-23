@@ -1,6 +1,7 @@
+/*
 #include <iostream>
 #include <thrust/device_vector.h>
-#include "../UtilKernels.h"
+#include "../Device/UtilKernels.h"
 #include "Util.h"
 #include <cstdio>
 
@@ -102,3 +103,4 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
+*/

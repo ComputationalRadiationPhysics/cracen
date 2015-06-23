@@ -3,9 +3,9 @@
 
 #include <fstream>
 #include <string>
-#include "Ringbuffer.hpp"
-#include "Types.hpp"
-#include "Constants.hpp"
+#include "../Utility/Ringbuffer.hpp"
+#include "../Config/Types.hpp"
+#include "../Config/Constants.hpp"
 
 /*! Class that provides all functions to write the results of the computation  
  *  into a file.

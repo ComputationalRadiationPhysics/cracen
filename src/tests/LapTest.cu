@@ -1,6 +1,7 @@
+/*
 #include <thrust/device_vector.h>
-#include "../UtilKernels.h"
-#include "../GaussJordan.h"
+#include "../Device/UtilKernels.h"
+#include "../Device/GaussJordan.h"
 #include "Util.h"
 
 int main(int argc, char** argv) {
@@ -44,3 +45,4 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
+*/

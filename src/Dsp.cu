@@ -1,11 +1,11 @@
 #include <vector>
 #include <iostream>
 
-#include "Node.hpp"
-#include "OutputStream.hpp"
-#include "Constants.hpp"
-#include "DataReader.hpp"
-#include "StopWatch.hpp"
+#include "Device/Node.hpp"
+#include "Output/OutputStream.hpp"
+#include "Config/Constants.hpp"
+#include "Input/DataReader.hpp"
+#include "Utility/StopWatch.hpp"
 
 
 //Taken from https://github.com/ComputationalRadiationPhysics/HaseOnGpu

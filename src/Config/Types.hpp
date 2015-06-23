@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 #include "Constants.hpp"
-#include "Ringbuffer.hpp"
+#include "../Utility/Ringbuffer.hpp"
 #ifndef __CUDACC__
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>

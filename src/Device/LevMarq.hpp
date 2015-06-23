@@ -3,12 +3,12 @@
 //! \file
 
 #include <cstdio>
-#include "Types.hpp"
+#include "../Config/Types.hpp"
 #include "MatMul.hpp"
 #include "GaussJordan.hpp"
-#include "FitFunctor.hpp"
-#include "CudaStopWatch.hpp"
-#include "PrintMat.hpp"
+#include "../Config/FitFunctions/FitFunctor.hpp"
+#include "../Utility/CudaStopWatch.hpp"
+#include "../Utility/PrintMat.hpp"
 
 DEVICE float getSample(const cudaTextureObject_t texObj, const float I, const int INDEXDATASET) {
 	return tex2D<float>(texObj, I+0.5, static_cast<float>(INDEXDATASET)+0.5);

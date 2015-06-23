@@ -2,7 +2,6 @@
 #define FITFUNCTION_HPP
 
 #include "FitFunctor.hpp"
-#include "Constants.hpp"
 
 /* User definitions */
 

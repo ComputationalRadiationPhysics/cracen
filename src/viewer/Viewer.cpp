@@ -3,8 +3,8 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
-#include "../Ringbuffer.hpp"
-#include "../DataReader.hpp"
+#include "../Utility/Ringbuffer.hpp"
+#include "../Input/DataReader.hpp"
 #include "FitParser.hpp"
 
 class MainWindow: public Gtk::Window {

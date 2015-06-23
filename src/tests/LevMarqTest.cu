@@ -1,7 +1,8 @@
+/*
 #include <iostream>
 #include <thrust/device_vector.h>
-#include "../LevMarq.hpp"
-#include "../FitFunction.hpp"
+#include "../Device/LevMarq.hpp"
+#include "../Config/FitFunctions/FitFunction.hpp"
 #include "Util.hpp"
 #include "Wave.hpp"
 
@@ -82,3 +83,5 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
+
+*/

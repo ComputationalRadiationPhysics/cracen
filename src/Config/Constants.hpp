@@ -9,7 +9,7 @@
 #define window_size SAMPLE_COUNT //100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
 
 #include <string>
-#include "FitFunction.hpp"
+#include "FitFunctions/FitFunction.hpp"
 
 /*! 
  *  \file 

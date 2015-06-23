@@ -1,5 +1,4 @@
 #include "Node.hpp"
-#include "Constants.hpp"
 #include "LevMarq.hpp"
 #include <vector>
 
