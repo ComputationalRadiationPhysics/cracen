@@ -7,6 +7,15 @@
 #include "Input/DataReader.hpp"
 #include "Utility/StopWatch.hpp"
 
+std::ostream& operator<<(std::ostream& lhs, const cudaDeviceProp& rhs) {
+	lhs << "Device found:" << std::endl;
+	lhs << rhs.name << std::endl;
+	lhs << "Cuda " << rhs.major << "." << rhs.minor << ", " << rhs.totalGlobalMem << " GB of global memory." << std::endl;
+	if( (rhs.major < MIN_COMPUTE_CAPABILITY_MAJOR) || (rhs.major == MIN_COMPUTE_CAPABILITY_MAJOR && rhs.minor < MIN_COMPUTE_CAPABILITY_MINOR) ) {
+		lhs << "Compute capability of this device is too low. (Minumum CC "<< MIN_COMPUTE_CAPABILITY_MAJOR << "." << MIN_COMPUTE_CAPABILITY_MINOR << ")" << std::endl;
+	}
+	return lhs;
+}
 
 //Taken from https://github.com/ComputationalRadiationPhysics/HaseOnGpu
 //Author: Erik Zenker, Carlchristian Eckert
@@ -24,6 +33,7 @@ std::vector<unsigned> getFreeDevices(unsigned maxGpus){
 	unsigned devicesAllocated = 0;
 	for(int i=0; i < count; ++i){
 		cudaGetDeviceProperties(&prop, i);
+		std::cout << prop << std::endl;
 		if( (prop.major > minMajor) || (prop.major == minMajor && prop.minor >= minMinor) ){
 			cudaSetDevice(i);
 			int* occupy; //TODO: occupy gets allocated, but never cudaFree'd -> small memory leak!
