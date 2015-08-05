@@ -95,18 +95,19 @@ public:
      *  the file.
      *  \return Number of samples per signal
      */
-    int get_nSamp() {return nSamp;};
+    int get_nSamp();
 
     /** Return number of signals per segment as given by the header of
      *  the file. At the moment only nSeg==1 is supported.
      *  \return Number of signals per segment.
      */
-    int get_nSeg() {return nSeg;};
+    int get_nSeg();
 
     /** Return number of signals (waveforms) in the datafile as given
      *  by the header of the file.
      *  \return Number of signals in the datafile.
      */
-    int get_nWf() {return nWf;};
+    int get_nWf();
 };
+
 #endif

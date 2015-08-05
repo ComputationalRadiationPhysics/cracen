@@ -5,6 +5,7 @@
 #include "Output/OutputStream.hpp"
 #include "Config/Constants.hpp"
 #include "Input/DataReader.hpp"
+#include "Input/ScopeReader.hpp"
 #include "Utility/StopWatch.hpp"
 
 std::ostream& operator<<(std::ostream& lhs, const cudaDeviceProp& rhs) {
@@ -79,6 +80,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::string input_filename = FILENAME_TESTFILE;
+	std::string scope_filename = SCOPE_PARAMETERFILE;
 	std::string output_filename =  OUTPUT_FILENAME;
 
 	if(argc > 1) {
@@ -106,7 +108,9 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Buffer created." << std::endl;
 	
-    DataReader reader(input_filename, &inputBuffer, CHUNK_COUNT);
+    ScopeReader::ScopeParameter::ScopeParameter parameter(scope_filename);
+    ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
+    
     std::cout << "DataReader created." << std::endl;
 
 	std::vector<Node*> devices;
@@ -118,7 +122,6 @@ int main(int argc, char* argv[]) {
 	}
 	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;
-	
 	std::cout << "Nodes created." << std::endl;
 		
 

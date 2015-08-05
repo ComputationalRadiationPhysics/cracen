@@ -2,6 +2,7 @@ project(DSP)
 cmake_minimum_required(VERSION 3.0.1)
 
 # helper for libs and packages
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/"
     "$ENV{CUDA_ROOT}" "$ENV{BOOST_ROOT}")
 
@@ -49,6 +50,17 @@ set(LIBS ${LIBS} ${Boost_LIBRARIES})
 if(Boost_VERSION EQUAL 105500)
   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \"-DBOOST_NOINLINE=__attribute__((noinline))\" ")
 endif(Boost_VERSION EQUAL 105500)
+
+
+###############################################################################
+# Acquiris Library for the ScopeReader
+###############################################################################
+find_package(Acqiris REQUIRED)
+include_directories(${Acqiris_INCLUDE_DIRS})
+add_definitions(${Acqiris_CFLAGS})
+add_definitions(${Acqiris_LDFLAGS})
+add_definitions(${Acqiris_CFLAGS_OTHER})
+set(LIBS ${LIBS} ${Acqiris_LIBRARIES})
 
 ###############################################################################
 # Gtk3mm for the viewer

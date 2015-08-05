@@ -37,6 +37,7 @@ const unsigned int pipelineDepth = 1;
 	
 const std::string OUTPUT_FILENAME = "results.txt";
 const std::string FILENAME_TESTFILE = "../data/Al_25keV-1.cdb";
+const std::string SCOPE_PARAMETERFILE = "../data/scope.ini";
 
 const unsigned int polynom_order = 2;
 typedef Gauss FitFunction; // y = p0*e^(-1* ((x-p1)/p3)^2) + p2

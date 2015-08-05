@@ -136,3 +136,15 @@ void DataReader::readToBuffer()
     }
 	rb->producerQuit();
 }
+
+int DataReader::get_nSamp() {
+	return nSamp;
+};
+
+int DataReader::get_nSeg() {
+	return nSeg;
+};
+
+int DataReader::get_nWf() {
+	return nWf;
+};

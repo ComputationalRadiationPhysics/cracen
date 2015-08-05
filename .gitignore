@@ -4,3 +4,4 @@ lib/*
 build/*
 slides/*
 DSP Graphics/*
+include/*
