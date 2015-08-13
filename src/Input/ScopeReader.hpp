@@ -76,6 +76,11 @@ private:
     int nChunk;
 	ViSession InstrumentID;
 	ViStatus status;
+	
+	//TODO: Convert raw pointer to objects
+	AqReadParameters *readPar;
+	AqDataDescriptor *dataDesc;
+	AqSegmentDescriptor *segDesc;
 
 
 	void initilizeDevice();

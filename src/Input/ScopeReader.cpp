@@ -47,7 +47,11 @@ ScopeReader::ScopeReader(const ScopeReader::ScopeParameter& param, InputBuffer* 
 
 
 ScopeReader::~ScopeReader()
-{}
+{
+	delete readPar;
+	delete dataDesc;
+	delete segDesc;
+}
 
 void ScopeReader::initilizeDevice() {
 	std::string dev = "PCI::INSTR0";
@@ -227,9 +231,10 @@ void ScopeReader::setDeviceTrigger() {
 }
 
 void ScopeReader::readDeviceConfig() {
-	AqReadParameters *readPar=new AqReadParameters;
-	AqDataDescriptor *dataDesc=new AqDataDescriptor;
-	AqSegmentDescriptor *segDesc=new AqSegmentDescriptor[param.nbrSegments];
+	readPar=new AqReadParameters;
+	dataDesc=new AqDataDescriptor;
+	segDesc=new AqSegmentDescriptor[param.nbrSegments];
+	
 	readPar->dataType=1;
 	readPar->readMode=1;
 	readPar->nbrSegments=param.nbrSegments;
@@ -256,37 +261,21 @@ void ScopeReader::readDeviceConfig() {
 
 void ScopeReader::readToBuffer()
 {
-/*
-	dataArrayP1=(short*)malloc(readPar->dataArraySize);
-	dataArrayP2=(short*)malloc(readPar->dataArraySize);
-*/
-
 	//measurement loop
-	for(i_Session=1;i_Session<=nbrSessions;i_Session++) {
+	for(int i_Session=1;i_Session<=param.nbrSessions;i_Session++) {
 		std::cout << "session " << i_Session << std::endl;
-		time(&rawtime);
-		timeinfo=localtime(&rawtime);
+		//time(&rawtime);
+		//timeinfo=localtime(&rawtime);
 
-		const char* asct = asctime(timeinfo);
-		fprintf(fptc,"session %5ld: %s", i_Session, asct);
-		start_session=clock();
-		sprintf(file_name,"%s-%ld.%s",target_path,i_Session,suffix);
-		if(write_mode==0) {
-			fout=fopen(file_name,"wb");
-			fwrite(&nbrSamples,sizeof(nbrSamples),1,fout);
-			fwrite(&nbrSegments,sizeof(nbrSegments),1,fout);
-			fwrite(&nbrWaveforms,sizeof(nbrWaveforms),1,fout);
-		} if(write_mode==1) {
-			fout=fopen(file_name,"w");
-		};
-
-		for(i_Waveform=1;i_Waveform<=nbrWaveforms;i_Waveform++) {
+		//const char* asct = asctime(timeinfo);
+		int data_good = 0;
+		for(int i_Waveform=1;i_Waveform<=param.nbrWaveforms;i_Waveform++) {
 			std::cout << "Waveform" << i_Waveform << std::endl;
 			//acquisition
 			data_good=0;
 			do {
 				AcqrsD1_acquire(InstrumentID);
-				status=AcqrsD1_waitForEndOfAcquisition(InstrumentID,timeOut);
+				status=AcqrsD1_waitForEndOfAcquisition(InstrumentID,param.timeout);
 				if(status==VI_SUCCESS) data_good=1;
 				check_stat(InstrumentID,status,"waitForEndOfAcquisition");
 				status=AcqrsD1_stopAcquisition(InstrumentID);
@@ -294,59 +283,28 @@ void ScopeReader::readToBuffer()
 			} while(data_good!=1);
 
 			//readout
-
-			status=AcqrsD1_readData(InstrumentID,1,readPar,dataArrayP1,dataDesc,segDesc);
+	    	Chunk* buffer = rb->reserveHead();
+			status=AcqrsD1_readData(InstrumentID,1,readPar,&((*buffer)[0]),dataDesc,segDesc);
+			rb->freeHead();
 			check_stat(InstrumentID,status,"readData: channel 1");
-			status=AcqrsD1_readData(InstrumentID,2,readPar,dataArrayP2,dataDesc,segDesc);
+			buffer = rb->reserveHead();
+			status=AcqrsD1_readData(InstrumentID,2,readPar,&((*buffer)[0]),dataDesc,segDesc);
+			rb->freeHead();
 			check_stat(InstrumentID,status,"readData: channel 2");
-			printf("session %5ld: %6.2lf %% done\r",i_Session,100.0*(double)i_Waveform/(double)nbrWaveforms); 
+			std::cout << "session " << i_Session << ": " << 100.0 * static_cast<double>(i_Waveform) / static_cast<double>(param.nbrWaveforms) << " %% done" << std::endl; 
 
-			//write
-			if(write_mode==0) {
-				for(i=0;i<nbrSegments*nbrSamples;i++) {
-					fwrite(&dataArrayP1[i],sizeof(dataArrayP1[i]),1,fout);
-					fwrite(&dataArrayP2[i],sizeof(dataArrayP2[i]),1,fout);
-				}
-			}
-			if(write_mode==1) {
-				for(j=0;j<nbrSegments;j++) {
-					for(i=0;i<(nbrSamplesNom);i++) {
-						fprintf(fout,"%8ld %8ld %8ld %8ld\n",i+1,j*(nbrSamples)+i+1,dataArrayP1[j*(nbrSamples)+i],dataArrayP2[j*(nbrSamples)+i]);
-					}
-					fprintf(fout,"\n");
-				}
-			}
+		
 
 		}
 
-		fclose(fout);
-		stop_session=clock();
-		t_session=stop_session-start_session;
-		printf("session %5ld: %6.2lf %% done  %4.2lf 1/s\n",i_Session,100.0*(double)i_Waveform/(double)nbrWaveforms,nbrWaveforms/t_session*1000);
-		fprintf(fptc,"session %5ld: %6.2lf %% done  %4.2lf 1/s\n",i_Session,100.0*(double)i_Waveform/(double)nbrWaveforms,nbrWaveforms/t_session*1000);
-
+		//stop_session=clock();
+		//t_session=stop_session-start_session;
+		//std::cout << "session " << i_Session << ":  " << 100.0*(double)i_Waveform/(double)nbrWaveforms << "%% done  " << std::endl;// << nbrWaveforms/t_session*1000 << " 1/s" << std::endl;
 
 	}
-	fclose(fptc);
 
-	printf("returned Samples in Segment: %ld, Index First Point %ld\n",dataDesc->returnedSamplesPerSeg,dataDesc->indexFirstPoint);
-*/
-    if(false) {
-		//Copy data to ring buffer
-		//TODO : Replace the copy thing with a nice function
-    	//rb->writeFromHost(&temp); //This can work because of missing copy constructors
-    	/*
-    	Chunk *buffer = rb->reserveHead();
-        for(int k = 0; k < nChunk*nSamp; k++) {
-            buffer->at(k) = temp.at(k);	
-        }
-    	rb->freeHead();
-    	
-    	j = 0;
-		*/
-    } else {
-        std::cout << "Failed to start acquisition." << std::endl;
-    }
+	std::cout << "returned Samples in Segment: " << dataDesc->returnedSamplesPerSeg << ", Index First Point " << dataDesc->indexFirstPoint << std::endl;
+
 
 	rb->producerQuit();
 }
