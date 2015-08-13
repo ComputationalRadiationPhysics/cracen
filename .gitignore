@@ -5,3 +5,4 @@ build/*
 slides/*
 DSP Graphics/*
 include/*
+tmp/*
