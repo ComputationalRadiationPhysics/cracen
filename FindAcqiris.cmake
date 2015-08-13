@@ -6,13 +6,17 @@
 #  Acqiris_DEFINITIONS - Compiler switches required for using Acqiris Driver
 
 find_path(Acqiris_INCLUDE_DIR NAMES AgMD1.h
-          HINTS ${CMAKE_CURRENT_SOURCE_DIR}/include/* /usr/include /usr/include/*})
+          HINTS ${CMAKE_CURRENT_SOURCE_DIR}/include/
+          PATHS /usr/include
+          PATH_SUFFIXES Acqiris)
 
 find_library(Acqiris_LIBRARY_1 NAMES AgMD1Fundamental
-             HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib /usr/lib /usr/lib32})
+             HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib 
+             PATHS /usr/lib /usr/lib32)
 
 find_library(Acqiris_LIBRARY2 NAMES AgMD1 libAgMD1
-             HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib /usr/lib /usr/lib32})
+             HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib 
+             PATHS /usr/lib /usr/lib32)
 
 
 set(Acqiris_INCLUDE_DIRS ${Acqiris_INCLUDE_DIR})

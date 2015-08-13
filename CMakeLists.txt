@@ -55,6 +55,7 @@ endif(Boost_VERSION EQUAL 105500)
 ###############################################################################
 # Acquiris Library for the ScopeReader
 ###############################################################################
+
 find_package(Acqiris REQUIRED)
 include_directories(${Acqiris_INCLUDE_DIRS})
 add_definitions(${Acqiris_CFLAGS})
