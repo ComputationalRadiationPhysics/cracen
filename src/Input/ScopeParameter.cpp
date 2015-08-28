@@ -64,7 +64,7 @@ ScopeReader::ScopeParameter::ScopeParameter(const std::string& filename) :
 	intParameterMap["coupling0"] = &coupling0;
 	intParameterMap["coupling1"] = &coupling1; 
 	intParameterMap["bandwidth0"] = &bandwidth0;
-	intParameterMap["bandwidth0"] = &bandwidth1; 
+	intParameterMap["bandwidth1"] = &bandwidth1; 
 	intParameterMap["trigger_type"] = &trigType;
 	intParameterMap["trigger_coupling_int"] = &trigCoupling_int;
 	intParameterMap["trigger_coupling_ext"] = &trigCoupling_ext;

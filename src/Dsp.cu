@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
 
 	if(argc > 1) {
 		input_filename = argv[1];	
+		scope_filename = argv[1];
 	}
 	if(argc > 2) {
 		output_filename = argv[2];
@@ -92,26 +93,24 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
 
-    int nSample = -1;
-    int nSegments = -1;
-    int nWaveforms = -1;
+    //DataReader::readHeader(input_filename, nSample, nSegments, ;nWaveforms);
+	//std::cout << "Header read. File compatible." << std::endl;
+    ScopeReader::ScopeParameter::ScopeParameter parameter(scope_filename);
+	int nSample = parameter.nbrSamples;
+	int nSegments = parameter.nbrSegments;
+	int nWaveforms = parameter.nbrWaveforms;
 
-    DataReader::readHeader(input_filename, nSample, nSegments, nWaveforms);
-	std::cout << "Header read. File compatible." << std::endl;
+    //std::cout << "DataReader created." << std::endl;
 
 	/* Initialize input buffer (with dynamic elements) */
     Chunk dc(CHUNK_COUNT * nSample);
     std::fill(dc.begin(), dc.end(), 0);
 	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, dc);
+    ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
     /* Initialize output buffer (with static elements) */
 	OutputStream os(output_filename, freeDevices.size());
 	
 	std::cout << "Buffer created." << std::endl;
-	
-    ScopeReader::ScopeParameter::ScopeParameter parameter(scope_filename);
-    ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
-    
-    std::cout << "DataReader created." << std::endl;
 
 	std::vector<Node*> devices;
 	StopWatch sw;

@@ -1,4 +1,5 @@
 /*
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -11,15 +12,18 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 /*
+ *
  *  Big parts of this code is based on work by Jakub Cizek, Marian Vlcek.
  *
  *  J. Cizek. M. Vlcek, I. Prochazka, Digital spectrometer
  *  for coincidence measurement of Doppler broadening of positron
  *  annihilation radiation, Nuclear Instruments and Methods
  *  in Physics Research, Section A 623, 982-994 (2010)
+ *
  */
 
 
@@ -33,9 +37,9 @@ void check_stat(ViSession InstrumentID,ViStatus status, const char* info)
 }
 
 ScopeReader::ScopeReader(const ScopeReader::ScopeParameter& param, InputBuffer* buffer, int chunksize) :
-    param(param),
-    nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize),
-    rb(buffer)
+	param(param),
+	nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize),
+	rb(buffer)
 {
 	initilizeDevice();
 	calibrateDevice();
@@ -61,7 +65,7 @@ void ScopeReader::initilizeDevice() {
 		simulate = "simulate=TRUE";
 		status = Acqrs_setSimulationOptions("64K");
 	} 
-	
+
 	/* Copy string values to a char array to get a non const c-string. */
 	std::vector<char> dev_buff(dev.length() + 1, '\0');
 	std::copy(dev.begin(), dev.end(), dev_buff.begin());
@@ -69,7 +73,7 @@ void ScopeReader::initilizeDevice() {
 	std::vector<char> simulate_buff(simulate.length() + 1, '\0');
 	std::copy(simulate.begin(), simulate.end(), simulate_buff.begin());
 	char* simulate_cstr = &simulate_buff[0];
-	
+	std::cout << "Device: " << dev_cstr << ", Simulate= " << simulate_cstr << std::endl;	
 	status = Acqrs_InitWithOptions(dev_cstr,VI_FALSE,VI_FALSE,simulate_cstr,&InstrumentID);
 	check_stat(InstrumentID,status,"InitWithOptions");
 	
@@ -118,7 +122,7 @@ void ScopeReader::getInstrumentInfo() {
 	check_stat(InstrumentID,status,"getInstrumentInfo>TrigLevelRange, channel 2");	
 	if(status==VI_SUCCESS) std::cout << "channel 2: " << trigRange1 << std::endl;
 	
-	ViReal64 temperature;
+	ViInt32 temperature;
 	status = Acqrs_getInstrumentInfo(InstrumentID,"Temperature 2",&temperature);
 	check_stat(InstrumentID,status,"getInstrumentInfo>Temperature");
 	if(status==VI_SUCCESS) std::cout << "Temperature: " << temperature << " C" << std::endl;
@@ -270,11 +274,12 @@ void ScopeReader::readToBuffer()
 		//const char* asct = asctime(timeinfo);
 		int data_good = 0;
 		for(int i_Waveform=1;i_Waveform<=param.nbrWaveforms;i_Waveform++) {
-			std::cout << "Waveform" << i_Waveform << std::endl;
+			//std::cout << "Waveform" << i_Waveform << std::endl;
 			//acquisition
 			data_good=0;
 			do {
-				AcqrsD1_acquire(InstrumentID);
+				status=AcqrsD1_acquire(InstrumentID);
+				check_stat(InstrumentID, status, "startAcquisition");
 				status=AcqrsD1_waitForEndOfAcquisition(InstrumentID,param.timeout);
 				if(status==VI_SUCCESS) data_good=1;
 				check_stat(InstrumentID,status,"waitForEndOfAcquisition");
@@ -283,7 +288,7 @@ void ScopeReader::readToBuffer()
 			} while(data_good!=1);
 
 			//readout
-	    	Chunk* buffer = rb->reserveHead();
+		    	Chunk* buffer = rb->reserveHead();
 			status=AcqrsD1_readData(InstrumentID,1,readPar,&((*buffer)[0]),dataDesc,segDesc);
 			rb->freeHead();
 			check_stat(InstrumentID,status,"readData: channel 1");
