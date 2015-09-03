@@ -115,6 +115,16 @@ DEVICE void matProdKernel(MatrixAccess3& result, const MatrixAccess1& left, cons
 				for(int i = 0; i < scalar; i++ ) {
 					if(x < right.getRows() && y + i < left.getRows()) {
 						sleft[threadIdx.x+i*blockSize] += right_reg*left[make_uint2(x,y+i)];	
+						/*
+						if(sleft[threadIdx.x+i*blockSize] != sleft[threadIdx.x+i*blockSize]) {
+							float inc = right_reg*left[make_uint2(x,y+i)];
+							printf("sleft nan, i=%i, increment = %f, right_reg = %f, left = %f\n", i, inc, right_reg, left[make_uint2(x,y+i)]);
+							printf("left coord: x = %i, y = %i, i = %i\n", x, y, i);
+							printf("threadIdx.x = %i, blockIdx.x = %i, iblockDim.x = %i\n", threadIdx.x, blockIdx.x, blockDim.x);
+							printf("xr = %i, blocks = %i\n", xr, blocks);
+							return;
+						}
+						*/
 					}
 				}
 			}

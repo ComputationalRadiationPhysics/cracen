@@ -13,16 +13,18 @@ private:
     Gtk::Button *button1,*button2, *button3, *button4;
     Gtk::Image *image;
     
-    InputBuffer waveBuffer;
+    //InputBuffer waveBuffer;
 	Fits fits;
-    DataReader reader;
+    //DataReader reader;
     int chunkIndex;
     int waveIndex;
     void drawWaveform() {
     	std::fstream waveFile("wave.txt", std::ios::out);
-    	for(int i = 0; i < SAMPLE_COUNT; i++) {
+    	/*
+	for(int i = 0; i < SAMPLE_COUNT; i++) {
     		waveFile << waveBuffer.getBuffer()[chunkIndex][waveIndex*SAMPLE_COUNT+i] << std::endl;
     	}
+	*/
     	waveFile.close();
     	const int offset = fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].woffset;
     	std::fstream plotFile("plot.gnu", std::ios::out);
@@ -38,8 +40,9 @@ private:
  		//	     << "set arrow from " << offset+100 << "," << -32000 << " to "<< offset+100 << "," << 32000 <<" nohead lc rgb \'black\'" << std::endl
 		//		 << "f(x) = ";
 				
-				 << "f(x) = " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[0] << "*exp(-1*((x-" << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[1] << ")/" << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[3] << ")**2) + " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[2];
-		
+		//		 << "f(x) = " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[0] << "*exp(-1*((x-" << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[1] << ")/" << 
+				 << "f(x) = " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[2] << "*x**2 + " << fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[1] << "*x + "<< fits.fits[chunkIndex*SAMPLE_COUNT+waveIndex].param[0];
+
 		/*
 		for(int i = 0; i < FitFunction::numberOfParams; i++) {
 			plotFile << fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].param[i] << "*x**" << i;
@@ -51,10 +54,10 @@ private:
 		std::string color;
 		if(fits.fits[chunkIndex*CHUNK_COUNT+waveIndex].status == 0) color = "green";
 		else color = "red";
-		plotFile << "plot 'wave.txt' using 1 title \"Raw Data (smoothed)\" with line smooth sbezier axes x1y1 lt rgb \"black\", \\" << std::endl
-				 << "f(x) with line title \"Fit\" axes x2y1 lt rgb \"" << color << "\"" << std::endl;
+		//plotFile << "plot 'wave.txt' using 1 title \"Raw Data (smoothed)\" with line smooth sbezier axes x1y1 lt rgb \"black\", \\" << std::endl;
+		plotFile   << "f(x) with line title \"Fit\" axes x2y1 lt rgb \"" << color << "\"" << std::endl;
 		plotFile.close();
-    	std::system("gnuplot plot.gnu");
+    		std::system("gnuplot plot.gnu");
 		image->set("plot.png");
     }
 public:
@@ -98,14 +101,14 @@ public:
 	MainWindow(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>&builder):
 		Gtk::Window(cobject), 
 		_builder(builder),
-		waveBuffer(1000, 1, Chunk(CHUNK_COUNT*SAMPLE_COUNT)),
-		reader(std::string("../../data/Al_25keV-1.cdb"), &waveBuffer, 1000),
+		//waveBuffer(1000, 1, Chunk(CHUNK_COUNT*SAMPLE_COUNT)),
+		//reader(std::string("../../data/Al_25keV-1.cdb"), &waveBuffer, 1000),
 		chunkIndex(0),
 		waveIndex(0)
 	{
 		//Wait for all the waveforms to be loaded.
 		fits.load(std::string("results.txt"));
-		reader.readToBuffer();
+		//reader.readToBuffer();
 		/* Retrieve all widgets. */
 		_builder->get_widget("button1", button1);
 		_builder->get_widget("button2", button2);

@@ -12,6 +12,7 @@ set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/"
 
 set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -Wall")
 set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -Wextra")
+set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -g")
 
 ###############################################################################
 # CUDA

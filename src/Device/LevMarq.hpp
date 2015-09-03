@@ -45,12 +45,16 @@ DEVICE void calcDerivF(const cudaTextureObject_t texObj, const float * const par
 				deriv_F[make_uint2(x,y)] = mu;
 			}
 		}
+		if(deriv_F[make_uint2(x,y)] != deriv_F[make_uint2(x,y)]) printf("A[%i, %i] is %f", x, y, deriv_F[make_uint2(x,y)]);
 	}
 	__syncthreads();
 }
 
 template <class Fit, unsigned int bs>
 __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const results, const unsigned sample_count, const unsigned int max_window_size, const unsigned int interpolation_count, float* mem, TickCounter* swMem = NULL) {
+	//DEBUG ONLY!
+	//if(blockIdx.x != 0) return;
+	
 	const unsigned int numberOfParams = Fit::numberOfParams;
 	//const unsigned int SPACE = ((max_window_size+numberOfParams)*2+(max_window_size+numberOfParams)*numberOfParams);
 	const unsigned int memOffset = blockIdx.x*SPACE;
@@ -109,8 +113,11 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		/* Abschnitt 2 */
 		//Solve minimization problem
 		//calc A^T*A => G
+		
 		matProdKernel<bs, Fit::numberOfParams>(G, AT, A, sleft);
+		//if(threadIdx.x == 0 && blockIdx.x == 0) printf("G:\n");
 		//if(threadIdx.x == 0 && blockIdx.x == 0) printMat(G);
+		
 		CUDA_SW_STOP(); //3
 		//calc G^-1
 		gaussJordan<Fit,bs>(G_inverse, G);
@@ -151,6 +158,7 @@ __global__ void levMarqIt(const cudaTextureObject_t texObj, FitData* const resul
 		const float z = u1[make_uint2(0,0)]-u2[make_uint2(0,0)];
 		const float n = u1[make_uint2(0,0)]-u3[make_uint2(0,0)];
 		roh = (z/n); //Div by 0 if not valid
+		//if(threadIdx.x == 0 && blockIdx.x == 0) printf("z=%f, n=%f, roh=z/n=%f\n", z, n, roh);
 		CUDA_SW_STOP(); //10
 		//decide if s is accepted or discarded
 		if(roh <= 0.2 || roh != roh) {

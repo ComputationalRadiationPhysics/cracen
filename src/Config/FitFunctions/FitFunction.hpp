@@ -78,11 +78,11 @@ public:
 		return res;
 	}
 	static DEVICE float derivation(const int param, const float x, const float y, const float * const params) {
-		float res;
-		if(param%2 == 1) res = pow(x,static_cast<float>(param));
-		else                               res = x*pow(x,param-1);		
-		//return pow(x, param); //pow does not work for odd i
-		return res;
+		//float res;
+		//if(param%2 == 1) res = pow(x,static_cast<float>(param));
+		//else                               res = x*pow(x,param-1);		
+		return pow(x, param); 
+		//return res;
 	}
 
 	static DEVICE void getWindow(const cudaTextureObject_t texObj, Window& window, const int dataset, const int sample_count) {
@@ -92,6 +92,7 @@ public:
 	template <class MatrixAccess>
 	static DEVICE void guessParams(const cudaTextureObject_t texObj, MatrixAccess& param, const Window& window) {
 		if(threadIdx.x == 0) {
+			
 			float max = RANGE_MINIMUM;
 			int pos = 0;
 			for(int i = 0; i < window.width; i++) {
@@ -108,6 +109,12 @@ public:
 			param[make_uint2(0,2)] = c;
 			for(int i = 3; i <= order; i++) param[make_uint2(0,i)] = 1.f/pow(10.f,-1*i);
 			
+			/*
+			param[make_uint2(0,0)] = 0;
+			param[make_uint2(0,1)] = 0;
+			param[make_uint2(0,2)] = 0;
+			param[make_uint2(0,3)] = 0;
+			*/
 		}
 		__syncthreads();
 	}

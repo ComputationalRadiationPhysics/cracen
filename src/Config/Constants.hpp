@@ -6,7 +6,7 @@
 #define GAUSS_PARAM2  -30000 //Baseline
 #define GAUSS_PARAM3  175	
 #define SAMPLE_COUNT 1000
-#define window_size SAMPLE_COUNT //100;//SAMPLE_COUNT/INTERPOLATION_COUNT;
+#define window_size 100//SAMPLE_COUNT/INTERPOLATION_COUNT;
 
 #include <string>
 #include "FitFunctions/FitFunction.hpp"
@@ -18,6 +18,7 @@
 
 /*! \var SAMPLE_COUNT 
  *  \brief Number of samples per event */
+//const unsigned int SAMPLE_COUNT = 1000;
 /*! \var CHUNK_COUNT 
  *  \brief Number of events copied to the GPU in one step */
 const unsigned int CHUNK_COUNT = 1024;
@@ -30,7 +31,7 @@ const unsigned int INTERPOLATION_COUNT = 1;
 /*! \var MAX_ITERATIONS
 	\brief Maximum amount of iterations levenbergMarquardt will try to fit
 */
-const unsigned int MAX_ITERATIONS = 100;
+const unsigned int MAX_ITERATIONS = 1000;
 
 const unsigned int maxNumberOfDevices = 1;
 const unsigned int pipelineDepth = 1;
@@ -40,8 +41,8 @@ const std::string FILENAME_TESTFILE = "../data/Al_25keV-1.cdb";
 const std::string SCOPE_PARAMETERFILE = "../data/scope.ini";
 
 const unsigned int polynom_order = 2;
-typedef Gauss FitFunction; // y = p0*e^(-1* ((x-p1)/p3)^2) + p2
-//typedef WindowPolynom<polynom_order> FitFunction; // y = p0 + p1*x + p2*x^2 + p3*x^3 + ...
+//typedef Gauss FitFunction; // y = p0*e^(-1* ((x-p1)/p3)^2) + p2
+typedef WindowPolynom<polynom_order> FitFunction; // y = p0 + p1*x + p2*x^2 + p3*x^3 + ...
 //typedef Polynom<polynom_order> FitFunction; // y = p0 + p1*x + p2*x^2 + p3*x^3 + ...
 
 /*  Do not touch */

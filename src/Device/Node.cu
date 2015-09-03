@@ -1,5 +1,6 @@
 #include "Node.hpp"
 #include "LevMarq.hpp"
+#include "Device.hpp"
 #include <vector>
 
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
@@ -78,26 +79,28 @@ void Node::run() {
 		Chunk *c = iBuffer->reserveTailTry();
 		/* Copy to device */
 		if(c != NULL) {
-			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &c->front(), 
+			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(c->front()), 
 	                               sizeof(DATATYPE) * c->size(), 
 	                               cudaMemcpyHostToDevice, streams[tex]);
-	        std::cout << std::endl;
-  			/* Free ringbuffer 
-	           This is possible because at the moment we use pageable (non-pinnend)
-	           host memory for the ringbuffer.
-	           In this case cudaMemcpy...Async will first copy data to a staging 
-	           buffer and then return. Only copying from staging buffer to final 
-	           destination is asynchronous.
-	           Should we switch to pinnend host memory for the ringbuffer we must
-	           not call iBuffer->freeTail() directly after cudaMemcpy..Async.
-	           See 
+	           	handleLastError();
+	       		/* Free ringbuffer 
+			   This is possible because at the moment we use pageable (non-pinnend)
+			   host memory for the ringbuffer.
+			   In this case cudaMemcpy...Async will first copy data to a staging 
+			   buffer and then return. Only copying from staging buffer to final 
+			   destination is asynchronous.
+			   Should we switch to pinnend host memory for the ringbuffer we must
+			   not call iBuffer->freeTail() directly after cudaMemcpy..Async.
+			   See 
 			   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
-	         */
+	         	*/
 			iBuffer->freeTail();
 			/*  for correct output the iBuffer->getSize() should be in the critical section */
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT, &mem[size*tex]);
+			handleLastError();
 			cudaMemcpyAsync(results[tex], &fitData[tex*CHUNK_COUNT], sizeof(results)/numberOfTextures, cudaMemcpyDeviceToHost, streams[tex]);
+			handleLastError();
 			lastTexture = tex;
 			tex = (tex+1)%numberOfTextures;
 			textureEmpty[tex] = false;
