@@ -266,7 +266,7 @@ void ScopeReader::readToBuffer()
 {
 	//measurement loop
 	short* shortBuffer = new short[SAMPLE_COUNT];
-	Chunk* buffer = new Chunk;
+	Chunk* buffer = new Chunk(CHUNK_COUNT);
 	unsigned int chunkPos = 0;
 	int data_good = 0;
 	bool firstValue = true;
@@ -316,6 +316,7 @@ void ScopeReader::readToBuffer()
 				Chunk*& ringbufferEntry = rb->reserveHead();
 				ringbufferEntry = buffer;
 				rb->freeHead();
+				buffer = new Chunk(CHUNK_COUNT);
 				chunkPos = 0;
 			}
 			status=AcqrsD1_readData(InstrumentID,2,readPar,shortBuffer,dataDesc,segDesc);
@@ -331,8 +332,11 @@ void ScopeReader::readToBuffer()
 				Chunk*& ringbufferEntry = rb->reserveHead();
 				ringbufferEntry = buffer;
 				rb->freeHead();
+				buffer = new Chunk(CHUNK_COUNT);
+				chunkPos=0;
 			}
 			//std::cout << "session " << i_Session << ": " << 100.0 * static_cast<double>(i_Waveform) / static_cast<double>(param.nbrWaveforms) << " %% done" << std::endl; 
+			std::cout << "Push Wave" << std::endl;
 		}
 		delete buffer;
 		//stop_session=clock();

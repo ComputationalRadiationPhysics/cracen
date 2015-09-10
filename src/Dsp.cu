@@ -94,7 +94,6 @@ int main(int argc, char* argv[]) {
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
 	    InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, NULL);
 	
-	#define DATAREADER
 	#ifdef DATAREADER
 		int nSample, nbrSegments, nWaveforms;
 		DataReader::readHeader(input_filename, nSample, nbrSegments, nWaveforms);
