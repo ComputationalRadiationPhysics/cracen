@@ -92,22 +92,25 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
-
-    //DataReader::readHeader(input_filename, nSample, nSegments, ;nWaveforms);
-	//std::cout << "Header read. File compatible." << std::endl;
-    ScopeReader::ScopeParameter::ScopeParameter parameter(scope_filename);
-	int nSample = parameter.nbrSamples;
-	int nSegments = parameter.nbrSegments;
-	int nWaveforms = parameter.nbrWaveforms;
-
-    //std::cout << "DataReader created." << std::endl;
-
-	/* Initialize input buffer (with dynamic elements) */
-    Chunk dc(CHUNK_COUNT * nSample);
-    std::fill(dc.begin(), dc.end(), 0);
-	InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, dc);
-    ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
-    /* Initialize output buffer (with static elements) */
+	    InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, NULL);
+	
+	#define DATAREADER
+	#ifdef DATAREADER
+		int nSample, nbrSegments, nWaveforms;
+		DataReader::readHeader(input_filename, nSample, nbrSegments, nWaveforms);
+		std::cout << "Header read. File compatible." << std::endl;
+		DataReader reader(input_filename, &inputBuffer, CHUNK_COUNT);
+		std::cout << "DataReader created." << std::endl;
+	#else
+		/* Initialize input buffer (with dynamic elements) */
+		ScopeReader::ScopeParameter::ScopeParameter parameter(scope_filename);
+		//int nSegments = parameter.nbrSegments;
+		//int nWaveforms = parameter.nbrWaveforms;
+		int nSample = parameter.nbrSamples;
+		ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
+	#endif
+	
+	/* Initialize output buffer (with static elements) */
 	OutputStream os(output_filename, freeDevices.size());
 	
 	std::cout << "Buffer created." << std::endl;

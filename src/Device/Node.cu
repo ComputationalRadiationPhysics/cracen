@@ -76,11 +76,13 @@ void Node::run() {
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
 		/* Block ringbuffer */
-		Chunk *c = iBuffer->reserveTailTry();
+		Chunk** c = iBuffer->reserveTailTry();
 		/* Copy to device */
 		if(c != NULL) {
-			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(c->front()), 
-	                               sizeof(DATATYPE) * c->size(), 
+			Chunk* buffer = *c;
+			iBuffer->freeTail();
+			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(buffer->front()), 
+	                               sizeof(DATATYPE) * buffer->size(), 
 	                               cudaMemcpyHostToDevice, streams[tex]);
 	           	handleLastError();
 	       		/* Free ringbuffer 
@@ -94,7 +96,6 @@ void Node::run() {
 			   See 
 			   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
 	         	*/
-			iBuffer->freeTail();
 			/*  for correct output the iBuffer->getSize() should be in the critical section */
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT, &mem[size*tex]);

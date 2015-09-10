@@ -7,7 +7,6 @@ DataReader::DataReader(const std::string& filename, InputBuffer* buffer,        
 {
     readHeader(filename, nSamp, nSeg, nWf);
     channelBuffer.resize(2 * nSamp);
-    temp.resize(nSamp * nChunk);
 }
 
 DataReader::~DataReader()
@@ -88,44 +87,23 @@ void DataReader::readToBuffer()
             //      [s1ch1 s1ch2 s2ch1 s2 ch2 s3ch1 s3ch2 ... ]
             // But we want it like
             //      [s1ch1 s2ch1 s3ch1 ... s1ch2 s2ch2 s3ch2 ...]
-
+			Chunk* temp = new Chunk;
             for (int i=0; i<nSamp; i++) {
-                temp[ j   *nSamp + i] = 
+                (*temp)[ j   *nSamp + i] = 
                         static_cast<DATATYPE>(channelBuffer[2*i]);
-                temp[(j+1)*nSamp + i] = 
+                (*temp)[(j+1)*nSamp + i] = 
                         static_cast<DATATYPE>(channelBuffer[2*i+1]);
             }
 			j += 2;
             
             if(j >= nChunk) {
-            	//Copy data to ring buffer
-    			//TODO : Replace the copy thing with a nice function
-            	//rb->writeFromHost(&temp); //This can work because of missing copy constructors
-            	Chunk *buffer = rb->reserveHead();
-		        for(int k = 0; k < nChunk*nSamp; k++) {
-		        	//(*buffer)[k] = temp[k];
-		        	buffer->at(k) = temp.at(k);	
-                }
-            	rb->freeHead();
-            	j = 0;
-            }
-        }
-        
-        //Fill the last Chunk with 0
-        for(j=j; j < nChunk; j++) {
-        	for(int i = 0; i < nSamp; i++) {
-        		temp[j*nSamp +i] = static_cast<DATATYPE>(0);
-        	}
-        }
-		//Copy data to ring buffer
-		//TODO : Replace the copy thing with a nice function
-    	//rb->writeFromHost(&temp); //This can work because of missing copy constructors
-    	Chunk *buffer = rb->reserveHead();
-        for(int k = 0; k < nChunk*nSamp; k++) {
-            buffer->at(k) = temp.at(k);	
-        }
-    	rb->freeHead();
-    	
+				//Copy pointer to data to ring buffer
+				Chunk*& buffer = rb->reserveHead();
+				buffer = temp;
+				rb->freeHead();
+				j = 0;
+			}
+		}
     	j = 0;
 
     } else {

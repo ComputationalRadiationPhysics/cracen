@@ -46,7 +46,7 @@ struct FitData {
 typedef FitData Output;
 //typedef std::vector<DATATYPE> Wform;
 typedef std::vector<DATATYPE> Chunk;
-typedef Ringbuffer<Chunk> InputBuffer;
+typedef Ringbuffer<Chunk*> InputBuffer;
 typedef Ringbuffer<Output> OutputBuffer;
 
 

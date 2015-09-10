@@ -39,7 +39,7 @@ public:
     ~Ringbuffer();
     int writeFromHost(Type &inputOnHost);
     int copyToHost(Type &outputOnHost);
-    Type* reserveHead();
+    Type& reserveHead();
     int freeHead();
     Type* reserveTailTry();
     int freeTail();
@@ -175,11 +175,11 @@ int Ringbuffer<Type>::copyToHost(Type &outputOnHost)
  *         be written here.
  */
 template <class Type>
-Type* Ringbuffer<Type>::reserveHead()
+Type& Ringbuffer<Type>::reserveHead()
 {
     sem_wait(&space);
     sem_wait(&mtx);
-    return &buffer.at(head);
+    return buffer.at(head);
 }
 
 /** Unlock buffer after external write operation (using reserveHead) 
