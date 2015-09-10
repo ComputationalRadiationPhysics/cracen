@@ -1,0 +1,89 @@
+/**
+
+\page graphPolicy Graph Policy
+
+
+[cage]: @ref cage
+
+The graph policy is a class which implements the graph interface of
+its host class ([cage]). A graph is defined by its vertex and edge
+property through template arguments and its graph description as
+constructor argument. The following defintion of a graph is defined by
+a city property which represents a vertex and a road property which
+represents an edge:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cc}
+typedef graybat::graphPolicy::BGL<City, Road> CityGraph;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The basic member of a property is an unique identifier (id) within the
+graph.  This id is used by the [cage] to map vertices to peers.  The
+following property is a very simple and basic property for edges and
+vertices. Therefore, it is called SimpleProperty:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cc}
+struct SimpleProperty{
+    typedef unsigned ID;
+    SimpleProperty() : SimpleProperty(0){}
+    SimpleProperty(ID id) : id(id){}
+
+    ID id;
+};
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The SimpleProperty can be used to build more complex properties:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cc}
+struct ComplexProperty::public graybat::graphPolicy::SimpleProperty{
+	ComplexProperty() : SimpleProperty(0)
+
+	// Property specific data
+};
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The following source code provides the full skeleton of a graph
+policy.  Nevertheless, the predefined boost graph library graph policy
+(graybat::graphPolicy::BGL) is a good starting point to be used in a
+[cage]. A custom implementation might only be necessary if there exist
+some special requirements.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cc}
+namespace graybat {
+
+	namespace graphPolicy {
+
+		template <class T_VertexProperty, class T_EdgeProperty>
+		class GraphPolicySkeleton {
+		
+			// Type definitions
+			typedef T_VertexProperty                                                Vertex;
+			typedef T_EdgeProperty                                                  Edge;
+			typedef std::pair<unsigned, unsigned>                                   EdgeDescription;
+			typedef std::pair<std::vector<unsigned>, std::vector<EdgeDescription> > GraphDescription;
+			
+			// Construct the graph from a graph description
+			GraphPolicySkeleton(GraphDescription description) {...}
+			
+			// Graph identifier
+			unsigned id;
+			
+			/*******************************************************************
+			 * GRAPH OPERATIONS
+			 ******************************************************************/
+			std::vector<Vertex> getVertices() {...}
+
+			std::vector<Vertex> getAdjacentVertices(const Vertex vertex) {...}
+
+			std::vector<std::pair<Vertex, Edge> > getOutEdges(const Vertex vertex) {...}
+
+			std::vector<std::pair<Vertex, Edge> > getInEdges(const Vertex vertex) {...}
+		}
+	}
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*/
