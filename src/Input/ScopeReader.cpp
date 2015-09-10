@@ -266,8 +266,8 @@ void ScopeReader::readToBuffer()
 {
 	//measurement loop
 	short* shortBuffer = new short[SAMPLE_COUNT];
-	Chunk* buffer;
-	unsigned int chunkPos = CHUNK_COUNT + 1;
+	Chunk* buffer = new Chunk;
+	unsigned int chunkPos = 0;
 	int data_good = 0;
 	bool firstValue = true;
 	for(int i_Session=1;i_Session<=param.nbrSessions;i_Session++) {
@@ -289,20 +289,15 @@ void ScopeReader::readToBuffer()
 				check_stat(InstrumentID,status,"stopAcquisition");
 			} while(data_good!=1);
 
-			//readout channel 1
-			if(chunkPos >= CHUNK_COUNT) {
-		    	buffer = rb->reserveHead();
-		    	std::cout << "New Chunk put to input buffer." << std::endl;
-				chunkPos = 0;		
-			}
-			 
+			//readout channel 1	 
 			status=AcqrsD1_readData(InstrumentID,1,readPar,shortBuffer,dataDesc,segDesc);
 			check_stat(InstrumentID,status,"readData: channel 1");
 			
 			for(int i = 0; i < SAMPLE_COUNT; i++) {
-				(*buffer)[chunkPos*SAMPLE_COUNT+i] = static_cast<float>(shortBuffer[i] >> 4);
+				(*buffer)[chunkPos*SAMPLE_COUNT+i] = static_cast<DATATYPE>(shortBuffer[i] >> 4);
 			}
 			
+			/*
 			if(firstValue) {
 				std::ofstream waveFile;
 				waveFile.open("wave.txt");
@@ -314,16 +309,14 @@ void ScopeReader::readToBuffer()
 				firstValue = false;
 				waveFile.close();
 			}
+			*/
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
+				Chunk*& ringbufferEntry = rb->reserveHead();
+				ringbufferEntry = buffer;
 				rb->freeHead();
-			}
-			/*
-			//readout channel 2
-			if(chunkPos >= CHUNK_COUNT) {
-				buffer = rb->reserveHead();
-				chunkPos = 0;	
+				chunkPos = 0;
 			}
 			status=AcqrsD1_readData(InstrumentID,2,readPar,shortBuffer,dataDesc,segDesc);
 			check_stat(InstrumentID,status,"readData: channel 2");
@@ -335,14 +328,13 @@ void ScopeReader::readToBuffer()
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
+				Chunk*& ringbufferEntry = rb->reserveHead();
+				ringbufferEntry = buffer;
 				rb->freeHead();
 			}
-			*/
 			//std::cout << "session " << i_Session << ": " << 100.0 * static_cast<double>(i_Waveform) / static_cast<double>(param.nbrWaveforms) << " %% done" << std::endl; 
-
-		
-
 		}
+		delete buffer;
 		//stop_session=clock();
 		//t_session=stop_session-start_session;
 		//std::cout << "session " << i_Session << ":  " << 100.0*(double)i_Waveform/(double)nbrWaveforms << "%% done  " << std::endl;// << nbrWaveforms/t_session*1000 << " 1/s" << std::endl;

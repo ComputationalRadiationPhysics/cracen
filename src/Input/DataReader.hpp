@@ -30,7 +30,6 @@ class DataReader {
 private:
     std::string inputFilename;
     InputBuffer* rb;
-    Chunk temp;
     std::vector<MeasureType> channelBuffer;
 
     int nSamp;
