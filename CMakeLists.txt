@@ -10,9 +10,10 @@ set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/"
 # Compiler Flags
 ###############################################################################
 
-set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -Wall")
-set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -Wextra")
-set(CMAKE_CXX_FLAGGS "${CMAKE_CXX_FLAGGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ###############################################################################
 # CUDA
@@ -27,6 +28,14 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Input)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Output)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Utility)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/communicationPolicy/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/dout/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/graphPolicy)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/pattern/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/mapping/)
 
 cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
@@ -130,7 +139,7 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 #LIST(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cu)
 #LIST(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/OnlineDSP/*)
 
-cuda_add_executable(DSP "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cu")
+cuda_add_executable(DSP "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
 target_link_libraries(DSP ${LIBS})
 
 add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
