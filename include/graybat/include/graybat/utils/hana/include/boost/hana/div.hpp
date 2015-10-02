@@ -1,0 +1,106 @@
+/*!
+@file
+Defines `boost::hana::div`.
+
+@copyright Louis Dionne 2015
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+ */
+
+#ifndef BOOST_HANA_DIV_HPP
+#define BOOST_HANA_DIV_HPP
+
+#include <boost/hana/fwd/div.hpp>
+
+#include <boost/hana/concept/constant.hpp>
+#include <boost/hana/concept/integral_domain.hpp>
+#include <boost/hana/core/convert.hpp>
+#include <boost/hana/core/dispatch.hpp>
+#include <boost/hana/detail/canonical_constant.hpp>
+#include <boost/hana/detail/has_common_embedding.hpp>
+#include <boost/hana/value.hpp>
+
+#include <type_traits>
+
+
+namespace boost { namespace hana {
+    //! @cond
+    template <typename X, typename Y>
+    constexpr decltype(auto) div_t::operator()(X&& x, Y&& y) const {
+        using T = typename hana::tag_of<X>::type;
+        using U = typename hana::tag_of<Y>::type;
+        using Div = BOOST_HANA_DISPATCH_IF(decltype(div_impl<T, U>{}),
+            IntegralDomain<T>::value &&
+            IntegralDomain<U>::value &&
+            !is_default<div_impl<T, U>>::value
+        );
+
+    #ifndef BOOST_HANA_CONFIG_DISABLE_CONCEPT_CHECKS
+        static_assert(IntegralDomain<T>::value,
+        "hana::div(x, y) requires 'x' to be an IntegralDomain");
+
+        static_assert(IntegralDomain<U>::value,
+        "hana::div(x, y) requires 'y' to be an IntegralDomain");
+
+        static_assert(!is_default<div_impl<T, U>>::value,
+        "hana::div(x, y) requires 'x' and 'y' to be embeddable "
+        "in a common IntegralDomain");
+    #endif
+
+        return Div::apply(static_cast<X&&>(x), static_cast<Y&&>(y));
+    }
+    //! @endcond
+
+    template <typename T, typename U, bool condition>
+    struct div_impl<T, U, when<condition>> : default_ {
+        template <typename ...Args>
+        static constexpr auto apply(Args&& ...) = delete;
+    };
+
+    // Cross-type overload
+    template <typename T, typename U>
+    struct div_impl<T, U, when<
+        detail::has_nontrivial_common_embedding<IntegralDomain, T, U>::value
+    >> {
+        using C = typename common<T, U>::type;
+        template <typename X, typename Y>
+        static constexpr decltype(auto) apply(X&& x, Y&& y) {
+            return hana::div(hana::to<C>(static_cast<X&&>(x)),
+                             hana::to<C>(static_cast<Y&&>(y)));
+        }
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // Model for integral data types
+    //////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    struct div_impl<T, T, when<std::is_integral<T>::value &&
+                               !std::is_same<T, bool>::value>> {
+        template <typename X, typename Y>
+        static constexpr decltype(auto) apply(X&& x, Y&& y)
+        { return static_cast<X&&>(x) / static_cast<Y&&>(y); }
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // Model for Constants over an IntegralDomain
+    //////////////////////////////////////////////////////////////////////////
+    namespace detail {
+        template <typename C, typename X, typename Y>
+        struct constant_from_div {
+            static constexpr auto value = hana::div(hana::value<X>(), hana::value<Y>());
+            using hana_tag = detail::CanonicalConstant<typename C::value_type>;
+        };
+    }
+
+    template <typename C>
+    struct div_impl<C, C, when<
+        Constant<C>::value &&
+        IntegralDomain<typename C::value_type>::value
+    >> {
+        template <typename X, typename Y>
+        static constexpr decltype(auto) apply(X const&, Y const&)
+        { return hana::to<C>(detail::constant_from_div<C, X, Y>{}); }
+    };
+}} // end namespace boost::hana
+
+#endif // !BOOST_HANA_DIV_HPP
