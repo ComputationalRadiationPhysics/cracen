@@ -31,7 +31,7 @@ struct FitData {
 		ptree params;
 		thisFit.put("status", status);
 		thisFit.put("woffset", woffset);
-		for(int i = 0; i < FitFunction::numberOfParams; i++) {
+		for(unsigned int i = 0; i < FitFunction::numberOfParams; i++) {
 			ptree value;
 			std::ostringstream out;
 			out << std::setprecision(12) << param[i];

@@ -75,6 +75,18 @@ add_definitions(${Acqiris_LDFLAGS})
 add_definitions(${Acqiris_CFLAGS_OTHER})
 set(LIBS ${LIBS} ${Acqiris_LIBRARIES})
 
+################################################################################
+# MPI
+################################################################################
+find_package(MPI REQUIRED)
+  include_directories(SYSTEM ${MPI_C_INCLUDE_PATH})
+set(LIBS ${LIBS} ${MPI_C_LIBRARIES})
+
+# bullxmpi fails if it can not find its c++ counter part
+if(MPI_CXX_FOUND)
+  set(LIBS ${LIBS} ${MPI_CXX_LIBRARIES})
+endif(MPI_CXX_FOUND)
+
 ###############################################################################
 # Gtk3mm for the viewer
 ###############################################################################
@@ -118,11 +130,12 @@ set(OnlineDSP_LIBS ${OnlineDSP_LIBS} Qt5::Gui Qt5::Widgets)
 ###############################################################################
 
 file(GLOB_RECURSE SRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/Config/*"
-						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Device/*"
 						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Input/*"
 						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Output/*"
 						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/*")
-						   
+						  
+file(GLOB_RECURSE CUDASRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/Device/*")
+
 file(GLOB_RECURSE OnlineDSP_SRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/OnlineDSP/*")
 
 #FOREACH(item ${SRCFILES})
@@ -139,7 +152,7 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 #LIST(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cu)
 #LIST(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/OnlineDSP/*)
 
-cuda_add_executable(DSP "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
+cuda_add_executable(DSP "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
 target_link_libraries(DSP ${LIBS})
 
 add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")

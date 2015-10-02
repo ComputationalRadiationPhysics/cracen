@@ -1,35 +1,15 @@
 #include <vector>
 #include <iostream>
 
-#include "../include/graybat/include/graybat.hpp"
-#include "GrayBat/Pipeline.hpp"
 #include "Device/Node.hpp"
 #include "Output/OutputStream.hpp"
 #include "Config/Constants.hpp"
 #include "Input/DataReader.hpp"
 #include "Input/ScopeReader.hpp"
 #include "Utility/StopWatch.hpp"
-#include "Utility/CudaUtil.hpp"
+#include "Device/CudaUtil.hpp"
   
-int main(int argc, char* argv[]) {
-	// CommunicationPolicy
-    typedef graybat::communicationPolicy::BMPI CP;
-    
-    // GraphPolicy
-    typedef graybat::graphPolicy::BGL<Cell>    GP;
-    
-    // Cage
-    typedef graybat::Cage<CP, GP>   OuterCage;
-    typedef typename MyCage::Event  Event;
-    typedef typename MyCage::Vertex Vertex;
-    typedef typename MyCage::Edge   Edge;
-
-	std::vector<unsigned int> pipelineStage(3);
-	pipelineStage[0] = 1;
-	pipelineStage[1] = 1;
-	pipelineStage[2] = 1;
-	OuterCage outerCage(graybat::pattern::Pipeline(pipelineStage));
-	
+int main(int argc, char* argv[]) {	
 	/* Get number of devices */
 	int numberOfDevices;
 	std::vector<unsigned> freeDevices = cuda::getFreeDevices(maxNumberOfDevices);
@@ -57,7 +37,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "DataReader created." << std::endl;
 	#else
 		/* Initialize input buffer (with dynamic elements) */
-		ScopeReader::ScopeParameter::ScopeParameter parameter(scope_filename);
+		ScopeReader::ScopeParameter parameter(scope_filename);
 		//int nSegments = parameter.nbrSegments;
 		//int nWaveforms = parameter.nbrWaveforms;
 		int nSample = parameter.nbrSamples;
