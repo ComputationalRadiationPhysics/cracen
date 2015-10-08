@@ -50,9 +50,9 @@ int exp() {
     const unsigned nChainLinks = 1000;
     auto inc = [](unsigned &a){a++;};
 
-    
     // Create GoL Graph
-    Cage cage;
+    CP communicationPolicy;
+    Cage cage(communicationPolicy);
 
     cage.setGraph(graybat::pattern::Chain(nChainLinks));
     

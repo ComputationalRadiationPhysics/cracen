@@ -114,7 +114,9 @@ int gol(const unsigned nCells, const unsigned nTimeSteps ) {
     const unsigned width  = height;
 
     // Create GoL Graph
-    Cage grid(graybat::pattern::GridDiagonal(height, width));
+    CP communicationPolicy;
+    Cage grid(communicationPolicy);
+    grid.setGraph(graybat::pattern::GridDiagonal(height, width));
 
     
     // Distribute vertices

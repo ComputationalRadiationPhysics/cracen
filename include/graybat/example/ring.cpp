@@ -56,7 +56,8 @@ int exp() {
     const unsigned nRingLinks = 50;
 
     // Create GoL Graph
-    Cage cage;
+    CP communicationPolicy;
+    Cage cage(communicationPolicy);
     assert(cage.getPeers().size() >= nRingLinks);
 
     // Create ring communication pattern
