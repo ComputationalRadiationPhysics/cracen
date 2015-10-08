@@ -2,8 +2,8 @@
 
 DataReader::DataReader(const std::string& filename, InputBuffer* buffer,                       int chunksize) :
     inputFilename(filename),
-    nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize),
-    rb(buffer)
+    rb(buffer),
+    nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize)
 {
     readHeader(filename, nSamp, nSeg, nWf);
     channelBuffer.resize(2 * nSamp);
@@ -98,8 +98,8 @@ void DataReader::readToBuffer()
             
             if(j >= nChunk) {
 				//Copy pointer to data to ring buffer
-				Chunk*& buffer = rb->reserveHead();
-				buffer = temp;
+				Chunk** buffer = rb->reserveHead();
+				*buffer = temp;
 				rb->freeHead();
 				j = 0;
 			}

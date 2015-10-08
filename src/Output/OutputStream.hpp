@@ -13,6 +13,7 @@
 class OutputStream {
 private:
 	Ringbuffer<Output> oBuffer;
+	std::string file;
 	bool done;
 	pthread_t thread_tid;
 	

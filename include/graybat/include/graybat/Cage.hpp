@@ -11,6 +11,7 @@
 #include <stdexcept> /* std::runtime_error */
 #include <tuple>     /* std::tie */
 #include <memory>    /* std::shared_memory */
+#include <sstream>   /* std::stringstream */
 
 // GRAYBAT
 #include <graybat/utils/exclusivePrefixSum.hpp> /* exclusivePrefixSum */

@@ -37,9 +37,9 @@ void check_stat(ViSession InstrumentID,ViStatus status, const char* info)
 }
 
 ScopeReader::ScopeReader(const ScopeReader::ScopeParameter& param, InputBuffer* buffer, int chunksize) :
+	rb(buffer),
 	param(param),
-	nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize),
-	rb(buffer)
+	nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize)
 {
 	initilizeDevice();
 	calibrateDevice();
@@ -314,8 +314,8 @@ void ScopeReader::readToBuffer()
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
-				Chunk*& ringbufferEntry = rb->reserveHead();
-				ringbufferEntry = buffer;
+				Chunk** ringbufferEntry = rb->reserveHead();
+				*ringbufferEntry = buffer;
 				rb->freeHead();
 				buffer = new Chunk(CHUNK_COUNT*SAMPLE_COUNT);
 				chunkPos = 0;
@@ -330,8 +330,8 @@ void ScopeReader::readToBuffer()
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
-				Chunk*& ringbufferEntry = rb->reserveHead();
-				ringbufferEntry = buffer;
+				Chunk** ringbufferEntry = rb->reserveHead();
+				*ringbufferEntry = buffer;
 				rb->freeHead();
 				buffer = new Chunk(CHUNK_COUNT*SAMPLE_COUNT);
 				chunkPos=0;

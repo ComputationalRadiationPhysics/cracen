@@ -9,36 +9,35 @@ set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/"
 ###############################################################################
 # Compiler Flags
 ###############################################################################
+string(FIND ${CMAKE_CXX_COMPILER} "clang++" CXX_COMPILER_IS_CLANG++)
+string(FIND ${CMAKE_CXX_COMPILER} "g++" CXX_COMPILER_IS_G++)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+if(${CXX_COMPILER_IS_G++})
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+endif(${CXX_COMPILER_IS_G++})
+
+if(${CXX_COMPILER_IS_CLANG++})
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+endif(${CXX_COMPILER_IS_CLANG++})
 
 ###############################################################################
 # CUDA
 ###############################################################################
+
 find_package(CUDA REQUIRED)
 set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-Xptxas=-v;-O3;-DDEBUG_ENABLED")
 set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Config)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Input)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Output)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Utility)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/communicationPolicy/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/dout/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/graphPolicy)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/pattern/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/include/mapping/)
-
-cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
+# Separate C++ from CUDA file compilation (So we can use our own compiler)
+set(CUDA_SEPARABLE_COMPILATION ON)
+# Do not propagate CXX flags to the nvcc host compiler (especially -std=c++11)
+set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 ###############################################################################
 # PThreads
@@ -76,16 +75,13 @@ add_definitions(${Acqiris_CFLAGS_OTHER})
 set(LIBS ${LIBS} ${Acqiris_LIBRARIES})
 
 ################################################################################
-# MPI
+# GRAYBAT
 ################################################################################
-find_package(MPI REQUIRED)
-  include_directories(SYSTEM ${MPI_C_INCLUDE_PATH})
-set(LIBS ${LIBS} ${MPI_C_LIBRARIES})
-
-# bullxmpi fails if it can not find its c++ counter part
-if(MPI_CXX_FOUND)
-  set(LIBS ${LIBS} ${MPI_CXX_LIBRARIES})
-endif(MPI_CXX_FOUND)
+set(graybat_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/graybat)
+find_package(graybat REQUIRED CONFIG)
+#include_directories(SYSTEM ${graybat_INCLUDE_DIRS})
+include_directories(${graybat_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${graybat_LIBRARIES})
 
 ###############################################################################
 # Gtk3mm for the viewer
@@ -126,6 +122,21 @@ include_directories(${Qt5Gui_INCLUDE_DIRS})
 set(OnlineDSP_LIBS ${OnlineDSP_LIBS} Qt5::Gui Qt5::Widgets)
 
 ###############################################################################
+# Include directories
+###############################################################################
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Config)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Input)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Output)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Utility)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
+
+cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
+
+###############################################################################
 # Executables
 ###############################################################################
 
@@ -154,6 +165,15 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 
 cuda_add_executable(DSP "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
 target_link_libraries(DSP ${LIBS})
+
+cuda_add_executable(Fitter "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Fitter.cpp")
+target_link_libraries(Fitter ${LIBS})
+
+add_executable(ScopeReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeReader.cpp")
+target_link_libraries(ScopeReader ${LIBS})
+
+add_executable(FileReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileReader.cpp")
+target_link_libraries(FileReader ${LIBS})
 
 add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
 target_link_libraries(Viewer ${LIBS})

@@ -29,6 +29,7 @@ OnlineDSP::~OnlineDSP()
 
 QPlatformSurface* OnlineDSP::surfaceHandle() const
 {
+	return surfaceHandle();
 }
 
 int main(int argc, char** argv) {

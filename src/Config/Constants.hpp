@@ -45,9 +45,16 @@ const unsigned int polynom_order = 2;
 typedef WindowPolynom<polynom_order> FitFunction; // y = p0 + p1*x + p2*x^2 + p3*x^3 + ...
 //typedef Polynom<polynom_order> FitFunction; // y = p0 + p1*x + p2*x^2 + p3*x^3 + ...
 
+//Graybat IP addresses
+
+const std::string masterUri = "tcp://127.0.0.1:5001";
+const std::string fitterUri = "tcp://127.0.0.1:5001";
+const std::string scopeReaderUri = "tcp://127.0.0.1:5001";
+const std::string onlineDspUri = "tcp://127.0.0.1:5001";
+
 /*  Do not touch */
-const unsigned int MIN_COMPUTE_CAPABILITY_MAJOR = 3;
-const unsigned int MIN_COMPUTE_CAPABILITY_MINOR = 5;
+const int MIN_COMPUTE_CAPABILITY_MAJOR = 3;
+const int MIN_COMPUTE_CAPABILITY_MINOR = 5;
 const unsigned int SPACE = ((window_size+FitFunction::numberOfParams)*2+(window_size+FitFunction::numberOfParams)*FitFunction::numberOfParams);
 
 #endif

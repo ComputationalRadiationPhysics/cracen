@@ -68,7 +68,7 @@ void Node::run() {
 		if(!textureEmpty[tex]) {
 			cudaStreamSynchronize(streams[tex]);
 			//std::cout << results[tex][0];
-			for(int i = 0; i < CHUNK_COUNT; i++) {
+			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
 					oBuffer->writeFromHost(results[tex][i]);
 			}
 			textureEmpty[tex] = true;
