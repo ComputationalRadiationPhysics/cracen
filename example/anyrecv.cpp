@@ -54,10 +54,9 @@ int exp() {
     /***************************************************************************
      * Initialize Communication
      ****************************************************************************/
-    //const unsigned vertices = 10;
-    
     // Create GoL Graph
-    Cage cage;
+    CP communicationPolicy;
+    Cage cage(communicationPolicy);
 
     // Set communication pattern
     cage.setGraph(graybat::pattern::BiStar(cage.getPeers().size()));

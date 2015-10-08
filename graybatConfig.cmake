@@ -15,13 +15,13 @@ set(graybat_PATCH_VERSION 0)
 set(graybat_VERSION
   ${graybat_MAJOR_VERSION}.${graybat_MINOR_VERSION}.${graybat_PATCH_VERSION})
 
-set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include")
-set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/utils/hana/include/")
+set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} "${graybat_DIR}/include")
+set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} "${graybat_DIR}/include/graybat/utils/hana/include/")
 
 ###############################################################################
 # MODULES
 ###############################################################################
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/include/graybat/utils/cmake/modules/" )
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${graybat_DIR}/include/graybat/utils/cmake/modules/" )
 
 ###############################################################################
 # DEPENDENCIES

@@ -22,14 +22,16 @@ provided as template arguments to the [cage] class.  The following
 listings show examples on how to use and how to configure the [cage]
 with predefined [communication policy] and [graph policy].
 
-## Configure the GrayBat Cage ##
+## Configure the graybat cage ##
 
-1. Include GrayBat umbrella header and predefined functors for
-   graph generation and graph mapping.
+1. Include graybat cage, communication policy, graph policy and
+   predefined functors for communication patterns and mappings.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cc}
-#include <graybat.hpp>
-#include <pattern/GridDiagonal.hpp>
-#include <mapping/Consecutive.hpp>
+#include <graybat/Cage.hpp>
+#include <graybat/communicationPolicy/BMPI.hpp>
+#include <graybat/graphPolicy/BGL.hpp>
+#include <graybat/pattern/GridDiagonal.hpp>
+#include <graybat/mapping/Consecutive.hpp>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 2. Define communication policy to use (boost.MPI).
@@ -47,10 +49,12 @@ typedef graybat::graphPolicy::BGL<> GraphPolicy;
 typedef graybat::Cage<CommunicatonPolicy, GraphPolicy> Cage;
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-5. Create Cage instance with graph creation functor that describes the
+5. Create Cage instance and set graph creation functor that describes the
    communication [pattern].
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cc}
-Cage cage(graybat::pattern::GridDiagonal(100,100))
+CommunicationPolicy communicationPolicy;
+Cage cage(communicationPolicy);
+cage.setGraph(graybat::pattern::GridDiagonal(100,100))
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -74,7 +78,7 @@ for(Vertex vertex: cage.hostedVertices){
 ## Graph Operations ##
 
 A peer is responsible for the communication of all its hosted
-vertices.  Therefore, the common approach for communication in GrayBat
+vertices.  Therefore, the common approach for communication in graybat
 is to iterate over the set of hosted vertices and send data to
 adjacent vertices which are connected with an outgoing edge and
 receive data from adjacent vertices which are connected with an
@@ -272,5 +276,7 @@ cage.synchronize();
 - \subpage graphPolicy 
 - \subpage communicationPattern
 - \subpage mapping
+- \subpage vertex
+- \subpage edge
 
 */
