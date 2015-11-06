@@ -11,7 +11,6 @@
   
 int main(int argc, char* argv[]) {	
 	/* Get number of devices */
-	int numberOfDevices;
 	std::vector<unsigned> freeDevices = cuda::getFreeDevices(maxNumberOfDevices);
 
 	std::string input_filename = FILENAME_TESTFILE;
@@ -27,7 +26,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
-	    InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, NULL);
+	    InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
 	
 	#ifdef DATAREADER
 		int nSample, nbrSegments, nWaveforms;
@@ -40,7 +39,6 @@ int main(int argc, char* argv[]) {
 		ScopeReader::ScopeParameter parameter(scope_filename);
 		//int nSegments = parameter.nbrSegments;
 		//int nWaveforms = parameter.nbrWaveforms;
-		int nSample = parameter.nbrSamples;
 		ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
 	#endif
 	

@@ -20,8 +20,6 @@
 #include <pthread.h>
 #include "../Config/Types.hpp"
 #include "../Config/Constants.hpp"
-#include "../Utility/Ringbuffer.hpp"
-
 #include "AgMD1.h"
 #include "AgMD1Fundamental.h"
 #include "AgMD1FundamentalErrorCodes.h"

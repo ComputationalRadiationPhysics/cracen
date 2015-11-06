@@ -28,7 +28,7 @@ namespace graybat {
 				std::vector<EdgeDescription> edges;
 				
 				unsigned int pos = 0;
-				for(unsigned int stage = 1; stage < verticesCount.size() - 1; stage++) {
+				for(unsigned int stage = 1; stage <= verticesCount.size() - 1; stage++) {
 					for(unsigned int from = pos; from < pos+verticesCount[stage-1]; from++) {
 						for(unsigned int to = pos+verticesCount[stage-1]; to < pos+verticesCount[stage-1]+verticesCount[stage]; to++) {
 							edges.push_back(std::make_pair(from, to));

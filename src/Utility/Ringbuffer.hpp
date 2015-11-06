@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 #include <semaphore.h>
+#include <cassert>
+#include "Maybe.hpp"
 
 /*! Ringbuffer
  *  @brief A ringbuffer template supporting non-host consumers/producers.
@@ -25,34 +27,49 @@ template <class Type>
 class Ringbuffer {
 
 private:
-    sem_t mtx;
-    sem_t usage, space;
-    std::vector<Type> buffer;
-    unsigned int bufferSize;
-    unsigned int head, tail;
-    int producer;
-
+	sem_t* mtx;
+	sem_t* usage;
+	sem_t* space;
+	std::vector<Type> buffer;
+	unsigned int head, tail;
+	unsigned int producer;
+	
+	Ringbuffer(const Ringbuffer& rb) {}
+	Ringbuffer& operator=(const Ringbuffer& rb) { return *this; }
+	
 public:
-    Ringbuffer(const unsigned int bSize, int producer,
-               Type defaultItem);
-    Ringbuffer(const unsigned int bSize, int producer);
-    ~Ringbuffer();
-    int writeFromHost(Type &inputOnHost);
-    int copyToHost(Type &outputOnHost);
-    Type* reserveHead();
-    int freeHead();
-    Type* reserveTailTry();
-    int freeTail();
-    int getSize();
-    bool isEmpty();
-    bool isFinished();
-    void producerQuit();
-    
-    //Not for multithreaded processes! Use with extreme caution.
-    std::vector<Type>& getBuffer() {return buffer;}
+	void init();
+	Ringbuffer(const unsigned int bSize, int producer, Type defaultItem);
+	Ringbuffer(const unsigned int bSize, int producer);
+	~Ringbuffer() noexcept;
+	int push(Type input) noexcept;
+	int push(Type &&input) noexcept;
+	Type pop() noexcept;
+	template <class Funktor>
+	int popTry(Funktor popFunction) noexcept;
+	
+	int getSize() const noexcept;
+	bool isEmpty() const noexcept;
+	bool isFinished() const noexcept;
+	void producerQuit() noexcept;
+	
 };
 
-typedef std::vector<float >Chunk;
+template <class Type>
+void Ringbuffer<Type>::init()
+{
+	int semaphoreErrorValue = 0;
+	mtx = new sem_t;
+	usage = new sem_t;
+	space = new sem_t;
+	semaphoreErrorValue |= sem_init(mtx, 0, 1);
+    semaphoreErrorValue |= sem_init(usage, 0, 0);
+    semaphoreErrorValue |= sem_init(space, 0, buffer.size());
+	if(semaphoreErrorValue != 0) std::cerr << "Initialization of semaphore failed." << std::endl;
+	assert(semaphoreErrorValue == 0);
+	std::cout << "usage << " << usage << std::endl;
+	std::cout << "space << " << space << std::endl;
+}
 
 /**
  * Constructor for dynamic size elements.
@@ -71,21 +88,12 @@ template <class Type>
 Ringbuffer<Type>::Ringbuffer(const unsigned int bSize, 
                              int producer,
                              Type defaultItem) :
-	bufferSize(0),
+    buffer(bSize, defaultItem),
 	head(0),// We write new item to this position
 	tail(0),// We read stored item from this position
 	producer(producer)
 {
-    buffer.reserve(bSize);
-    for (unsigned int i=0; i<bSize; i++) {
-        // We need to push_back the defaultItem for variable size types 
-        // like std::vector. Otherwise the memory is not allocated.
-        buffer.push_back(defaultItem);
-    }
-    sem_init(&mtx, 0, 1);
-    sem_init(&usage, 0, 0);
-    sem_init(&space, 0, bSize);
-    bufferSize = bSize; 
+	init();
 }
 
 /**
@@ -99,24 +107,24 @@ Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
 template <class Type>
 Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
                              int producer) :
-	bufferSize(bSize),
-	head(0),
-	tail(0),
+	buffer(bSize, Type()),
+	head(0),// We write new item to this position
+	tail(0),// We read stored item from this position
 	producer(producer)
 {
-	buffer.resize(bSize);
-	sem_init(&mtx, 0, 1);
-	sem_init(&usage, 0, 0);
-	sem_init(&space, 0, bSize);
+	init();
 }
 
 
 template <class Type>
-Ringbuffer<Type>::~Ringbuffer()
+Ringbuffer<Type>::~Ringbuffer() noexcept
 {
-    sem_destroy(&mtx);
-    sem_destroy(&usage);
-    sem_destroy(&space);
+    sem_destroy(mtx);
+    sem_destroy(usage);
+    sem_destroy(space);
+	delete mtx;
+	delete usage;
+	delete space;
 }
 
 /**
@@ -128,20 +136,43 @@ Ringbuffer<Type>::~Ringbuffer()
  * \param inputOnHost Needs to be on host memory.
  */
 template <class Type>
-int Ringbuffer<Type>::writeFromHost(Type &inputOnHost)
+int Ringbuffer<Type>::push(Type input) noexcept
 {
-    sem_wait(&space);   // is there space in buffer?
-    sem_wait(&mtx);     // lock buffer
+	sem_wait(space);   // is there space in buffer?
+    sem_wait(mtx);     // lock buffer
     
-    buffer.at(head) = inputOnHost;
-    head = (head+1) % bufferSize;     // move head
+    buffer.at(head) = input;
+    head = (head+1) % buffer.size();     // move head
 
-    sem_post(&mtx);     // unlock buffer
-    sem_post(&usage);   // tell them that there is something in buffer
+    sem_post(mtx);     // unlock buffer
+    sem_post(usage);   // tell them that there is something in buffer
     
 	return 0;
 }
 
+/**
+ * Write data to the buffer from the host.
+ *
+ * The call blocks if there is no space available on the buffer or if the 
+ * buffer is already used by another thread.
+ *
+ * \param inputOnHost Needs to be on host memory.
+ */
+
+template <class Type>
+int Ringbuffer<Type>::push(Type &&input) noexcept
+{
+	sem_wait(space);   // is there space in buffer?
+    sem_wait(mtx);     // lock buffer
+    
+    buffer.at(head).swap(input);
+    head = (head+1) % buffer.size();     // move head
+
+    sem_post(mtx);     // unlock buffer
+    sem_post(usage);   // tell them that there is something in buffer
+    
+	return 0;
+}
 /**
  * Read data from the buffer to the host.
  *
@@ -152,92 +183,52 @@ int Ringbuffer<Type>::writeFromHost(Type &inputOnHost)
  *        written.
  */
 template <class Type>
-int Ringbuffer<Type>::copyToHost(Type &outputOnHost)
+Type Ringbuffer<Type>::pop() noexcept
 {
-    sem_wait(&usage);   // is there some data in buffer?
-    sem_wait(&mtx);     // lock buffer
+	std::cout << "pop " << &usage << std::endl;
+	int val;
+	sem_getvalue(space, &val);
+	std::cout << "pop value " << val << std::endl;
     
-    outputOnHost = buffer.at(tail);
-    tail = ++tail % bufferSize;     // move tail
+	Type result;
+    sem_wait(usage);   // is there some data in buffer?
+    sem_wait(mtx);     // lock buffer
     
-    sem_post(&mtx);     // unlock buffer
-    sem_post(&space);   // tell them that there is space in buffer
+    result.swap(buffer.at(tail));
+    tail = (tail+1) % buffer.size();     // move tail
     
-    return 0;
+    sem_post(mtx);     // unlock buffer
+    sem_post(space);   // tell them that there is space in buffer
+    
+    return result;
 }
 
-/** 
- * Lock head position of buffer to perform write operations externally.
- *
- * The call blocks until there is space available in the buffer.
- *
- * Buffer is blocked until freeHead() is called.
- * \return Pointer to the head of the ringbuffer. One item of <Type> can
- *         be written here.
- */
 template <class Type>
-Type* Ringbuffer<Type>::reserveHead()
+template <class Funktor>
+int Ringbuffer<Type>::popTry(Funktor popFunction) noexcept
 {
-    sem_wait(&space);
-    sem_wait(&mtx);
-    return &buffer.at(head);
-}
-
-/** Unlock buffer after external write operation (using reserveHead) 
- * finished. All other calls to the buffer will block until freeHead() is 
- * called. 
- * Calling freeHead() wakes up other threads trying to read from an empty 
- * buffer.
- */
-template <class Type>
-int Ringbuffer<Type>::freeHead()
-{
-    head = (head+1) % bufferSize;
-    sem_post(&mtx);
-    sem_post(&usage);
-    return 0;
-}
-
-/** Lock tail position of buffer to perform read/copy operation externally.
- * 
- * If there is no data in the buffer it returns NULL. The call blocks if
- * another thread is using the buffer.
- *
- * The buffer will block any other threads until freeTail() is called.
- *
- * \return Pointer to data to be read or NULL if buffer is empty.
- */
-template <class Type>
-Type* Ringbuffer<Type>::reserveTailTry()
-{
-    if(sem_trywait(&usage) != 0) {
-    	return NULL;
-    }
-    sem_wait(&mtx);
-    return &buffer.at(tail);
-}
-
-/**Unlock buffer after external read operation (using reserveTail())
- * finished. All other calls to the buffer will block until freeTail() is
- * called.
- * Calling freeTail() wakes up other blocking threads trying to write to a 
- * full buffer.
- */
-template <class Type>
-int Ringbuffer<Type>::freeTail()
-{
-    tail = (tail+1) % bufferSize;
-    sem_post(&mtx);
-    sem_post(&space);
-    return 0;
+	if(sem_trywait(usage) != 0) {
+       return 1;
+	}
+	Type result;
+	sem_wait(mtx);     // lock buffer
+    
+    result.swap(buffer.at(tail));
+    tail = (tail+1) % buffer.size();     // move tail
+    
+    sem_post(mtx);     // unlock buffer
+    sem_post(space);   // tell them that there is space in buffer
+    
+    popFunction(result);
+	return 0;
 }
 /** Get amount of items stored in buffer.
  * \return Number of items in buffer
  */
 template <class Type>
-int Ringbuffer<Type>::getSize() {
+int Ringbuffer<Type>::getSize() const noexcept {
 	int full_value;
-	sem_getvalue(&usage, &full_value);
+	sem_getvalue(const_cast<sem_t*>(usage), &full_value);
 	return full_value;
 }
 
@@ -245,11 +236,11 @@ int Ringbuffer<Type>::getSize() {
  * \return True if no elements are in buffer. False otherwise.
  */
 template <class Type>
-bool Ringbuffer<Type>::isEmpty() {
+bool Ringbuffer<Type>::isEmpty() const noexcept {
 	int full_value, empty_value;
-	sem_getvalue(&usage, &full_value);
-	sem_getvalue(&space, &empty_value);
-	return (full_value == 0) && (empty_value == bufferSize);
+	sem_getvalue(const_cast<sem_t*>(usage), &full_value);
+	sem_getvalue(const_cast<sem_t*>(space), &empty_value);
+	return (full_value == 0) && (empty_value == static_cast<int>(buffer.size()));
 }
 
 /** Tell if buffer is empty and will stay empty. This is the case if
@@ -258,10 +249,8 @@ bool Ringbuffer<Type>::isEmpty() {
  * announced that they stopped adding elements. False otherwise.
  */
 template <class Type>
-bool Ringbuffer<Type>::isFinished() {
-	int full_value;
-	sem_getvalue(&usage, &full_value);
-	return (producer==0) && (full_value == 0);
+bool Ringbuffer<Type>::isFinished() const noexcept {
+	return (producer==0) && isEmpty();
 }
 
 /** Lets a producer announce that it is adding no more elements to the 
@@ -269,7 +258,7 @@ bool Ringbuffer<Type>::isFinished() {
  *  To be called only once per producer. This is not checked.
  */
 template <class Type>
-void Ringbuffer<Type>::producerQuit() {
+void Ringbuffer<Type>::producerQuit() noexcept {
 	__sync_sub_and_fetch(&producer,1);
 }
 #endif

@@ -2,7 +2,7 @@
 #include <thread>
 
 #include "Config/Constants.hpp"
-#include "Output/OutputStream.hpp"
+#include "Output/GrayBatStream.hpp"
 #include "Input/ScopeReader.hpp"
 
 int main(int argc, char** argv) {
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 	}
 	
 	//std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
-    InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1, NULL);
+    InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
 	
 	/* Initialize input buffer (with dynamic elements) */
 	ScopeReader::ScopeParameter parameter(scope_filename);
@@ -33,22 +33,21 @@ int main(int argc, char** argv) {
 	ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
 	GrayBatStream<Chunk> os(1,masterUri, fitterUri);
 	
-	std::thread sendingThread([inputBuffer, os](){
-		while(inputBuffer.isFinished())
-		Chunk* tail inputBuffer.reserveTailTry();
-			if(tail != NULL) {
-				os.send(*tail);
-			}
+	std::thread sendingThread([&inputBuffer, &os](){
+		while(inputBuffer.isFinished()) {
+			inputBuffer.popTry([&os](Chunk& t){
+				os.send(t);
+			});
 		}
+		
 		os.quit();
 	});
 	
-	std::cout << "Buffer created." << std::endl;
+	//std::cout << "Buffer created." << std::endl;
 
 	reader.readToBuffer();
 	
 	//Make sure all results are written back
 	sendingThread.join();
-	os.join();
 	return 0;	
 }

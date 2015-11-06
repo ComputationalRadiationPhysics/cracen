@@ -6,15 +6,12 @@ void OutputStream::run() {
 	ptree pt;
 	ptree array;
 	while(!oBuffer.isFinished()) {
-		Output* o = oBuffer.reserveTailTry();
-		if(o != NULL) {
-			o->save(array);
-			oBuffer.freeTail();
-			delete o;
-		}
+		oBuffer.popTry([&array](Output& o){
+			o.save(array);
+		});
 	}
 	pt.add_child("fits", array);
-   write_json(file, pt);
+	write_json(file, pt);
 }
 
 OutputStream::OutputStream(const std::string& file, int producer) :

@@ -266,16 +266,18 @@ void ScopeReader::readDeviceConfig() {
 void ScopeReader::readToBuffer()
 {
 	//measurement loop
-	short* shortBuffer = new short[SAMPLE_COUNT];
-	Chunk* buffer = new Chunk(CHUNK_COUNT*SAMPLE_COUNT);
+	std::vector<short> shortBuffer(SAMPLE_COUNT);
 	unsigned int chunkPos = 0;
 	int data_good = 0;
 	bool firstValue = true;
+	Chunk buffer;
+	
 	for(int i_Session=1;i_Session<=param.nbrSessions;i_Session++) {
 		//time(&rawtime);
 		//timeinfo=localtime(&rawtime);
 
 		//const char* asct = asctime(timeinfo);
+		
 		for(int i_Waveform=1;i_Waveform<=param.nbrWaveforms;i_Waveform++) {
 			//std::cout << "Waveform" << i_Waveform << std::endl;
 			//acquisition
@@ -291,11 +293,11 @@ void ScopeReader::readToBuffer()
 			} while(data_good!=1);
 
 			//readout channel 1	 
-			status=AcqrsD1_readData(InstrumentID,1,readPar,shortBuffer,dataDesc,segDesc);
+			status=AcqrsD1_readData(InstrumentID,1,readPar,&(shortBuffer.front()),dataDesc,segDesc);
 			check_stat(InstrumentID,status,"readData: channel 1");
-			
+	
 			for(int i = 0; i < SAMPLE_COUNT; i++) {
-				(*buffer)[chunkPos*SAMPLE_COUNT+i] = static_cast<DATATYPE>(shortBuffer[i] >> 4);
+				buffer[chunkPos*SAMPLE_COUNT+i] = static_cast<DATATYPE>(shortBuffer[i] >> 4);
 			}
 			
 			
@@ -303,8 +305,8 @@ void ScopeReader::readToBuffer()
 				std::ofstream waveFile;
 				waveFile.open("wave.txt");
 				for(int i = 0; i < SAMPLE_COUNT; i++) {
-					std::cout << (*buffer)[chunkPos*SAMPLE_COUNT+i] << ", ";
-					waveFile << (*buffer)[chunkPos*SAMPLE_COUNT+i] << std::endl;
+					std::cout << buffer[chunkPos*SAMPLE_COUNT+i] << ", ";
+					waveFile << buffer[chunkPos*SAMPLE_COUNT+i] << std::endl;
 				}
 				std::cout << std::endl;
 				firstValue = false;
@@ -314,26 +316,20 @@ void ScopeReader::readToBuffer()
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
-				Chunk** ringbufferEntry = rb->reserveHead();
-				*ringbufferEntry = buffer;
-				rb->freeHead();
-				buffer = new Chunk(CHUNK_COUNT*SAMPLE_COUNT);
+				rb->push(buffer);
 				chunkPos = 0;
 			}
-			status=AcqrsD1_readData(InstrumentID,2,readPar,shortBuffer,dataDesc,segDesc);
+			status=AcqrsD1_readData(InstrumentID,2,readPar,&(shortBuffer.front()),dataDesc,segDesc);
 			check_stat(InstrumentID,status,"readData: channel 2");
 			
 			for(int i = 0; i < SAMPLE_COUNT; i++) {
-				(*buffer)[chunkPos*SAMPLE_COUNT+i] = static_cast<float>(shortBuffer[i] >> 4);
+				buffer[chunkPos*SAMPLE_COUNT+i] = static_cast<float>(shortBuffer[i] >> 4);
 				//std::cout << (*buffer)[chunkPos*SAMPLE_COUNT+i] << std::endl;
 			}
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
-				Chunk** ringbufferEntry = rb->reserveHead();
-				*ringbufferEntry = buffer;
-				rb->freeHead();
-				buffer = new Chunk(CHUNK_COUNT*SAMPLE_COUNT);
+				rb->push(buffer);
 				chunkPos=0;
 			}
 			//std::cout << "session " << i_Session << ": " << 100.0 * static_cast<double>(i_Waveform) / static_cast<double>(param.nbrWaveforms) << " %% done" << std::endl; 
@@ -344,8 +340,6 @@ void ScopeReader::readToBuffer()
 		//std::cout << "session " << i_Session << ":  " << 100.0*(double)i_Waveform/(double)nbrWaveforms << "%% done  " << std::endl;// << nbrWaveforms/t_session*1000 << " 1/s" << std::endl;
 
 	}
-	delete buffer;
-	delete shortBuffer;
 
 	std::cout << "returned Samples in Segment: " << dataDesc->returnedSamplesPerSeg << ", Index First Point " << dataDesc->indexFirstPoint << std::endl;
 

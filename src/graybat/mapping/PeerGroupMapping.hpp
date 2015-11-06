@@ -17,11 +17,12 @@ namespace graybat {
 	    template<typename T_Graph>
 	    std::vector<typename T_Graph::Vertex> operator()(const unsigned processID, const unsigned processCount, T_Graph &graph){
 			typedef typename T_Graph::Vertex Vertex;
-
-
 			
 			std::vector<Vertex> myVertices;
+			assert(graph.getVertices().size() > 0);
+			std::cout << graph.getVertices().size() << std::endl;
 			myVertices.push_back(graph.getVertex(stage));
+			
 			return myVertices;
 	    }
 	};

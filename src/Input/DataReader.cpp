@@ -6,7 +6,6 @@ DataReader::DataReader(const std::string& filename, InputBuffer* buffer,        
     nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize)
 {
     readHeader(filename, nSamp, nSeg, nWf);
-    channelBuffer.resize(2 * nSamp);
 }
 
 DataReader::~DataReader()
@@ -66,12 +65,15 @@ void DataReader::readToBuffer()
     std::ifstream fs;
     fs.open(inputFilename.c_str(), std::ifstream::in |
                                    std::ifstream::binary);
+
     if (fs) {
         // move cursor over the first 3 Integers
         fs.seekg(3*sizeof(int), fs.beg);    
         // read waveform data
         int j = 0;
-        while (not fs.eof()) {
+		Chunk temp;
+        channelBuffer.resize(2 * nSamp);
+		while (not fs.eof()) {
             /*
             static int xxii = 0;
             xxii++;
@@ -87,20 +89,19 @@ void DataReader::readToBuffer()
             //      [s1ch1 s1ch2 s2ch1 s2 ch2 s3ch1 s3ch2 ... ]
             // But we want it like
             //      [s1ch1 s2ch1 s3ch1 ... s1ch2 s2ch2 s3ch2 ...]
-			Chunk* temp = new Chunk;
             for (int i=0; i<nSamp; i++) {
-                (*temp)[ j   *nSamp + i] = 
-                        static_cast<DATATYPE>(channelBuffer[2*i]);
-                (*temp)[(j+1)*nSamp + i] = 
+				temp[ j*nSamp + i] = 
+		                static_cast<DATATYPE>(channelBuffer[2*i]);
+                temp[(j+1)*nSamp + i] = 
                         static_cast<DATATYPE>(channelBuffer[2*i+1]);
             }
-			j += 2;
+			j ++;
             
             if(j >= nChunk) {
 				//Copy pointer to data to ring buffer
-				Chunk** buffer = rb->reserveHead();
-				*buffer = temp;
-				rb->freeHead();
+				std::cout << "Write Data to iBuffer" << std::endl;
+				//rb->push(std::move(temp));
+				rb->push(temp);
 				j = 0;
 			}
 		}

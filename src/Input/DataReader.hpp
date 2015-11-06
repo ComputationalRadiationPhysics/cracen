@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include "../Config/Types.hpp"
 #include "../Config/Constants.hpp"
-#include "../Utility/Ringbuffer.hpp"
+#include <boost/lockfree/queue.hpp>
 
 /*! DataReader
  *  @brief Is meant as a producer for the Ringbuffer class. 

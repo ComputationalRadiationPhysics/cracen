@@ -18,7 +18,7 @@
 
 /*! \var SAMPLE_COUNT 
  *  \brief Number of samples per event */
-//const unsigned int SAMPLE_COUNT = 1000;
+//const unsigned int SAMPLE_COUNT = 32767;
 /*! \var CHUNK_COUNT 
  *  \brief Number of events copied to the GPU in one step */
 const unsigned int CHUNK_COUNT = 1024;
@@ -47,7 +47,7 @@ typedef WindowPolynom<polynom_order> FitFunction; // y = p0 + p1*x + p2*x^2 + p3
 
 //Graybat IP addresses
 
-const std::string masterUri = "tcp://127.0.0.1:5001";
+const std::string masterUri = "tcp://127.0.0.1:5000";
 const std::string fitterUri = "tcp://127.0.0.1:5001";
 const std::string scopeReaderUri = "tcp://127.0.0.1:5001";
 const std::string onlineDspUri = "tcp://127.0.0.1:5001";

@@ -69,23 +69,19 @@ void Node::run() {
 			cudaStreamSynchronize(streams[tex]);
 			//std::cout << results[tex][0];
 			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
-					oBuffer->writeFromHost(results[tex][i]);
+					oBuffer->push(results[tex][i]);
 			}
 			textureEmpty[tex] = true;
 		}
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
-		/* Block ringbuffer */
-		Chunk** c = iBuffer->reserveTailTry();
 		/* Copy to device */
-		if(c != NULL) {
-			Chunk* buffer = *c;
-			iBuffer->freeTail();
-			cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(buffer->front()), 
-	                               sizeof(DATATYPE) * buffer->size(), 
+		Maybe<Chunk> buffer = iBuffer->popTry([&](Chunk& buffer){
+						cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(buffer.front()), 
+	                               sizeof(DATATYPE) * buffer.size(), 
 	                               cudaMemcpyHostToDevice, streams[tex]);
-	           	handleLastError();
-	       		/* Free ringbuffer 
+			handleLastError();
+			/* Free ringbuffer 
 			   This is possible because at the moment we use pageable (non-pinnend)
 			   host memory for the ringbuffer.
 			   In this case cudaMemcpy...Async will first copy data to a staging 
@@ -105,7 +101,7 @@ void Node::run() {
 			lastTexture = tex;
 			tex = (tex+1)%numberOfTextures;
 			textureEmpty[tex] = false;
-		}
+		});
 	}
 	cudaFree(mem);
 	for(unsigned int i = 0; i < numberOfTextures; i++) {

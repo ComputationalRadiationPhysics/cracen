@@ -2,7 +2,7 @@
 #define TYPES_HPP
 
 #include <string>
-#include <vector>
+#include <array>
 #include <iostream>
 #include "Constants.hpp"
 #include "../Utility/Ringbuffer.hpp"
@@ -10,6 +10,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/array.hpp>
 #endif
 
 /*!
@@ -23,7 +25,34 @@ struct FitData {
 	float param[FitFunction::numberOfParams];
 	int status;
 	int woffset;
-	FitData() {};
+	
+	FitData() {}
+	~FitData() {}
+	
+	FitData(const FitData& cpy) :
+		status(cpy.status),
+		woffset(cpy.woffset) 
+	{
+		for(unsigned int i = 0; i < FitFunction::numberOfParams; i++) {
+			param[i] = cpy.param[i];
+		}
+	}
+	
+	void swap(FitData& rhs) {
+		std::swap(param, rhs.param);
+		std::swap(status, rhs.status);
+		std::swap(woffset, rhs.woffset);
+	}
+	
+	FitData & operator= (const FitData & assign) {
+		status = assign.status;
+		woffset = assign.woffset;
+		for(unsigned int i = 0; i < FitFunction::numberOfParams; i++) {
+			param[i] = assign.param[i];
+		}
+		return *this;
+	}
+	
 	#ifndef __CUDACC__
 	void save(boost::property_tree::ptree& pt) {
 		using boost::property_tree::ptree;
@@ -41,12 +70,26 @@ struct FitData {
 		thisFit.add_child("params", params);
 		pt.push_back(std::make_pair("",thisFit));
 	}
+	
+	friend class boost::serialization::access;
+    template<class Archive>
+	void serialize(Archive & ar, const unsigned int version) {
+		ar & boost::serialization::make_array<float>(param, FitFunction::numberOfParams);
+		ar & status;
+		ar & woffset;
+	}
+	
 	#endif
+	
+	
+	float* data() {
+		return param;
+	}
 };
 typedef FitData Output;
 //typedef std::vector<DATATYPE> Wform;
-typedef std::vector<DATATYPE> Chunk;
-typedef Ringbuffer<Chunk*> InputBuffer;
+typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+typedef Ringbuffer<Chunk> InputBuffer;
 typedef Ringbuffer<Output> OutputBuffer;
 
 
