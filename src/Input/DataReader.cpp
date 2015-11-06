@@ -100,7 +100,6 @@ void DataReader::readToBuffer()
             if(j >= nChunk) {
 				//Copy pointer to data to ring buffer
 				std::cout << "Write Data to iBuffer" << std::endl;
-				//rb->push(std::move(temp));
 				rb->push(temp);
 				j = 0;
 			}

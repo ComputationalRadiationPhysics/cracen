@@ -165,7 +165,7 @@ int Ringbuffer<Type>::push(Type &&input) noexcept
 	sem_wait(space);   // is there space in buffer?
     sem_wait(mtx);     // lock buffer
     
-    buffer.at(head).swap(input);
+    buffer.at(head) = input;
     head = (head+1) % buffer.size();     // move head
 
     sem_post(mtx);     // unlock buffer
