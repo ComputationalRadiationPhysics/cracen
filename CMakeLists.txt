@@ -16,7 +16,7 @@ if(${CXX_COMPILER_IS_G++})
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+# set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif(${CXX_COMPILER_IS_G++})
@@ -31,7 +31,7 @@ endif(${CXX_COMPILER_IS_CLANG++})
 ###############################################################################
 
 find_package(CUDA REQUIRED)
-set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-Xptxas=-v;-O3;-DDEBUG_ENABLED")
+set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-Xptxas=-v;-O3;-std=c++11;-DDEBUG_ENABLED")
 set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
 
 # Separate C++ from CUDA file compilation (So we can use our own compiler)
@@ -109,17 +109,17 @@ set(LIBS ${LIBS} ${GTK3MM_LIBRARIES})
 # Qt5 for the viewer
 ###############################################################################
 
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_BUILD_TYPE Debug)
-
-find_package(Qt5Widgets)
-include_directories(${Qt5Widgets_INCLUDE_DIRS})
-find_package(Qt5Gui)
-include_directories(${Qt5Gui_INCLUDE_DIRS})
-set(OnlineDSP_LIBS ${OnlineDSP_LIBS} Qt5::Gui Qt5::Widgets)
+## Find includes in corresponding build directories
+#set(CMAKE_INCLUDE_CURRENT_DIR ON)
+## Instruct CMake to run moc automatically when needed.
+#set(CMAKE_AUTOMOC ON)
+#set(CMAKE_BUILD_TYPE Debug)
+#
+#find_package(Qt5Widgets)
+#include_directories(${Qt5Widgets_INCLUDE_DIRS})
+#find_package(Qt5Gui)
+#include_directories(${Qt5Gui_INCLUDE_DIRS})
+#set(OnlineDSP_LIBS ${OnlineDSP_LIBS} Qt5::Gui Qt5::Widgets)
 
 ###############################################################################
 # Include directories
@@ -175,11 +175,14 @@ target_link_libraries(ScopeReader ${LIBS})
 add_executable(FileReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileReader.cpp")
 target_link_libraries(FileReader ${LIBS})
 
+add_executable(FileWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileWriter.cpp")
+target_link_libraries(FileWriter ${LIBS})
+
 add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
 target_link_libraries(Viewer ${LIBS})
 
-add_executable(OnlineDSP "${OnlineDSP_SRCFILES}")
-target_link_libraries(OnlineDSP ${OnlineDSP_LIBS})
+#add_executable(OnlineDSP "${OnlineDSP_SRCFILES}")
+#target_link_libraries(OnlineDSP ${OnlineDSP_LIBS})
 
 ADD_CUSTOM_TARGET (
 	run 
