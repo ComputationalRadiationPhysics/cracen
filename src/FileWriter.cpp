@@ -36,8 +36,10 @@ int main(int argc, char* argv[]) {
 		while(!inputBuffer.isFinished()) {
 			auto elem = inputBuffer.pop();
 			out << elem.status << " " << elem.woffset << " ";
+			std::cout << elem.status << " " << elem.woffset << " ";
 			for(auto p : elem.param) out << p << " ";
 			out << std::endl;
+			std::cout << std::endl;
 		}
 		out.close();
 	});

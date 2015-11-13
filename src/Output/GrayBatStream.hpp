@@ -51,17 +51,12 @@ private:
 		stages[1] = 1;
 		cage.setGraph(graybat::pattern::Pipeline(stages));
 		auto g = graybat::pattern::Pipeline(stages)();
-		std::cout << "Edges" << std::endl;
-		for(auto e : g.second) {
-			std::cout << e.first << "->" << e.second << std::endl;
-		}
 		cage.distribute(graybat::mapping::PeerGroupMapping(0));
 		assert(cage.hostedVertices.size() > 0);
 		
 		while(!oBuffer.isFinished()) {
 			DataType o = oBuffer.pop();
 			//Send dataset away	
-			std::cout << "Sending package." << std::endl;
 			Vertex source = cage.hostedVertices.at(0);
 			std::vector<Edge> source_sink = cage.getOutEdges(source);
 			std::vector<DataType> send_buffer(1, o);

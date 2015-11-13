@@ -185,22 +185,20 @@ int Ringbuffer<Type>::push(Type &&input) noexcept
 template <class Type>
 Type Ringbuffer<Type>::pop() noexcept
 {
-	std::cout << "pop " << &usage << std::endl;
 	int val;
 	sem_getvalue(space, &val);
-	std::cout << "pop value " << val << std::endl;
-    
+
 	Type result;
-    sem_wait(usage);   // is there some data in buffer?
-    sem_wait(mtx);     // lock buffer
-    
-    result.swap(buffer.at(tail));
-    tail = (tail+1) % buffer.size();     // move tail
-    
-    sem_post(mtx);     // unlock buffer
-    sem_post(space);   // tell them that there is space in buffer
-    
-    return result;
+	sem_wait(usage);   // is there some data in buffer?
+	sem_wait(mtx);     // lock buffer
+
+	result.swap(buffer.at(tail));
+	tail = (tail+1) % buffer.size();     // move tail
+
+	sem_post(mtx);     // unlock buffer
+	sem_post(space);   // tell them that there is space in buffer
+
+	return result;
 }
 
 template <class Type>
