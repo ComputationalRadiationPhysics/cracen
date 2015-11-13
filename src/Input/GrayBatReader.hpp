@@ -68,6 +68,7 @@ public:
     GrayBatReader(const std::string& masterUri, const std::string& selfUri) :
 		iBuffer(CHUNK_BUFFER_COUNT, 1),
 		//cp(masterUri, selfUri, 2),
+		cp(0),
 		cage(cp),
 		done(false),
 		receivingThread(&GrayBatReader::run, this)

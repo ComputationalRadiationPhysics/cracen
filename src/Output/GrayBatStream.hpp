@@ -83,6 +83,7 @@ public:
 	GrayBatStream(int producer, const std::string& masterUri, const std::string& selfUri) :
 		oBuffer(CHUNK_BUFFER_COUNT, producer),
 		//cp(masterUri, selfUri, 2),
+		cp(0),
 		cage(cp),
 		done(false),
 		sendingThread(&GrayBatStream::run, this),
