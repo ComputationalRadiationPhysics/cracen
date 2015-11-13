@@ -23,19 +23,19 @@ template <class DataType>
 class GrayBatStream {
 private:
 	/***************************************************************************
-     * graybat configuration
-     ****************************************************************************/
-    // CommunicationPolicy	
-//    typedef graybat::communicationPolicy::ZMQ CP;
-    typedef graybat::communicationPolicy::BMPI CP;
-    
+	 * graybat configuration
+	 ****************************************************************************/
+	// CommunicationPolicy	
+	//    typedef graybat::communicationPolicy::ZMQ CP;
+	typedef graybat::communicationPolicy::BMPI CP;
+
 	// GraphPolicy
-    typedef graybat::graphPolicy::BGL<>    GP;
-    
-    // Cage
-    typedef graybat::Cage<CP, GP> Cage;
-    typedef typename Cage::Event  Event;
-    typedef typename Cage::Vertex Vertex;
+	typedef graybat::graphPolicy::BGL<>    GP;
+
+	// Cage
+	typedef graybat::Cage<CP, GP> Cage;
+	typedef typename Cage::Event  Event;
+	typedef typename Cage::Vertex Vertex;
 	typedef typename Cage::Edge Edge;
 	
 	Ringbuffer<DataType> oBuffer;

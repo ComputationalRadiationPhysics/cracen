@@ -39,7 +39,6 @@ namespace graybat {
 				
 				return std::make_pair(vertices,edges);
 			}
-
 		};
 	}
 }
