@@ -26,7 +26,9 @@
 // GRAYBAT pattern
 #include <graybat/pattern/Chain.hpp>
 
+struct Config {
 
+};
 
 int exp() {
     /***************************************************************************
@@ -51,7 +53,8 @@ int exp() {
     auto inc = [](unsigned &a){a++;};
 
     // Create GoL Graph
-    CP communicationPolicy;
+    Config config;
+    CP communicationPolicy(config);
     Cage cage(communicationPolicy);
 
     cage.setGraph(graybat::pattern::Chain(nChainLinks));

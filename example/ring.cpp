@@ -22,6 +22,9 @@
 // GRAYBAT patterns
 #include <graybat/pattern/Ring.hpp>
 
+struct Config {
+
+};
 
 struct Function {
 
@@ -56,7 +59,8 @@ int exp() {
     const unsigned nRingLinks = 50;
 
     // Create GoL Graph
-    CP communicationPolicy;
+    Config config;
+    CP communicationPolicy(config);
     Cage cage(communicationPolicy);
     assert(cage.getPeers().size() >= nRingLinks);
 

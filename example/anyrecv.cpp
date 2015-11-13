@@ -35,6 +35,10 @@ struct Function {
 };
 
 
+struct Config {
+
+};
+
 int exp() {
     /***************************************************************************
      * Configuration
@@ -55,7 +59,8 @@ int exp() {
      * Initialize Communication
      ****************************************************************************/
     // Create GoL Graph
-    CP communicationPolicy;
+    Config config;
+    CP communicationPolicy(config);
     Cage cage(communicationPolicy);
 
     // Set communication pattern

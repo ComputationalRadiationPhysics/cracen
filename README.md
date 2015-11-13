@@ -16,10 +16,13 @@ applications. These mappings are established as an intermediate layer
 between an application and communication libraries and are dynamically
 adptable during run-time.
 
+The graybat API is currently unstable.
+
 
 ##Documentation##
 
-Have a look at the documentation that is available [here](https://ComputationalRadiationPhysics.github.io/graybat)
+Have a look at the documentation that is available [here](https://ComputationalRadiationPhysics.github.io/graybat) or
+skim through the [examples](example) or [test cases](test) to have a quick start into graybat.
 
 
 ##Referencing##
@@ -32,32 +35,76 @@ results that used graybat, you should set this as a **reference**.
 Graybat is licensed under the <b>LGPLv3+</b>. Please refer to our [LICENSE.md](LICENSE.md)
 
 
+##Project Organization##
+
+The project is organized in a couple of subdirectories.
+
+ * The [example](example) directory contains examples produced during development of graybat.
+ * The [include](include) directory contains the library itself, which is header only.
+ * The [test](test) directory contains unit and integration tests (might be used as examples)
+ * The [utils](utils) directory contains cmake modules and doxygen files.
+
+
 ##Dependencies##
 
 ###Mandatory###
  * cmake 3.0.2
- * Boost 1.57.0
+ * Boost 1.56.0
  * g++ 5.2.0 or clang 3.5
  * c++14
 
 ###Optional###
  * OpenMPI 1.8.0 (mpi communication policy)
- * zeromq 4.1.3  (zeromq communication policy) 
+ * zeromq 4.1.3 (zeromq communication policy) 
  * metis 5.1 (graph partitioning mapping)
+ * [Boost Hana 1.0](https://github.com/ldionne/hana) (zeromq communication policy) 
 
 
-##Usage##
+##Installation##
 
-Graybat is a header only library so nothing has to be build.
-The most easy way to include graybat into your application
-is to use the CMAKE `find_package()` interface:
+###System Installion###
 
-    set(graybat_DIR <ABSOLUT-PATH-TO-GRAYBAT-LIB>)
-    find_package(graybat REQUIRED CONFIG)
-    include_directories(SYSTEM ${graybat_INCLUDE_DIRS})
-    set(LIBS ${LIBS} ${graybat_LIBRARIES})
+Installation into the operating system libery path e.g.
+to `/usr/lib/graybat`:
 
-Finally, the application can use graybat like `#include <graybat/Cage.hpp>`.
+    git clone https://github.com/ComputationalRadiationPhysics/graybat.git
+    cd graybat && mkdir build && cd build
+	cmake -DCMAKE_INSTALL_DIR=/usr ..
+	sudo make install
+	
+###Package Install###
+
+* Graybat [AUR package](https://aur.archlinux.org/packages/graybat-git/)
+
+##Usage as Library##
+
+
+###CMAKE-Configfile###
+Graybat is a header only library so nothing has to be build.  The most
+easy way to include graybat into your application is to use the shiped
+[CMAKE-Configfile](https://cmake.org/cmake/help/v3.4/manual/cmake-packages.7.html#config-file-packages),
+that can be used if your project is built with CMake.  If graybat was
+not installed to a path where CMake usually has a look then you can
+instruct CMake to find graybat by adding the absolute path of graybat
+to your `CMAKE_PREFIX_PATH`, by setting the path within CMake `find_package()`:
+
+    find_package(graybat 1.0.0 REQUIRED CONFIG PATHS <ABSOLUTE-PATH-TO-GRAYBAT>)
+
+or by setting the `graybat_DIR`:
+
+    set(graybat_DIR <ABSOLUTE-PATH-TO-GRAYBAT>)
+
+
+The CMAKE-Configfile of graybat provides the CMAKE variables `${graybat_INCLUDE_DIRS}` and
+`${graybat_LIBRARIES}`. Where `${graybat_INCLUDE_DIRS}` contains all header files
+included by graybat and `${graybat_LIBRARIES}` contains all libraries used by graybat.
+The following is a an example of how to embed graybat into your `CMakeLists.txt`
+
+     find_package(graybat REQUIRED CONFIG)
+     include_directories(SYSTEM ${graybat_INCLUDE_DIRS})
+     set(LIBS ${LIBS} ${graybat_LIBRARIES})
+
+Finally, the application can use graybat e.g. `#include <graybat/Cage.hpp>`.
 
 
 ##Compiling Tests/Examples##
@@ -69,6 +116,17 @@ Finally, the application can use graybat like `#include <graybat/Cage.hpp>`.
  * Set compiler: `export CXX=[g++,clang++]`
  * Create Makefile `cmake ..`
  * Build project : `make [target]`
+
+
+##Predefined Targets##
+
+ * **example**: All example applications.
+
+ * **test** : Build, unit and integration test.
+
+ * **doc**: Build documentation in `doc/`.
+
+ * **clean**: Cleanup build directory.
 
 
 ##Tested Compilers##
@@ -83,27 +141,6 @@ Finally, the application can use graybat like `#include <graybat/Cage.hpp>`.
 | -------- | --------| ------------- |
 | **master** | [![Build Status](http://haseongpu.mooo.com/api/badge/github.com/erikzenker/GrayBat/status.svg?branch=master)](http://haseongpu.mooo.com/github.com/erikzenker/GrayBat) |  stable releases |
 | **dev**  | [![Build Status](http://haseongpu.mooo.com/api/badge/github.com/erikzenker/GrayBat/status.svg?branch=dev)](http://haseongpu.mooo.com/github.com/erikzenker/GrayBat) |development branch |
-
-
-##Predefined Targets##
-
- * **example**: All example applications.
-
- * **test** : Build, unit and integration test.
-
- * **doc**: Build documentation in `doc/`.
-
- * **clean**: Cleanup build directory.
-
-
-##Project Organization##
-
-The project is organized in a couple of subdirectories.
-
- * The [example](example) directory contains examples produced during development of graybat.
- * The [include](include) directory contains the library itself, which is header only.
- * The [test](test) directory contains unit and integration tests (might me used as examples)
- * The [utils](utils) directory contains cmake modules and doxygen files.
 
 
 ##Related Material##

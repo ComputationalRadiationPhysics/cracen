@@ -275,8 +275,6 @@ namespace graybat {
          * @todo What happens if *vertices* is empty ?
          * @todo What happens when there already exist an context for *graph* ?
          * @todo What happens when not all *vertices* of a *graph* were announced ?
-         * @todo Reduce communication from 2 steps (allReduce + allGather) to one
-         *       step (allGatherVar), could reduce communication.
          *
          * @param[in] graph  Its vertices will be announced
          * @param[in] vertices A set of vertices, that will be hosted by this peer

@@ -6,17 +6,18 @@
 ###############################################################################
 # graybat
 ###############################################################################
-cmake_minimum_required(VERSION 3.3.1)
+cmake_minimum_required(VERSION 3.3.0)
 project("graybat")
-
-set(graybat_MAJOR_VERSION 1)
-set(graybat_MINOR_VERSION 0)
-set(graybat_PATCH_VERSION 0)
-set(graybat_VERSION
-  ${graybat_MAJOR_VERSION}.${graybat_MINOR_VERSION}.${graybat_PATCH_VERSION})
 
 set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} "${graybat_DIR}/include")
 set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} "${graybat_DIR}/include/graybat/utils/hana/include/")
+
+
+###############################################################################
+# COMPILER FLAGS
+###############################################################################
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
 
 ###############################################################################
 # MODULES
@@ -44,7 +45,7 @@ set(graybat_LIBRARIES ${graybat_LIBRARIES} ${ZMQ_LIBRARIES})
 ###############################################################################
 # Boost LIB
 ###############################################################################
-find_package(Boost 1.58.0 MODULE COMPONENTS mpi serialization REQUIRED)
+find_package(Boost 1.56.0 MODULE COMPONENTS mpi serialization REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(graybat_LIBRARIES ${graybat_LIBRARIES} ${Boost_LIBRARIES})
 
