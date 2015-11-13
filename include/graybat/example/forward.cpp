@@ -24,6 +24,10 @@
 #include <graybat/pattern/GridDiagonal.hpp>
 #include <graybat/pattern/Chain.hpp>
 
+struct Config {
+
+};
+
 struct Function {
     
     void process(std::array<unsigned, 1> &data){
@@ -58,7 +62,8 @@ int exp() {
     const unsigned nChainLinks = 1000;
     
     // Create GoL Graph
-    CP communicationPolicy;
+    Config config;
+    CP communicationPolicy(config);
     Cage cage(communicationPolicy);
 
     // Set communication pattern

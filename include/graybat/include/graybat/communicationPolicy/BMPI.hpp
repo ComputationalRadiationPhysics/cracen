@@ -178,7 +178,8 @@ namespace graybat {
 	    typedef int      Uri;
 
 
-	    BMPI() :contextCount(0),
+	    template<typename T_Config>
+	    BMPI(T_Config const config) :contextCount(0),
 		    uriMap(0),
 		    initialContext(contextCount, mpi::communicator()){
 

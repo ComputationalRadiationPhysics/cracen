@@ -25,6 +25,10 @@
 // GRAYBAT patterns
 #include <graybat/pattern/GridDiagonal.hpp>
 
+struct Config {
+
+};
+
 struct Cell {
     Cell() : isAlive{{0}}, aliveNeighbors(0){
 	unsigned random = rand() % 10000;
@@ -114,7 +118,8 @@ int gol(const unsigned nCells, const unsigned nTimeSteps ) {
     const unsigned width  = height;
 
     // Create GoL Graph
-    CP communicationPolicy;
+    Config config;
+    CP communicationPolicy(config);
     Cage grid(communicationPolicy);
     grid.setGraph(graybat::pattern::GridDiagonal(height, width));
 

@@ -32,7 +32,7 @@ static const MsgType CONTEXT_REQUEST = 6;
 static char * s_recv (zmq::socket_t& socket) {
     zmq::message_t message(256);
     socket.recv(&message);
-    if (message.size() == -1)
+    if (message.size() == static_cast<size_t>(-1))
 	return NULL;
     if (message.size() > 255)
 	static_cast<char*>(message.data())[255] = 0;
@@ -127,6 +127,7 @@ int main(){
                 if(phoneBook[contextID].count(remoteVAddr) == 0){
                     sss << RETRY;
                     s_send(socket, sss.str().c_str());
+		    std::cout << "VADDR LOOKUP [contextID:" << contextID << "][remoteVAddr:" << remoteVAddr << "]: " << " RETRY"<< std::endl;		    		    
                 }
                 else {
                     sss << ACK << " " << phoneBook[contextID][remoteVAddr] << " ";
