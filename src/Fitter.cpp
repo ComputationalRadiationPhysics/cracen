@@ -1,14 +1,16 @@
 #include "Config/Constants.hpp"
+#include "Config/NetworkGraph.hpp"
 #include "Device/CudaUtil.hpp"
 #include "Input/GrayBatReader.hpp"
 #include "Output/GrayBatStream.hpp"
 #include "Device/Node.hpp"
 
 int main(int argc, char** argv) {
+	cage.distribute(graybat::mapping::PeerGroupMapping(1));
 	
-	GrayBatReader<Chunk> reader(masterUri, fitterUri);
+	GrayBatReader<Chunk, Cage> reader(cage);
 	std::cout << "GrayBatReader created." << std::endl;
-	GrayBatStream<Output> stream(1,masterUri, fitterUri);
+	GrayBatStream<Output, Cage> stream(1,cage);
 	std::cout << "GrayBatStream created." << std::endl;
 	
 	

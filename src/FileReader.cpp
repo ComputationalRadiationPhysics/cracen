@@ -1,12 +1,15 @@
 #include <vector>
 #include <iostream>
 
+#include "Config/Constants.hpp"
+#include "Config/NetworkGraph.hpp"
 #include "Device/Node.hpp"
 #include "Output/GrayBatStream.hpp"
-#include "Config/Constants.hpp"
 #include "Input/DataReader.hpp"
   
-int main(int argc, char* argv[]) {	
+int main(int argc, char* argv[]) {
+	cage.distribute(graybat::mapping::PeerGroupMapping(0));
+	
 	std::string input_filename = FILENAME_TESTFILE;
 	std::string scope_filename = SCOPE_PARAMETERFILE;
 	std::string output_filename =  OUTPUT_FILENAME;
@@ -28,7 +31,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "DataReader created." << std::endl;
 	
 	/* Initialize output buffer (with static elements) */
-	GrayBatStream<Chunk> os(1, masterUri, scopeReaderUri);
+	GrayBatStream<Chunk, Cage> os(1, cage);
 	std::cout << "GrayBatStream" << std::endl;
 	
 	

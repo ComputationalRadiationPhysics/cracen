@@ -4,12 +4,13 @@
 #include "Device/Node.hpp"
 #include "Output/OutputStream.hpp"
 #include "Config/Constants.hpp"
+#include "Config/NetworkGraph.hpp"
 #include "Input/GrayBatReader.hpp"
 #include "Input/ScopeReader.hpp"
-#include "Utility/StopWatch.hpp"
 #include "Device/CudaUtil.hpp"
   
 int main(int argc, char* argv[]) {
+	cage.distribute(graybat::mapping::PeerGroupMapping(2));
 	
 	std::string input_filename = FILENAME_TESTFILE;
 	std::string scope_filename = SCOPE_PARAMETERFILE;
@@ -24,19 +25,19 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
-    OutputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
 	
-	GrayBatReader<Output> gbReader(masterUri, onlineDspUri);
+	GrayBatReader<Output, Cage> gbReader(cage);
 	
 	std::cout << "Buffer created." << std::endl;
 
-	std::thread writerThread([&inputBuffer](){
+	std::thread writerThread([&gbReader](){
 		std::fstream out;
 		out.open("results.txt");
-		while(!inputBuffer.isFinished()) {
-			auto elem = inputBuffer.pop();
+		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
+		while(!inputBuffer->isFinished() || true) {
+			auto elem = inputBuffer->pop();
 			out << elem.status << " " << elem.woffset << " ";
-			std::cout << elem.status << " " << elem.woffset << " ";
+			std::cout << "Write fit:" << elem.status << " " << elem.woffset << " ";
 			for(auto p : elem.param) out << p << " ";
 			out << std::endl;
 			std::cout << std::endl;

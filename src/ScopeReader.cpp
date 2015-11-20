@@ -1,11 +1,13 @@
 #include <iostream>
 #include <thread>
 
+#include "Config/NetworkGraph.hpp"
 #include "Config/Constants.hpp"
 #include "Output/GrayBatStream.hpp"
 #include "Input/ScopeReader.hpp"
 
 int main(int argc, char** argv) {
+	cage.distribute(graybat::mapping::PeerGroupMapping(1));
 	
 	/* Get number of devices */
 	int numberOfDevices;
@@ -31,7 +33,7 @@ int main(int argc, char** argv) {
 	//int nWaveforms = parameter.nbrWaveforms;
 	int nSample = parameter.nbrSamples;
 	ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
-	GrayBatStream<Chunk> os(1,masterUri, fitterUri);
+	GrayBatStream<Chunk, Cage> os(1, cage);
 	
 	std::thread sendingThread([&inputBuffer, &os](){
 		while(inputBuffer.isFinished()) {

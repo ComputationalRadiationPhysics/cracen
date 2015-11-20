@@ -6,52 +6,24 @@
 #include "../Config/Types.hpp"
 #include "../Config/Constants.hpp"
 
-// GRAYBAT
-#include <graybat/Cage.hpp>
-#include <graybat/communicationPolicy/ZMQ.hpp>
-#include <graybat/communicationPolicy/BMPI.hpp>
-#include <graybat/graphPolicy/BGL.hpp>
-// GRAYBAT mappings
-#include <graybat/mapping/PeerGroupMapping.hpp>
-// GRAYBAT pattern
-#include <graybat/pattern/Pipeline.hpp>
-
 /*! Class that provides all functions to send data over the network
  */
 
-template <class DataType>
+template <class DataType, class Cage>
 class GrayBatStream {
 private:
-	/***************************************************************************
-	 * graybat configuration
-	 ****************************************************************************/
-	// CommunicationPolicy	
-	//    typedef graybat::communicationPolicy::ZMQ CP;
-	typedef graybat::communicationPolicy::BMPI CP;
-
-	// GraphPolicy
-	typedef graybat::graphPolicy::BGL<>    GP;
-
 	// Cage
-	typedef graybat::Cage<CP, GP> Cage;
 	typedef typename Cage::Event  Event;
 	typedef typename Cage::Vertex Vertex;
 	typedef typename Cage::Edge Edge;
 	
 	Ringbuffer<DataType> oBuffer;
-	CP cp;
-	Cage cage;
+	Cage& cage;
 	bool done;
 	std::thread sendingThread;
 	unsigned int roundRobinCounter;
 	
 	void run() {
-		std::vector<unsigned int> stages(2);
-		stages[0] = 1;
-		stages[1] = 1;
-		cage.setGraph(graybat::pattern::Pipeline(stages));
-		auto g = graybat::pattern::Pipeline(stages)();
-		cage.distribute(graybat::mapping::PeerGroupMapping(0));
 		assert(cage.hostedVertices.size() > 0);
 		
 		while(!oBuffer.isFinished()) {
@@ -75,11 +47,9 @@ public:
 	 *
 	 *  \param file Filename of the output file.
 	 */
-	GrayBatStream(int producer, const std::string& masterUri, const std::string& selfUri) :
+	GrayBatStream(int producer, Cage& cage) :
 		oBuffer(CHUNK_BUFFER_COUNT, producer),
-		//cp(masterUri, selfUri, 2),
-		cp(0),
-		cage(cp),
+		cage(cage),
 		done(false),
 		sendingThread(&GrayBatStream::run, this),
 		roundRobinCounter(0)

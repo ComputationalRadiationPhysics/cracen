@@ -31,7 +31,7 @@ endif(${CXX_COMPILER_IS_CLANG++})
 ###############################################################################
 
 find_package(CUDA REQUIRED)
-set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-Xptxas=-v;-O3;-std=c++11;-DDEBUG_ENABLED")
+set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED") #-Xptxas=-v;
 set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
 
 # Separate C++ from CUDA file compilation (So we can use our own compiler)
@@ -51,7 +51,7 @@ set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 # Boost
 ###############################################################################
 
-find_package(Boost 1.55.0 REQUIRED)
+find_package(Boost 1.55.0 REQUIRED mpi regex system)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${Boost_LIBRARIES})
@@ -180,6 +180,9 @@ target_link_libraries(FileWriter ${LIBS})
 
 add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
 target_link_libraries(Viewer ${LIBS})
+
+add_executable(WhoAmI "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/WhoAmI.cpp")
+target_link_libraries(WhoAmI ${LIBS})
 
 #add_executable(OnlineDSP "${OnlineDSP_SRCFILES}")
 #target_link_libraries(OnlineDSP ${OnlineDSP_LIBS})
