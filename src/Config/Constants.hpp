@@ -6,7 +6,8 @@
 #define GAUSS_PARAM2  -30000 //Baseline
 #define GAUSS_PARAM3  175	
 #define SAMPLE_COUNT 1000
-#define window_size 100//SAMPLE_COUNT/INTERPOLATION_COUNT;
+#define window_size 100 //Windowed fit
+//#define window_size SAMPLE_COUNT/INTERPOLATION_COUNT  //Fit over whole wave form
 
 #include <string>
 #include "FitFunctions/FitFunction.hpp"
@@ -33,11 +34,11 @@ const unsigned int INTERPOLATION_COUNT = 1;
 */
 const unsigned int MAX_ITERATIONS = 1000;
 
-const unsigned int maxNumberOfDevices = 1;
+const unsigned int maxNumberOfDevices = 4;
 const unsigned int pipelineDepth = 1;
 	
 const std::string OUTPUT_FILENAME = "results.txt";
-const std::string FILENAME_TESTFILE = "../data/Al_25keV-1.cdb";
+const std::string FILENAME_TESTFILE = "../data/default.cdb";
 const std::string SCOPE_PARAMETERFILE = "../data/scope.ini";
 
 const unsigned int polynom_order = 2;

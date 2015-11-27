@@ -4,13 +4,15 @@
 #include "Device/Node.hpp"
 #include "Output/OutputStream.hpp"
 #include "Config/Constants.hpp"
-#include "Config/NetworkGraph.hpp"
+#include "Config/CommandLineParser.hpp"
+#include "graybat/CageFactory.hpp"
 #include "Input/GrayBatReader.hpp"
 #include "Input/ScopeReader.hpp"
 #include "Device/CudaUtil.hpp"
   
 int main(int argc, char* argv[]) {
-	cage.distribute(graybat::mapping::PeerGroupMapping(2));
+	auto vm = CommandLineParser::parse(argc, argv);
+	auto cage = CageFactory::buildCage(vm);
 	
 	std::string input_filename = FILENAME_TESTFILE;
 	std::string scope_filename = SCOPE_PARAMETERFILE;
@@ -26,7 +28,7 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
 	
-	GrayBatReader<Output, Cage> gbReader(cage);
+	GrayBatReader<Output, decltype(cage)> gbReader(cage);
 	
 	std::cout << "Buffer created." << std::endl;
 

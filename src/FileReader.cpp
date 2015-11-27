@@ -2,13 +2,15 @@
 #include <iostream>
 
 #include "Config/Constants.hpp"
-#include "Config/NetworkGraph.hpp"
+#include "Config/CommandLineParser.hpp"
+#include "graybat/CageFactory.hpp"
 #include "Device/Node.hpp"
 #include "Output/GrayBatStream.hpp"
 #include "Input/DataReader.hpp"
   
 int main(int argc, char* argv[]) {
-	cage.distribute(graybat::mapping::PeerGroupMapping(0));
+	auto vm = CommandLineParser::parse(argc, argv);
+	auto cage = CageFactory::buildCage(vm);
 	
 	std::string input_filename = FILENAME_TESTFILE;
 	std::string scope_filename = SCOPE_PARAMETERFILE;
@@ -31,7 +33,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "DataReader created." << std::endl;
 	
 	/* Initialize output buffer (with static elements) */
-	GrayBatStream<Chunk, Cage> os(1, cage);
+	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	std::cout << "GrayBatStream" << std::endl;
 	
 	

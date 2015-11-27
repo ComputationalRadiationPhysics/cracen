@@ -1,16 +1,19 @@
 #include "Config/Constants.hpp"
-#include "Config/NetworkGraph.hpp"
+#include "Config/CommandLineParser.hpp"
+#include "graybat/CageFactory.hpp"
 #include "Device/CudaUtil.hpp"
 #include "Input/GrayBatReader.hpp"
 #include "Output/GrayBatStream.hpp"
 #include "Device/Node.hpp"
 
 int main(int argc, char** argv) {
-	cage.distribute(graybat::mapping::PeerGroupMapping(1));
 	
-	GrayBatReader<Chunk, Cage> reader(cage);
+	auto vm = CommandLineParser::parse(argc, argv);
+	auto cage = CageFactory::buildCage(vm);
+	
+	GrayBatReader<Chunk, decltype(cage)> reader(cage);
 	std::cout << "GrayBatReader created." << std::endl;
-	GrayBatStream<Output, Cage> stream(1,cage);
+	GrayBatStream<Output, decltype(cage)> stream(1,cage);
 	std::cout << "GrayBatStream created." << std::endl;
 	
 	

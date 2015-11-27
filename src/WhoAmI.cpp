@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv) {
 	if(argc != 2) {
-		std::cout << "Usage: WhoAmI <Remote IP>" << std::endl;
+		std::cout << "Usage: WhoAmI <Remote Host>" << std::endl;
 		return 0;
 	}
 	std::string localIp = Whoami(argv[1]);

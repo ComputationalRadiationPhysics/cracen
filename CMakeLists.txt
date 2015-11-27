@@ -51,7 +51,7 @@ set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 # Boost
 ###############################################################################
 
-find_package(Boost 1.55.0 REQUIRED mpi regex system)
+find_package(Boost 1.55.0 REQUIRED mpi regex system program_options)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${Boost_LIBRARIES})
