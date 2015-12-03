@@ -22,7 +22,7 @@ namespace CommandLineParser {
 		
 		po::options_description networkOptions( "Network Options" );
 		networkOptions.add_options()
-		("signalingIp, sip", po::value<std::string>()->required(),
+		("signalingIp, sip", po::value<std::string>()->default_value("127.0.0.1"),
 			"Required: The ip adress of the signaling server")
 		("communicationIp, cip", po::value<std::string>(),
 			 std::string(std::string() + "Optional: The ip adress of the client, by which it is reachable by other clients. This parameter is optional and " +

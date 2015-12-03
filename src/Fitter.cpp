@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 	
 	
 	InputBuffer* ib = reader.getBuffer();
+/*
 	std::thread test([&](){
 		for(int i = 0; true; i++) {
 			ib->pop();
@@ -37,12 +38,12 @@ int main(int argc, char** argv) {
 			stream.send(o);
 		}
 	});
-	
+	*/
 	std::cout << "Nodes created." << std::endl;
 	
 	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;
-	test.join();
+	//test.join();
 	//Make sure all results are written back
 	//stream.join();
 	return 0;

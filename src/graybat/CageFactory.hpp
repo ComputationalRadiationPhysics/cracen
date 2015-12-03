@@ -37,11 +37,13 @@ struct CageFactory {
 		const std::string signalingIp = vm["signalingIp"].as<std::string>();
 		const std::string localIp = Whoami(signalingIp);
 		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(vm["signalingPort"].as<unsigned int>());
-		const std::string peerUri = "tcp://"+localIp+":"+std::to_string(vm["4communicationPort"].as<unsigned int>());
+		const std::string peerUri = "tcp://"+localIp+":"+std::to_string(vm["communicationPort"].as<unsigned int>());
+		std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = vm["sources"].as<unsigned int>() + vm["fitters"].as<unsigned int>() + vm["sinks"].as<unsigned int>();
 			
 		
-		const std::string name = vm["programName"].as<std::string>();
+		std::string name = vm["programName"].as<std::string>();
+		name = name.substr(name.find_last_of("/") + 1); 
 		unsigned int peer;
 		if(name == "FileReader" || name == "ScopeReader") {
 			peer = 0;

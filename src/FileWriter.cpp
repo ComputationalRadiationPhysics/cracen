@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 	
 	std::cout << "Buffer created." << std::endl;
 
+	/*
 	std::thread writerThread([&gbReader](){
 		std::fstream out;
 		out.open("results.txt");
@@ -46,12 +47,12 @@ int main(int argc, char* argv[]) {
 		}
 		out.close();
 	});
-	
+	*/
 	gbReader.readToBuffer();
 	std::cout << "Data read." << std::endl;
 
 	//Make sure all results are written back
-	writerThread.join();
+	//writerThread.join();
 	
 	return 0;
 }

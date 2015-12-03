@@ -48,7 +48,10 @@ public:
 	}
 	
 	
-    ~GrayBatReader() {receivingThread.join();}
+    ~GrayBatReader() {
+//		done = true;
+		receivingThread.join();
+	}
 
     void readToBuffer() {}
 
