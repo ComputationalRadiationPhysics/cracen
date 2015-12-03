@@ -1,21 +1,27 @@
-/*******************************************************************************
- *
- * GRAPH TOPOLOGY GENERATORS
- *
- *******************************************************************************/
+# pragma once
+
+// STL
+#include <utility> /* std::make_pair */
+
+// GRAYBAT
+#include <graybat/graphPolicy/Traits.hpp>
+
 
 namespace graybat {
 
     namespace pattern {
 
-	typedef unsigned                                                        VertexID;
-	typedef std::pair<VertexID, VertexID>                                   EdgeDescription;
-	typedef std::pair<std::vector<VertexID>, std::vector<EdgeDescription> > GraphDescription;
-
-    
+        template <typename T_GraphPolicy>
 	struct Ring {
 
-	    const unsigned verticesCount;
+            using GraphPolicy       = T_GraphPolicy;
+            using VertexDescription = graybat::graphPolicy::VertexDescription<GraphPolicy>;
+            using EdgeDescription   = graybat::graphPolicy::EdgeDescription<GraphPolicy>;
+            using GraphDescription  = graybat::graphPolicy::GraphDescription<GraphPolicy>;
+            using EdgeProperty      = graybat::graphPolicy::EdgeProperty<GraphPolicy>;
+            using VertexProperty    = graybat::graphPolicy::VertexProperty<GraphPolicy>;            
+
+            const unsigned verticesCount;
 
 	    Ring(const unsigned verticesCount) :
 		verticesCount(verticesCount) {
@@ -24,16 +30,20 @@ namespace graybat {
     
 
 	    GraphDescription operator()(){
-		std::vector<VertexID> vertices(verticesCount);
+		std::vector<VertexDescription> vertices(verticesCount);
 		std::vector<EdgeDescription> edges;
 
+                for(unsigned i = 0; i < vertices.size(); ++i){
+                    vertices.at(i) = std::make_pair(i, VertexProperty());
+                }
+                
 		if(vertices.size() != 1) {
 		    for(unsigned i = 0; i < vertices.size(); ++i){
 			if(i == vertices.size() - 1){
-			    edges.push_back(std::make_pair(i, 0));
+			    edges.push_back(std::make_pair(std::make_pair(vertices[i].first, vertices[0].first), EdgeProperty()));
 			}
 			else {
-			    edges.push_back(std::make_pair(i, i + 1));
+			    edges.push_back(std::make_pair(std::make_pair(vertices[i].first, vertices[i + 1].first), EdgeProperty()));
 			}
 		
 		    }

@@ -22,10 +22,6 @@
 // GRAYBAT patterns
 #include <graybat/pattern/Ring.hpp>
 
-struct Config {
-
-};
-
 struct Function {
 
     void process(std::tuple<unsigned, std::string> &a){
@@ -44,6 +40,7 @@ int exp() {
 
     // CommunicationPolicy
     typedef graybat::communicationPolicy::BMPI CP;
+    typedef CP::Config                         Config;
     
     // GraphPolicy
     typedef graybat::graphPolicy::BGL<Function>    GP;
@@ -60,12 +57,11 @@ int exp() {
 
     // Create GoL Graph
     Config config;
-    CP communicationPolicy(config);
-    Cage cage(communicationPolicy);
+    Cage cage(config);
     assert(cage.getPeers().size() >= nRingLinks);
 
     // Create ring communication pattern
-    cage.setGraph(graybat::pattern::Ring(nRingLinks));
+    cage.setGraph(graybat::pattern::Ring<GP>(nRingLinks));
 
     
     // Distribute vertices

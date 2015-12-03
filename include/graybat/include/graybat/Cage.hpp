@@ -51,6 +51,7 @@ namespace graybat {
         typedef typename CommunicationPolicy::VAddr     VAddr;
         typedef typename CommunicationPolicy::Context   Context;
         typedef typename CommunicationPolicy::Event     Event;
+        typedef typename CommunicationPolicy::Config    CPConfig;
         typedef CommunicationEdge<Cage_T>               Edge;
         typedef CommunicationVertex<Cage_T>             Vertex;
         typedef typename Vertex::VertexID               VertexID;
@@ -59,15 +60,15 @@ namespace graybat {
         typedef unsigned Peer;
         
         template <class T_Functor>
-        Cage(CommunicationPolicy& comm, T_Functor graphFunctor) :
-	    comm(comm),
+        Cage(CPConfig const cpConfig, T_Functor graphFunctor) :
+	    comm(cpConfig),
 	    graph(GraphPolicy(graphFunctor())){
 	    
         }
 	
-	Cage(CommunicationPolicy& comm) :
-	    comm(comm),
-	    graph(GraphPolicy(graybat::pattern::None()())){
+	Cage(CPConfig const cpConfig) :
+	    comm(cpConfig),
+	    graph(GraphPolicy(graybat::pattern::None<GraphPolicy>()())){
 
 	}
 
@@ -81,10 +82,10 @@ namespace graybat {
          * MEMBER
          *
          ***************************************************************************/
-	CommunicationPolicy& comm;
-        GraphPolicy          graph;
-        Context              graphContext;
-        std::vector<Vertex>  hostedVertices;
+	CommunicationPolicy comm;
+        GraphPolicy         graph;
+        Context             graphContext;
+        std::vector<Vertex> hostedVertices;
 
 
         /***************************************************************************

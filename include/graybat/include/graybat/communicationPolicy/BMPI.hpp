@@ -4,16 +4,13 @@
 #include <assert.h>   /* assert */
 
 // STL
-#include <array>      /* array */
-#include <numeric>    /* std::accumulate */
-#include <iostream>   /* std::cout */
-#include <map>          /* std::map */
-#include <exception>    /* std::out_of_range */
-#include <sstream>      /* std::stringstream */
-#include <algorithm>    /* std::transform */
-
-// MPI
-#include <mpi.h>        /* MPI_* */
+#include <array>     /* array */
+#include <numeric>   /* std::accumulate */
+#include <iostream>  /* std::cout */
+#include <map>       /* std::map */
+#include <exception> /* std::out_of_range */
+#include <sstream>   /* std::stringstream */
+#include <algorithm> /* std::transform */
 
 // BOOST
 #include <boost/mpi/environment.hpp>
@@ -21,18 +18,23 @@
 #include <boost/mpi/collectives.hpp>
 #include <boost/mpi/datatype.hpp>
 #include <boost/optional.hpp>
+namespace mpi = boost::mpi;
+
+// MPI
+#include <mpi.h>     /* MPI_* */
 
 // GRAYBAT
 #include <graybat/utils/serialize_tuple.hpp>
-
-
-
-namespace mpi = boost::mpi;
+#include <graybat/communicationPolicy/bmpi/Context.hpp> /* Context */
+#include <graybat/communicationPolicy/bmpi/Event.hpp>   /* Event */
+#include <graybat/communicationPolicy/bmpi/Config.hpp>   /* Config */
+#include <graybat/communicationPolicy/Base.hpp> 
+#include <graybat/communicationPolicy/Traits.hpp>
 
 namespace graybat {
     
     namespace communicationPolicy {
-    
+
 	/************************************************************************//**
 	 *
 	 * @class BMPI
@@ -41,145 +43,41 @@ namespace graybat {
 	 *        based on the MPI implementation boost::mpi.
 	 *
 	 ***************************************************************************/
-	struct BMPI {
-	    /**
-	     * @brief A context represents a set of peers which are
-	     *        able to communicate with each other.
-	     *
-	     */
-	    class Context {
-		typedef unsigned ContextID;
-		typedef unsigned VAddr;
-	    
-	    public:
-		Context() :
-		    id(0),
-		    isValid(false){
 
-		}
+        struct BMPI;
+        
+        namespace traits {
 
-		Context(ContextID contextID, mpi::communicator comm) : 
-		    comm(comm),
-		    id(contextID),
-		    isValid(true){
-		
-		}
+            template<>
+            struct ContextType<BMPI> {
+                using type = graybat::communicationPolicy::bmpi::Context;
+            };
 
-		Context& operator=(const Context& otherContext){
-		    id            = otherContext.getID();
-		    isValid       = otherContext.valid();
-		    comm          = otherContext.comm;
-		    return *this;
+            template<>
+            struct EventType<BMPI> {
+                using type = graybat::communicationPolicy::bmpi::Event;
+            };
 
-		}
+            template<>
+            struct ConfigType<BMPI> {
+                using type = graybat::communicationPolicy::bmpi::Config;
+            };
 
-		size_t size() const{
-		    return comm.size();
-		}
+        }
+        
+	struct BMPI : Base<BMPI>{
+            
+    	    // Type defs
+            using Tag       = typename graybat::communicationPolicy::Tag<BMPI>;
+            using ContextID = typename graybat::communicationPolicy::ContextID<BMPI>;
+            using MsgType   = typename graybat::communicationPolicy::MsgType<BMPI>;
+            using VAddr     = typename graybat::communicationPolicy::VAddr<BMPI>;
+            using Context   = typename graybat::communicationPolicy::Context<BMPI>;
+            using Event     = typename graybat::communicationPolicy::Event<BMPI>;
+            using Config    = typename graybat::communicationPolicy::Config<BMPI>;                        
+            using Uri       = int;
 
-		VAddr getVAddr() const {
-		    return comm.rank();
-		}
-
-		ContextID getID() const {
-		    return id;
-		}
-
-		bool valid() const{
-		    return isValid;
-		}
-
-		mpi::communicator comm;
-	
-	    private:	
-		ContextID id;
-		bool      isValid;
-	    };
-
-	    /**
-	     * @brief An event is returned by non-blocking 
-	     *        communication operations and can be 
-	     *        asked whether an operation has finished
-	     *        or it can be waited for this operation to
-	     *        be finished.
-	     *
-	     */
-	    class Event {
-                typedef unsigned Tag;                                            
-                typedef unsigned VAddr;
-                
-	    public:
-		Event(mpi::request request) : request(request), async(true){
-
-		}
-
-                Event(mpi::status status) : status(status), async(false){
-
-                }
-
-
-		~Event(){
-
-		}
-
-		void wait(){
-                    if(async){
-                        request.wait();
-                    }
-	
-		}
-
-		bool ready(){
-                    if(async){
-                        boost::optional<mpi::status> status = request.test();
-
-                        if(status){
-                            return true;
-                        }
-                        else {
-                            return false;
-                        }
-                    }
-                    return true;
-
-		}
-
-                VAddr source(){
-                    if(async){
-                        status = request.wait();
-                    }
-                    return status.source();
-                }
-
-                Tag getTag(){
-                    if(async){
-                        status = request.wait();
-                    }
-                    return status.tag();
-
-                }
-
-	    private:
-		mpi::request request;
-                mpi::status  status;
-                const bool async;
-
-                
-                
-	    };
-
-
-	    // Type defs
-	    typedef unsigned Tag;                                            
-	    typedef unsigned ContextID;
-	    typedef unsigned VAddr;
-
-	    typedef unsigned MsgType;
-	    typedef int      Uri;
-
-
-	    template<typename T_Config>
-	    BMPI(T_Config const config) :contextCount(0),
+	    BMPI(Config const config) :contextCount(0),
 		    uriMap(0),
 		    initialContext(contextCount, mpi::communicator()){
 
@@ -202,7 +100,26 @@ namespace graybat {
 	     * @{
 	     *
 	     ***************************************************************************/
-	    /** 
+	    /**
+	     * @brief Blocking transmission of a message sendData to peer with virtual address destVAddr.
+	     * 
+	     * @param[in] destVAddr  VAddr of peer that will receive the message
+	     * @param[in] tag        Description of the message to better distinguish messages types
+	     * @param[in] context    Context in which both sender and receiver are included
+	     * @param[in] sendData   Data reference of template type T will be send to receiver peer.
+	     *                       T need to provide the function data(), that returns the pointer
+	     *                       to the data memory address. And the function size(), that
+	     *                       return the amount of data elements to send. Notice, that
+	     *                       std::vector and std::array implement this interface.
+	     */
+	    template <typename T_Send>
+	    void send(const VAddr destVAddr, const Tag tag, const Context context, const T_Send& sendData){
+	    	Uri destUri = getVAddrUri(context, destVAddr);
+		context.comm.send(destUri, tag, sendData.data(), sendData.size());
+	    }
+
+            
+            /** 
 	     * @brief Non blocking transmission of a message sendData to peer with virtual address destVAddr.
 	     * 
 	     * @param[in] destVAddr  VAddr of peer that will receive the message
@@ -223,50 +140,6 @@ namespace graybat {
 	    	return Event(request);
 
 	    }
-
-
-	    /**
-	     * @brief Blocking transmission of a message sendData to peer with virtual address destVAddr.
-	     * 
-	     * @param[in] destVAddr  VAddr of peer that will receive the message
-	     * @param[in] tag        Description of the message to better distinguish messages types
-	     * @param[in] context    Context in which both sender and receiver are included
-	     * @param[in] sendData   Data reference of template type T will be send to receiver peer.
-	     *                       T need to provide the function data(), that returns the pointer
-	     *                       to the data memory address. And the function size(), that
-	     *                       return the amount of data elements to send. Notice, that
-	     *                       std::vector and std::array implement this interface.
-	     */
-	    template <typename T_Send>
-	    void send(const VAddr destVAddr, const Tag tag, const Context context, const T_Send& sendData){
-	    	Uri destUri = getVAddrUri(context, destVAddr);
-		context.comm.send(destUri, tag, sendData.data(), sendData.size());
-	    }
-
-	    
-	    /**
-	     * @brief Non blocking receive of a message recvData from peer with virtual address srcVAddr.
-	     * 
-	     * @param[in]  srcVAddr   VAddr of peer that sended the message
-	     * @param[in]  tag        Description of the message to better distinguish messages types
-	     * @param[in]  context    Context in which both sender and receiver are included
-	     * @param[out] recvData   Data reference of template type T will be received from sender peer.
-	     *                        T need to provide the function data(), that returns the pointer
-	     *                        to the data memory address. And the function size(), that
-	     *                        return the amount of data elements to send. Notice, that
-	     *                        std::vector and std::array implement this interface.
-	     *
-	     * @return Event
-	     *
-	     */
-	    template <typename T_Recv>
-	    Event asyncRecv(const VAddr srcVAddr, const Tag tag, const Context context, T_Recv& recvData){
-	    	 Uri srcUri = getVAddrUri(context, srcVAddr);
-		 mpi::request request = context.comm.irecv(srcUri, tag, recvData.data(), recvData.size());
-	    	 return Event(request);
-	    }
-
-
 	    /**
 	     * @brief Blocking receive of a message recvData from peer with virtual address srcVAddr.
 	     * 
@@ -301,6 +174,30 @@ namespace graybat {
 
 	    }
 
+
+	    /**
+	     * @brief Non blocking receive of a message recvData from peer with virtual address srcVAddr.
+	     * 
+	     * @param[in]  srcVAddr   VAddr of peer that sended the message
+	     * @param[in]  tag        Description of the message to better distinguish messages types
+	     * @param[in]  context    Context in which both sender and receiver are included
+	     * @param[out] recvData   Data reference of template type T will be received from sender peer.
+	     *                        T need to provide the function data(), that returns the pointer
+	     *                        to the data memory address. And the function size(), that
+	     *                        return the amount of data elements to send. Notice, that
+	     *                        std::vector and std::array implement this interface.
+	     *
+	     * @return Event
+	     *
+	     */
+	    template <typename T_Recv>
+	    Event asyncRecv(const VAddr srcVAddr, const Tag tag, const Context context, T_Recv& recvData){
+	    	 Uri srcUri = getVAddrUri(context, srcVAddr);
+		 mpi::request request = context.comm.irecv(srcUri, tag, recvData.data(), recvData.size());
+	    	 return Event(request);
+	    }
+
+
 	    /** @} */
     
 	    /************************************************************************//**
@@ -326,7 +223,7 @@ namespace graybat {
 	     */
 	    template <typename T_Send, typename T_Recv>
 	    void gather(const VAddr rootVAddr, const Context context, const T_Send& sendData, T_Recv& recvData){
-		Uri rootUri = getVAddrUri(context, rootVAddr);
+	        Uri rootUri = getVAddrUri(context, rootVAddr);
 	    	mpi::gather(context.comm, sendData.data(), sendData.size(), recvData, rootUri);
 	    }
 
@@ -535,7 +432,7 @@ namespace graybat {
 	     *
 	     */
 	    template <typename T_SendRecv>
-	    void broadcast(const VAddr rootVAddr, const Context context, const T_SendRecv& data){
+	    void broadcast(const VAddr rootVAddr, const Context context, T_SendRecv& data){
 	    	 Uri rootUri = uriMap.at(context.getID()).at(rootVAddr);
 		 mpi::broadcast(context.comm, data.data(), data.size(), rootUri);
 	    }

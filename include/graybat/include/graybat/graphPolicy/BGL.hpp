@@ -25,7 +25,7 @@ namespace graybat {
 	    ID id;
 	};
 
-	/************************************************************************//**
+  	/************************************************************************//**
          * @class BGL
 	 *									   
 	 * @brief A class to describe directed graphs.
@@ -39,11 +39,13 @@ namespace graybat {
 	public:
 	    // Public typedefs
 	    typedef T_VertexProperty                                                VertexProperty;
-	    typedef T_EdgeProperty                                                  EdgeProperty;	    
-	    typedef std::pair<unsigned, unsigned>                                   EdgeDescription;
-	    typedef std::pair<std::vector<unsigned>, std::vector<EdgeDescription> > GraphDescription;
+	    typedef T_EdgeProperty                                                  EdgeProperty;
 
-	    typedef unsigned                                                        GraphID;
+            using VertexDescription = graybat::graphPolicy::VertexDescription<BGL>;
+            using EdgeDescription   = graybat::graphPolicy::EdgeDescription<BGL>;
+            using GraphDescription  = graybat::graphPolicy::GraphDescription<BGL>;
+            
+	    typedef unsigned                                                                 GraphID;
 
 
 	    // BGL typdefs
@@ -62,8 +64,6 @@ namespace graybat {
 	    typedef typename boost::graph_traits<BGLGraph>::adjacency_iterator AdjacentVertexIter;
 	    typedef typename boost::graph_traits<BGLGraph>::vertex_iterator    AllVertexIter;
 	    
-
-
 	    // Member
 	    BGLGraph* graph;
 	    std::vector<BGL<VertexProperty, EdgeProperty>> subGraphs;
@@ -82,25 +82,25 @@ namespace graybat {
 	    BGL(GraphDescription graphDesc) :
 		id(0){
 
-		std::vector<unsigned> vertices     = graphDesc.first;
-		std::vector<EdgeDescription> edges = graphDesc.second;
+		std::vector<VertexDescription> vertices = graphDesc.first;
+		std::vector<EdgeDescription> edges      = graphDesc.second;
 
 		graph = new BGLGraph(vertices.size());
 
 		unsigned edgeCount = 0;
 
 		for(EdgeDescription edge: edges){
-		    VertexID srcVertex    = std::get<0>(edge);
-		    VertexID targetVertex = std::get<1>(edge);
+		    VertexID srcVertex    = std::get<0>(edge.first);
+		    VertexID targetVertex = std::get<1>(edge.first);
 		    EdgeID edgeID = boost::add_edge(srcVertex, targetVertex, (*graph)).first;
                     edgeIdMap.push_back(edgeID);
-		    setEdgeProperty(edgeID, std::make_pair(edgeCount++, EdgeProperty()));
+		    setEdgeProperty(edgeID, std::make_pair(edgeCount++, edge.second));
 		}
 
 		// Bind vertex_descriptor and VertexProperty;
-		for(unsigned vertexID = 0; vertexID < vertices.size(); ++vertexID){
-		    setVertexProperty(vertexID, std::make_pair(vertexID, VertexProperty()));
-		}
+                for(VertexDescription &v : vertices){
+                    setVertexProperty(v.first, std::make_pair(v.first, v.second));
+                }
 		
 	    }	    
 

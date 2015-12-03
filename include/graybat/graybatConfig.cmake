@@ -32,28 +32,28 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${graybat_DIR}/include/graybat/utils
 # METIS LIB
 ###############################################################################
 find_package(METIS MODULE 5.1.0)
-include_directories(SYSTEM ${METIS_INCLUDE_DIRS})
+set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} ${METIS_INCLUDE_DIRS})
 set(graybat_LIBRARIES ${graybat_LIBRARIES} ${METIS_LIBRARIES})
 
 ###############################################################################
 # ZMQ LIB
 ###############################################################################
 find_package(ZMQ MODULE 4.0.0)
-include_directories(SYSTEM ${ZMQ_INCLUDE_DIRS})
+set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIRS})
 set(graybat_LIBRARIES ${graybat_LIBRARIES} ${ZMQ_LIBRARIES})
 
 ###############################################################################
 # Boost LIB
 ###############################################################################
 find_package(Boost 1.56.0 MODULE COMPONENTS mpi serialization REQUIRED)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 set(graybat_LIBRARIES ${graybat_LIBRARIES} ${Boost_LIBRARIES})
 
 ################################################################################
 # MPI LIB
 ################################################################################
 find_package(MPI MODULE)
-include_directories(SYSTEM ${MPI_C_INCLUDE_PATH})
+set(graybat_INCLUDE_DIRS ${graybat_INCLUDE_DIRS} ${MPI_C_INCLUDE_PATH})
 set(graybat_LIBRARIES ${graybat_LIBRARIES} ${MPI_C_LIBRARIES})
 set(graybat_LIBRARIES ${graybat_LIBRARIES} ${MPI_CXX_LIBRARIES})
 

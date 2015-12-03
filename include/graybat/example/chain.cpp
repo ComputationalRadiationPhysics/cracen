@@ -23,11 +23,14 @@
 #include <graybat/mapping/Consecutive.hpp>
 #include <graybat/mapping/Random.hpp>
 #include <graybat/mapping/Roundrobin.hpp>
+#include <graybat/mapping/Filter.hpp>
 // GRAYBAT pattern
 #include <graybat/pattern/Chain.hpp>
 
-struct Config {
 
+struct Tag {
+    int tag;
+    
 };
 
 int exp() {
@@ -37,9 +40,10 @@ int exp() {
 
     // CommunicationPolicy
     typedef graybat::communicationPolicy::BMPI CP;
+    typedef CP::Config                         Config;    
     
     // GraphPolicy
-    typedef graybat::graphPolicy::BGL<>    GP;
+    typedef graybat::graphPolicy::BGL<Tag, Tag>    GP;
     
     // Cage
     typedef graybat::Cage<CP, GP> Cage;
@@ -49,18 +53,17 @@ int exp() {
     /***************************************************************************
      * Initialize Communication
      ****************************************************************************/
-    const unsigned nChainLinks = 1000;
+    const unsigned nChainLinks = 6;
     auto inc = [](unsigned &a){a++;};
 
     // Create GoL Graph
     Config config;
-    CP communicationPolicy(config);
-    Cage cage(communicationPolicy);
+    Cage cage(config);
 
-    cage.setGraph(graybat::pattern::Chain(nChainLinks));
+    cage.setGraph(graybat::pattern::Chain<GP>(nChainLinks));
     
     // Distribute vertices
-    cage.distribute(graybat::mapping::Consecutive());
+    cage.distribute(graybat::mapping::Filter(cage.comm.getGlobalContext().getVAddr() % 3));
 
     /***************************************************************************
      * Run Simulation
@@ -77,29 +80,29 @@ int exp() {
 
     for(Vertex v : cage.hostedVertices){
 
-	if(v == entry){
-	    v.spread(input, events);
-	    std::cout << "Input: " << input[0] << std::endl;
-	}
+        if(v == entry){
+            v.spread(input, events);
+            std::cout << "Input: " << input[0] << " " << cage.comm.getGlobalContext().getVAddr() << std::endl;
+        }
 
-	if(v == exit){
-	    v.collect(output);
-	    std::cout << "Output: " << output[0] << std::endl;
-	}
+        if(v == exit){
+            v.collect(output);
+            std::cout << "Output: " << output[0] << " " << cage.comm.getGlobalContext().getVAddr() << std::endl;
+        }
 
-	if(v != entry and v != exit){
-	    v.collect(intermediate);
-	    inc(intermediate[0]);
-	    std::cout << "Increment: " << intermediate[0] << std::endl;
-	    v.spread(intermediate, events);
+        if(v != entry and v != exit){
+            v.collect(intermediate);
+            inc(intermediate[0]);
+            std::cout << "Increment: " << intermediate[0] << " " << cage.comm.getGlobalContext().getVAddr() << std::endl;
+            v.spread(intermediate, events);
 	    
-	}
+        }
 	
     }
 
     for(unsigned i = 0; i < events.size(); ++i){
-	events.back().wait();
-	events.pop_back();
+        events.back().wait();
+        events.pop_back();
     }
     
     return 0;

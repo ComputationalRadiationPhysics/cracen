@@ -24,10 +24,6 @@
 #include <graybat/pattern/GridDiagonal.hpp>
 #include <graybat/pattern/Chain.hpp>
 
-struct Config {
-
-};
-
 struct Function {
     
     void process(std::array<unsigned, 1> &data){
@@ -46,6 +42,7 @@ int exp() {
 
     // CommunicationPolicy
     typedef graybat::communicationPolicy::BMPI CP;
+    typedef CP::Config                         Config;
     
     // GraphPolicy
     typedef graybat::graphPolicy::BGL<Function>    GP;
@@ -63,11 +60,10 @@ int exp() {
     
     // Create GoL Graph
     Config config;
-    CP communicationPolicy(config);
-    Cage cage(communicationPolicy);
+    Cage cage(config);
 
     // Set communication pattern
-    cage.setGraph(graybat::pattern::Chain(nChainLinks));
+    cage.setGraph(graybat::pattern::Chain<GP>(nChainLinks));
 
     // Distribute vertices
     cage.distribute(graybat::mapping::Consecutive());

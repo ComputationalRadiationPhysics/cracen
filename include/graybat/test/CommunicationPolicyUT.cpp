@@ -19,27 +19,29 @@
 #include <graybat/communicationPolicy/ZMQ.hpp>
 #include <graybat/communicationPolicy/BMPI.hpp>
 
-
 /*******************************************************************************
- * CommunicationPolicy configuration
+ * Communication Policies to Test
  ******************************************************************************/
-struct Config {
+namespace hana = boost::hana;
 
-    Config() :
-	masterUri("tcp://127.0.0.1:5000"),
-	peerUri("tcp://127.0.0.1:5001"),
-	contextSize(std::stoi(std::getenv("OMPI_COMM_WORLD_SIZE"))){
-
-    }
-
-    std::string const masterUri;
-    std::string const peerUri;
-    size_t const contextSize;	    
-
-};
-
-Config const config;
 size_t const nRuns = 1000;
+
+using ZMQ        = graybat::communicationPolicy::ZMQ;
+using BMPI       = graybat::communicationPolicy::BMPI;
+using ZMQConfig  = ZMQ::Config;
+using BMPIConfig = BMPI::Config;
+
+ZMQConfig zmqConfig = {"tcp://127.0.0.1:5000",
+                       "tcp://127.0.0.1:5001",
+                       static_cast<size_t>(std::stoi(std::getenv("OMPI_COMM_WORLD_SIZE")))};
+
+BMPIConfig bmpiConfig;
+
+ZMQ zmqCP(zmqConfig);
+BMPI bmpiCP(bmpiConfig);
+
+auto communicationPolicies = hana::make_tuple(std::ref(zmqCP),
+                                              std::ref(bmpiCP) );
 
 
 /*******************************************************************************
@@ -72,35 +74,22 @@ struct Progress {
 
 };
 
-/*******************************************************************************
- * Test Suites
- ******************************************************************************/
-BOOST_AUTO_TEST_SUITE( graybat_communication_policy_point_to_point_test )
-
 
 /*******************************************************************************
- * Communication Policies to Test
+ * Point to Point Test Suites
  ******************************************************************************/
-namespace hana = boost::hana;
-using ZMQ  = graybat::communicationPolicy::ZMQ;
-using BMPI = graybat::communicationPolicy::BMPI;
-
-BMPI bmpiCP(config);
-ZMQ zmqCP(config);
-
-auto communicationPolicies = hana::make_tuple(std::ref(bmpiCP),
-					      std::ref(zmqCP));
+BOOST_AUTO_TEST_SUITE( graybat_cp_point_to_point )
 
 
 /***************************************************************************
  * Test Cases
  ****************************************************************************/
 BOOST_AUTO_TEST_CASE( context ){
-    hana::for_each(communicationPolicies, [](auto refWrap){
+    hana::for_each(communicationPolicies, [](auto cpRef){
 	    // Test setup
-	    using CP      = typename decltype(refWrap)::type;
+	    using CP      = typename decltype(cpRef)::type;
 	    using Context = typename CP::Context;	    
-	    CP& cp = refWrap.get();
+	    CP& cp = cpRef.get();
 	    Progress progress(cp);
 
 	    // Test run
@@ -121,12 +110,12 @@ BOOST_AUTO_TEST_CASE( context ){
 
 
 BOOST_AUTO_TEST_CASE( send_recv){
-    hana::for_each(communicationPolicies, [](auto refWrap){
+    hana::for_each(communicationPolicies, [](auto cpRef){
 	    // Test setup
-	    using CP      = typename decltype(refWrap)::type;
+	    using CP      = typename decltype(cpRef)::type;
 	    using Context = typename CP::Context;
-	    using Event = typename CP::Event;	    	    
-	    CP& cp = refWrap.get();
+	    using Event   = typename CP::Event;	    	    
+	    CP& cp = cpRef.get();            
 	    Progress progress(cp);
 
 	    // Test run
@@ -176,12 +165,12 @@ BOOST_AUTO_TEST_CASE( send_recv){
 
 
 BOOST_AUTO_TEST_CASE( send_recv_all){
-    hana::for_each(communicationPolicies, [](auto refWrap){
+    hana::for_each(communicationPolicies, [](auto cpRef){
 	    // Test setup
-	    using CP      = typename decltype(refWrap)::type;
+	    using CP      = typename decltype(cpRef)::type;
 	    using Context = typename CP::Context;
-	    using Event = typename CP::Event;	    	    
-	    CP& cp = refWrap.get();
+	    using Event   = typename CP::Event;	    	    
+	    CP& cp = cpRef.get();            
 	    Progress progress(cp);
 
 	    // Test run
@@ -232,12 +221,13 @@ BOOST_AUTO_TEST_CASE( send_recv_all){
 
 
 BOOST_AUTO_TEST_CASE( send_recv_order ){
-    hana::for_each(communicationPolicies, [](auto refWrap){
+    hana::for_each(communicationPolicies, [](auto cpRef){
 	    // Test setup
-	    using CP      = typename decltype(refWrap)::type;
+	    using CP      = typename decltype(cpRef)::type;
 	    using Context = typename CP::Context;
-	    using Event = typename CP::Event;	    	    
-	    CP& cp = refWrap.get();
+	    using Event   = typename CP::Event;
+	    CP& cp = cpRef.get();            
+            
 	    Progress progress(cp);
 
 	    // Test run
@@ -303,5 +293,359 @@ BOOST_AUTO_TEST_CASE( send_recv_order ){
 	});
 
 }
+
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/*******************************************************************************
+ * Collective Test Suites
+ ******************************************************************************/
+BOOST_AUTO_TEST_SUITE( graybat_cp_collectives )
+
+
+/*******************************************************************************
+ * Test Cases
+ ******************************************************************************/
+BOOST_AUTO_TEST_CASE( gather ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+
+                const unsigned nElements = 10;
+                unsigned value = 9;
+
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> send (nElements, value);
+                    std::vector<unsigned> recv (nElements * context.size(), 0);
+
+                    cp.gather(0, context, send, recv);
+
+                    if(context.getVAddr() == 0){
+                        for(auto d : recv){
+                            BOOST_CHECK_EQUAL(d, value);
+                        }
+
+                    }
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+BOOST_AUTO_TEST_CASE( gather_var ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;
+	    using VAddr   = typename CP::VAddr;            
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+                std::vector<unsigned> recvCount;
+                
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> send (context.getVAddr() + 1, context.getVAddr());
+                    std::vector<unsigned> recv;
+
+                    cp.gatherVar(0, context, send, recv, recvCount);
+
+                    if(context.getVAddr() == 0){
+                        unsigned i = 0;
+                        for(VAddr vAddr = 0; vAddr < context.size(); ++vAddr){
+                            for(unsigned j = 0; j < vAddr + 1; j++){
+                                BOOST_CHECK_EQUAL(recv.at(i), vAddr);
+                                i++;
+                            }
+                            
+                        }
+
+                    }
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+BOOST_AUTO_TEST_CASE( all_gather ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+
+                const unsigned nElements = 10;
+                unsigned value = 9;
+
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> send (nElements, value);
+                    std::vector<unsigned> recv (nElements * context.size(), 0);
+
+                    cp.allGather(context, send, recv);
+
+                    for(auto d : recv){
+                        BOOST_CHECK_EQUAL(d, value);
+                    }
+
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+BOOST_AUTO_TEST_CASE( all_gather_var ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;
+	    using VAddr   = typename CP::VAddr;            
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+                std::vector<unsigned> recvCount;
+                
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> send (context.getVAddr() + 1, context.getVAddr());
+                    std::vector<unsigned> recv;
+
+                    cp.allGatherVar(context, send, recv, recvCount);
+
+                    unsigned i = 0;
+                    for(VAddr vAddr = 0; vAddr < context.size(); ++vAddr){
+                        for(unsigned j = 0; j < vAddr + 1; j++){
+                            BOOST_CHECK_EQUAL(recv.at(i), vAddr);
+                            i++;
+                        }
+                            
+                    }
+
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+BOOST_AUTO_TEST_CASE( scatter ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+
+                const unsigned nElements = 10;
+                unsigned value = 9;
+
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> send (nElements * context.size(), value);
+                    std::vector<unsigned> recv (nElements, 0);
+                    
+                    cp.scatter(0, context, send, recv);
+
+                    if(context.getVAddr() == 0){
+                        for(auto d : recv){
+                            BOOST_CHECK_EQUAL(d, value);
+                        }
+
+                    }
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+BOOST_AUTO_TEST_CASE( reduce ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+
+                const unsigned nElements = 10;
+                unsigned value = 9;
+
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> send (nElements, value);
+                    std::vector<unsigned> recv (nElements, 0);
+                    
+                    cp.reduce(0, context, std::plus<unsigned>(), send, recv);
+
+                    if(context.getVAddr() == 0){
+                        for(auto d : recv){
+                            BOOST_CHECK_EQUAL(d, value * context.size());
+                        }
+
+                    }
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE( broadcast ){
+    hana::for_each(communicationPolicies, [](auto cpRef){
+	    // Test setup
+	    using CP      = typename decltype(cpRef)::type;
+	    using Context = typename CP::Context;
+	    using Event   = typename CP::Event;	    	    
+	    CP& cp = cpRef.get();            
+            Progress progress(cp);
+
+            // Test run
+            {
+    
+                Context context = cp.getGlobalContext();
+
+                const unsigned nElements = 10;
+                unsigned value = 9;
+
+                for(unsigned run_i = 0; run_i < nRuns; ++run_i){
+    
+                    std::vector<Event> events;
+
+                    std::vector<unsigned> data (nElements, value);
+
+                    cp.broadcast(0, context, data);
+
+                    for(auto d : data){
+                        BOOST_CHECK_EQUAL(d, value);
+                    }
+
+                    for(Event &e : events){
+                        e.wait();
+	    
+                    }
+	
+                    progress.print(nRuns, run_i);	
+
+                }
+		
+            }
+	    
+        });
+
+}
+
+
+
 
 BOOST_AUTO_TEST_SUITE_END()

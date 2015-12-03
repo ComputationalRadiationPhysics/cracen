@@ -25,10 +25,6 @@
 // GRAYBAT patterns
 #include <graybat/pattern/GridDiagonal.hpp>
 
-struct Config {
-
-};
-
 struct Cell {
     Cell() : isAlive{{0}}, aliveNeighbors(0){
 	unsigned random = rand() % 10000;
@@ -101,6 +97,7 @@ int gol(const unsigned nCells, const unsigned nTimeSteps ) {
 
     // CommunicationPolicy
     typedef graybat::communicationPolicy::BMPI CP;
+    typedef CP::Config                         Config;
     
     // GraphPolicy
     typedef graybat::graphPolicy::BGL<Cell>    GP;
@@ -119,9 +116,8 @@ int gol(const unsigned nCells, const unsigned nTimeSteps ) {
 
     // Create GoL Graph
     Config config;
-    CP communicationPolicy(config);
-    Cage grid(communicationPolicy);
-    grid.setGraph(graybat::pattern::GridDiagonal(height, width));
+    Cage grid(config);
+    grid.setGraph(graybat::pattern::GridDiagonal<GP>(height, width));
 
     
     // Distribute vertices
