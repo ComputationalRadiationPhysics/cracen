@@ -5,7 +5,12 @@
 // STL
 #include <iostream> /* std::cout, std::endl */
 #include <map>      /* std::map */
+#include <string>   /* std::string */
 #include <sstream>  /* std::stringstream */
+
+// BOOSt
+#include <boost/program_options.hpp>
+
 
 // ZMQ
 #include <zmq.hpp>
@@ -47,12 +52,41 @@ static int s_send (zmq::socket_t& socket, const char *string) {
     return 0;
 }
 
-int main(){
-    std::cout << "Start zmq connection manager" << std::endl;
+int main(const int argc, char **argv){
+    /***************************************************************************
+     * Parse Commandline
+     **************************************************************************/
+    namespace po = boost::program_options;
+    po::options_description options( "ZMQ Signaling Server Options" );
+    
+    options.add_options()
+        ("port,p",
+         po::value<unsigned>()->default_value(5000),
+         "Port to listen for signaling requests")
+        ("help,h",
+         "Print this help message and exit");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line( argc, argv, options ), vm);
+    
+    if(vm.count("help")){
+        std::cout << "Usage: " << argv[0] << " [options] " << std::endl;
+        std::cout << options << std::endl;
+        exit(0);
+    }
+    
+    /***************************************************************************
+     * Start signaling
+     **************************************************************************/
+    
+    std::cout << "Start zmq signaling server" << std::endl;
 
     std::map<ContextID, std::map<VAddr, Uri> > phoneBook;
     std::map<ContextID, VAddr> maxVAddr;
-    std::string masterUri = "tcp://127.0.0.1:5000";
+    std::string masterUri = std::string("tcp://127.0.0.1:") + std::to_string(vm["port"].as<unsigned>());
+
+    std::cout << "Listening on: " << masterUri << std::endl;
+    
     zmq::context_t context(1);
     
     zmq::message_t request;

@@ -1,29 +1,39 @@
+# pragma once
+
+// STL
+#include <utility> /* std::make_pair */
+
+// GRAYBAT
+#include <graybat/graphPolicy/Traits.hpp>
+
 namespace graybat {
 
   namespace pattern {
 
-    typedef unsigned                                                        VertexID;
-    typedef std::pair<VertexID, VertexID>                                   EdgeDescription;
-    typedef std::pair<std::vector<VertexID>, std::vector<EdgeDescription> > GraphDescription;
 
+      template<typename T_GraphPolicy>
+      struct EdgeLess {
 
-    struct EdgeLess {
+          using GraphPolicy       = T_GraphPolicy;
+          using VertexDescription = graybat::graphPolicy::VertexDescription<GraphPolicy>;
+          using EdgeDescription   = graybat::graphPolicy::EdgeDescription<GraphPolicy>;
+          using GraphDescription  = graybat::graphPolicy::GraphDescription<GraphPolicy>;
 
-      const unsigned verticesCount;
+          const unsigned verticesCount;
 
-	EdgeLess(const unsigned verticesCount) :
-	    verticesCount(verticesCount){
+          EdgeLess(const unsigned verticesCount) :
+              verticesCount(verticesCount){
 
-      }
+          }
       
-      GraphDescription operator()(){
-	std::vector<VertexID> vertices(verticesCount);
-	assert(vertices.size() == verticesCount);
-	std::vector<EdgeDescription> edges;
-	return std::make_pair(vertices,edges);
-      }
+          GraphDescription operator()(){
+              std::vector<VertexDescription> vertices(verticesCount);
+              assert(vertices.size() == verticesCount);
+              std::vector<EdgeDescription> edges;
+              return std::make_pair(vertices,edges);
+          }
 
-    };
+      };
       
   } /* pattern */
 

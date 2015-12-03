@@ -1,29 +1,27 @@
-/*******************************************************************************
- *
- * GRAPH TOPOLOGY GENERATORS
- *
- *******************************************************************************/
+#pragma once
+
+#include <graybat/graphPolicy/Traits.hpp>
 
 namespace graybat {
 
-  namespace pattern {
+    namespace pattern {
 
-    typedef unsigned                                                        VertexID;
-    typedef std::pair<VertexID, VertexID>                                   EdgeDescription;
-    typedef std::pair<std::vector<VertexID>, std::vector<EdgeDescription> > GraphDescription;
 
-    
-    struct None {
-      GraphDescription operator()(){
-	  std::vector<VertexID> vertices;
-    
-	  std::vector<EdgeDescription> edges;
+        template <typename T_GraphPolicy>
+        struct None {
+            using VertexDescription = graybat::graphPolicy::VertexDescription<T_GraphPolicy>;
+            using EdgeDescription   = graybat::graphPolicy::EdgeDescription<T_GraphPolicy>;
+            using GraphDescription  = graybat::graphPolicy::GraphDescription<T_GraphPolicy>;
+            
+            GraphDescription operator()(){
+                std::vector<VertexDescription> vertices;
+                std::vector<EdgeDescription> edges;
 
-	  return std::make_pair(vertices,edges);
-      }
+                return std::make_pair(vertices,edges);
+            }
 
-    };
+        };
 
-  } /* pattern */
+    } /* pattern */
 
 } /* graybat */
