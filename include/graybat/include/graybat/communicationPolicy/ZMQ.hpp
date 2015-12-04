@@ -159,7 +159,7 @@ namespace graybat {
 
 	    }
 
-	    ZMQ(ZMQ &&other) = delete;
+	    //ZMQ(ZMQ &&other) = delete;
 	    ZMQ(ZMQ &other)  = delete;
 
 	    // Destructor

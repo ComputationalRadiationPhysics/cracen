@@ -33,7 +33,8 @@ private:
 			std::vector<Edge> source_sink = cage.getOutEdges(source);
 			std::vector<DataType> send_buffer(1, o);
 			
-			cage.send(source_sink[roundRobinCounter], send_buffer);
+			std::cout << "RRC=" << roundRobinCounter << " source_sink.size()="<< source_sink.size() << std::endl;
+			cage.send(source_sink.at(roundRobinCounter), send_buffer);
 			roundRobinCounter = (roundRobinCounter+1) % source_sink.size();
 		}
 	}

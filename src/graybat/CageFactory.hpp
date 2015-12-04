@@ -20,18 +20,16 @@
  * graybat configuration
  ****************************************************************************/
 
-struct CageFactory {
+namespace CageFactory {
 	
 	typedef graybat::communicationPolicy::ZMQ CP;
 	//typedef graybat::communicationPolicy::BMPI CP;
-	typedef graybat::graphPolicy::BGL<>    GP;
+	typedef graybat::graphPolicy::BGL<unsigned int>    GP;
 	typedef graybat::Cage<CP, GP> Cage;
 	
-	struct ZMQConfigDescriptor {
-		const std::string masterUri, peerUri;
-		const unsigned int contextSize;
-	};
-		
+	
+	//TODO: Implement Move Constructors for ZMQ and Cage
+	/*
 	static Cage buildCage (boost::program_options::variables_map vm) {
 		
 		const std::string signalingIp = vm["signalingIp"].as<std::string>();
@@ -57,12 +55,64 @@ struct CageFactory {
 			std::cerr << "Program name given was: " << name << std::endl;
 			std::exit(1);
 		}
-		
-		ZMQConfigDescriptor zmqConfig{masterUri, peerUri, contextSize};
-		CP cp(zmqConfig);
-		Cage cage(cp, graybat::pattern::Pipeline(std::vector<unsigned int>({vm["sources"].as<unsigned int>(), vm["fitters"].as<unsigned int>(), vm["sinks"].as<unsigned int>()})));
+
+		CP::Config zmqConfig({masterUri, peerUri, contextSize});
+		Cage cage(
+			zmqConfig,
+			graybat::pattern::Pipeline(
+				std::vector<unsigned int>({
+					vm["sources"].as<unsigned int>(),
+					vm["fitters"].as<unsigned int>(),
+					vm["sinks"].as<unsigned int>()
+					
+				})
+			)
+		);
 		cage.distribute(graybat::mapping::PeerGroupMapping(peer));
 		return cage;
+	}
+	*/
+	
+	CP::Config commPoly(boost::program_options::variables_map vm) {
+		const std::string signalingIp = vm["signalingIp"].as<std::string>();
+		const std::string localIp = Whoami(signalingIp);
+		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(vm["signalingPort"].as<unsigned int>());
+		const std::string peerUri = "tcp://"+localIp+":"+std::to_string(vm["communicationPort"].as<unsigned int>());
+		std::cout << "My URI =" << peerUri << std::endl;
+		const unsigned int contextSize = vm["sources"].as<unsigned int>() + vm["fitters"].as<unsigned int>() + vm["sinks"].as<unsigned int>();
+
+		return CP::Config({masterUri, peerUri, contextSize});
+	}
+	
+	auto graphPoly(boost::program_options::variables_map vm) {
+		return graybat::pattern::Pipeline<GP>(
+			std::vector<unsigned int>({
+				vm["sources"].as<unsigned int>(),
+				vm["fitters"].as<unsigned int>(),
+				vm["sinks"].as<unsigned int>()
+				
+			})
+		);
+	}
+	
+	void map(Cage& cage, boost::program_options::variables_map vm) {
+		std::string name = vm["programName"].as<std::string>();
+		name = name.substr(name.find_last_of("/") + 1); 
+		unsigned int peer;
+		if(name == "FileReader" || name == "ScopeReader") {
+			peer = 0;
+		} else if (name == "Fitter") {
+			peer = 1;
+		} else if (name == "FileWriter") {
+			peer = 2;
+		} else {
+			std::cerr << "Could not assign peer to executable. PeerGroupMapping not possible." << std::endl;
+			std::cerr << "Program name has to be one of [FileReader, ScopeReader, Fitter, FileWriter], to assign the peer to the executable." << std::endl;
+			std::cerr << "Program name given was: " << name << std::endl;
+			std::exit(1);
+		}
+		
+		cage.distribute(graybat::mapping::PeerGroupMapping(peer));
 	}
 };
 #endif

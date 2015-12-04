@@ -9,7 +9,8 @@
 int main(int argc, char** argv) {
 	
 	auto vm = CommandLineParser::parse(argc, argv);
-	auto cage = CageFactory::buildCage(vm);
+	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
+	CageFactory::map(cage, vm);
 	
 	GrayBatReader<Chunk, decltype(cage)> reader(cage);
 	std::cout << "GrayBatReader created." << std::endl;
@@ -28,7 +29,7 @@ int main(int argc, char** argv) {
 	
 	
 	InputBuffer* ib = reader.getBuffer();
-/*
+
 	std::thread test([&](){
 		for(int i = 0; true; i++) {
 			ib->pop();
@@ -38,12 +39,12 @@ int main(int argc, char** argv) {
 			stream.send(o);
 		}
 	});
-	*/
+	
 	std::cout << "Nodes created." << std::endl;
 	
 	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;
-	//test.join();
+	test.join();
 	//Make sure all results are written back
 	//stream.join();
 	return 0;

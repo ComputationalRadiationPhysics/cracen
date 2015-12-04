@@ -12,27 +12,15 @@
   
 int main(int argc, char* argv[]) {
 	auto vm = CommandLineParser::parse(argc, argv);
-	auto cage = CageFactory::buildCage(vm);
+	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
+	CageFactory::map(cage, vm);	
 	
-	std::string input_filename = FILENAME_TESTFILE;
-	std::string scope_filename = SCOPE_PARAMETERFILE;
-	std::string output_filename =  OUTPUT_FILENAME;
-
-	if(argc > 1) {
-		input_filename = argv[1];	
-		scope_filename = argv[1];
-	}
-	if(argc > 2) {
-		output_filename = argv[2];
-	}
-	
-	std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
-	
+	std::string output_filename =  vm["outputFile"].as<std::string>();
+		
 	GrayBatReader<Output, decltype(cage)> gbReader(cage);
 	
 	std::cout << "Buffer created." << std::endl;
 
-	/*
 	std::thread writerThread([&gbReader](){
 		std::fstream out;
 		out.open("results.txt");
@@ -47,9 +35,10 @@ int main(int argc, char* argv[]) {
 		}
 		out.close();
 	});
-	*/
+	
 	gbReader.readToBuffer();
 	std::cout << "Data read." << std::endl;
+	while(1);
 
 	//Make sure all results are written back
 	//writerThread.join();

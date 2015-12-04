@@ -25,6 +25,7 @@ private:
 	std::thread receivingThread;
 	
 	void run() {
+		if(cage.hostedVertices.size() == 0) std::cerr << "Error: No hostedVertices!" << std::endl;
 		assert(cage.hostedVertices.size() > 0);
 		while(!done) {
 			Vertex sink = cage.hostedVertices.at(0);

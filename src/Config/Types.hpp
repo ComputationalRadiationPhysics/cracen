@@ -10,8 +10,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/array.hpp>
 #endif
 
 /*!
@@ -25,6 +23,7 @@ struct FitData {
 	float param[FitFunction::numberOfParams];
 	int status;
 	int woffset;
+	
 	
 	FitData() {}
 	~FitData() {}
@@ -71,20 +70,13 @@ struct FitData {
 		pt.push_back(std::make_pair("",thisFit));
 	}
 	
-	friend class boost::serialization::access;
-    template<class Archive>
-	void serialize(Archive & ar, const unsigned int version) {
-		ar & boost::serialization::make_array<float>(param, FitFunction::numberOfParams);
-		ar & status;
-		ar & woffset;
-	}
-	
 	#endif
 	
 	
 	float* data() {
 		return param;
 	}
+	
 };
 typedef FitData Output;
 //typedef std::vector<DATATYPE> Wform;

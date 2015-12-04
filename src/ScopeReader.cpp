@@ -9,22 +9,12 @@
 
 int main(int argc, char** argv) {
 	auto vm = CommandLineParser::parse(argc, argv);
-	auto cage = CageFactory::buildCage(vm);
+	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
+	CageFactory::map(cage, vm);
 	
 	/* Get number of devices */
 	int numberOfDevices;
-	
-	std::string input_filename = FILENAME_TESTFILE;
-	std::string scope_filename = SCOPE_PARAMETERFILE;
-	std::string output_filename =  OUTPUT_FILENAME;
-
-	if(argc > 1) {
-		input_filename = argv[1];	
-		scope_filename = argv[1];
-	}
-	if(argc > 2) {
-		output_filename = argv[2];
-	}
+	std::string scope_filename = vm["scopeFile"].as<std::string>();
 	
 	//std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
     InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
