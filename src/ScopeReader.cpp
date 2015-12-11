@@ -8,12 +8,15 @@
 #include "Input/ScopeReader.hpp"
 
 int main(int argc, char** argv) {
+	std::cout << sizeof(ViSession) << std::endl;
+	std::cout << sizeof(ViStatus) << std::endl;
+	std::cout << sizeof(Chunk) << std::endl;
+
 	auto vm = CommandLineParser::parse(argc, argv);
 	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
 	CageFactory::map(cage, vm);
 	
 	/* Get number of devices */
-	int numberOfDevices;
 	std::string scope_filename = vm["scopeFile"].as<std::string>();
 	
 	//std::cout << "Args read (" << input_filename << ", " << output_filename << ")" << std::endl;
@@ -25,6 +28,7 @@ int main(int argc, char** argv) {
 	//int nWaveforms = parameter.nbrWaveforms;
 	int nSample = parameter.nbrSamples;
 	ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
+	
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	
 	std::thread sendingThread([&inputBuffer, &os](){

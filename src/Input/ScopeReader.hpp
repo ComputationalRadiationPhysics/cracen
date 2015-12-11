@@ -18,6 +18,7 @@
 #include <fstream> 
 #include <string> 
 #include <pthread.h>
+#include <memory>
 #include "../Config/Types.hpp"
 #include "../Config/Constants.hpp"
 #include "AgMD1.h"
@@ -65,7 +66,7 @@ public:
 
 private:
     InputBuffer* rb;
-    Chunk temp;
+    std::unique_ptr<Chunk> temp;
     std::vector<MeasureType> channelBuffer;
 	ScopeParameter param;
     int nSamp;

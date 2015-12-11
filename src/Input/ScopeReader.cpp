@@ -38,6 +38,7 @@ void check_stat(ViSession InstrumentID,ViStatus status, const char* info)
 
 ScopeReader::ScopeReader(const ScopeReader::ScopeParameter& param, InputBuffer* buffer, int chunksize) :
 	rb(buffer),
+	temp(new Chunk()),
 	param(param),
 	nSamp(-1), nSeg(-1), nWf(-1), nChunk(chunksize)
 {
@@ -269,9 +270,7 @@ void ScopeReader::readToBuffer()
 	std::vector<short> shortBuffer(SAMPLE_COUNT);
 	unsigned int chunkPos = 0;
 	int data_good = 0;
-	bool firstValue = true;
-	Chunk buffer;
-	
+	bool firstValue = true;	
 	for(int i_Session=1;i_Session<=param.nbrSessions;i_Session++) {
 		//time(&rawtime);
 		//timeinfo=localtime(&rawtime);
@@ -297,7 +296,7 @@ void ScopeReader::readToBuffer()
 			check_stat(InstrumentID,status,"readData: channel 1");
 	
 			for(int i = 0; i < SAMPLE_COUNT; i++) {
-				buffer[chunkPos*SAMPLE_COUNT+i] = static_cast<DATATYPE>(shortBuffer[i] >> 4);
+				(*temp)[chunkPos*SAMPLE_COUNT+i] = static_cast<DATATYPE>(shortBuffer[i] >> 4);
 			}
 			
 			
@@ -305,8 +304,8 @@ void ScopeReader::readToBuffer()
 				std::ofstream waveFile;
 				waveFile.open("wave.txt");
 				for(int i = 0; i < SAMPLE_COUNT; i++) {
-					std::cout << buffer[chunkPos*SAMPLE_COUNT+i] << ", ";
-					waveFile << buffer[chunkPos*SAMPLE_COUNT+i] << std::endl;
+					std::cout << (*temp)[chunkPos*SAMPLE_COUNT+i] << ", ";
+					waveFile << (*temp)[chunkPos*SAMPLE_COUNT+i] << std::endl;
 				}
 				std::cout << std::endl;
 				firstValue = false;
@@ -316,20 +315,20 @@ void ScopeReader::readToBuffer()
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
-				rb->push(buffer);
+				rb->push((*temp));
 				chunkPos = 0;
 			}
 			status=AcqrsD1_readData(InstrumentID,2,readPar,&(shortBuffer.front()),dataDesc,segDesc);
 			check_stat(InstrumentID,status,"readData: channel 2");
 			
 			for(int i = 0; i < SAMPLE_COUNT; i++) {
-				buffer[chunkPos*SAMPLE_COUNT+i] = static_cast<float>(shortBuffer[i] >> 4);
+				(*temp)[chunkPos*SAMPLE_COUNT+i] = static_cast<float>(shortBuffer[i] >> 4);
 				//std::cout << (*buffer)[chunkPos*SAMPLE_COUNT+i] << std::endl;
 			}
 			chunkPos++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
-				rb->push(buffer);
+				rb->push((*temp));
 				chunkPos=0;
 			}
 			//std::cout << "session " << i_Session << ": " << 100.0 * static_cast<double>(i_Waveform) / static_cast<double>(param.nbrWaveforms) << " %% done" << std::endl; 
