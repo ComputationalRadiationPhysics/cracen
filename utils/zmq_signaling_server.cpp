@@ -63,8 +63,12 @@ int main(const int argc, char **argv){
         ("port,p",
          po::value<unsigned>()->default_value(5000),
          "Port to listen for signaling requests")
+        ("ip,i",
+         po::value<std::string>()->default_value("tcp://127.0.0.1"),
+         "IP to listen for signaling requests (protocoll://this.is.my.ip)")
         ("help,h",
          "Print this help message and exit");
+
 
     po::variables_map vm;
     po::store(po::parse_command_line( argc, argv, options ), vm);
@@ -83,7 +87,9 @@ int main(const int argc, char **argv){
 
     std::map<ContextID, std::map<VAddr, Uri> > phoneBook;
     std::map<ContextID, VAddr> maxVAddr;
-    std::string masterUri = std::string("tcp://127.0.0.1:") + std::to_string(vm["port"].as<unsigned>());
+    std::string masterUri = vm["ip"].as<std::string>()
+        + std::string(":")
+        + std::to_string(vm["port"].as<unsigned>());
 
     std::cout << "Listening on: " << masterUri << std::endl;
     
