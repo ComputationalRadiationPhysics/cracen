@@ -26,7 +26,10 @@
  *
  */
 
-
+#include <thread>
+#include <ctime>
+#include <iostream>
+#include <chrono>
 #include "ScopeReader.hpp"
 
 void check_stat(ViSession InstrumentID,ViStatus status, const char* info)
@@ -271,6 +274,23 @@ void ScopeReader::readToBuffer()
 	unsigned int chunkPos = 0;
 	int data_good = 0;
 	bool firstValue = true;	
+	size_t waves = 0;
+	bool endMeassure = false;
+	std::thread statusThread([&waves, &endMeassure](){
+		while(!endMeassure) {
+			std::chrono::time_point<std::chrono::system_clock> start, end;
+			start = std::chrono::system_clock::now();
+			
+			size_t waves_old = waves;
+			
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			end = std::chrono::system_clock::now();
+			std::chrono::duration<double> elapsed_seconds = end-start;
+			
+			std::cout << static_cast<double>(waves-waves_old) / elapsed_seconds.count() <<  " Events per second. " << std::endl;
+		}
+	});
+	
 	for(int i_Session=1;i_Session<=param.nbrSessions;i_Session++) {
 		//time(&rawtime);
 		//timeinfo=localtime(&rawtime);
@@ -313,6 +333,7 @@ void ScopeReader::readToBuffer()
 			}
 			
 			chunkPos++;
+			waves++;
 			
 			if(chunkPos >= CHUNK_COUNT) {
 				rb->push((*temp));
@@ -326,7 +347,7 @@ void ScopeReader::readToBuffer()
 				//std::cout << (*buffer)[chunkPos*SAMPLE_COUNT+i] << std::endl;
 			}
 			chunkPos++;
-			
+			waves++;
 			if(chunkPos >= CHUNK_COUNT) {
 				rb->push((*temp));
 				chunkPos=0;
@@ -342,6 +363,7 @@ void ScopeReader::readToBuffer()
 
 	std::cout << "returned Samples in Segment: " << dataDesc->returnedSamplesPerSeg << ", Index First Point " << dataDesc->indexFirstPoint << std::endl;
 
-
+	endMeassure = true;
+	statusThread.join();
 	rb->producerQuit();
 }
