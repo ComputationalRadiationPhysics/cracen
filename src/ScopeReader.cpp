@@ -32,13 +32,12 @@ int main(int argc, char** argv) {
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	
 	std::thread sendingThread([&inputBuffer, &os](){
-		while(inputBuffer.isFinished()) {
-			inputBuffer.popTry([&os](Chunk& t){
-				os.send(t);
-			});
+		while(!inputBuffer.isFinished()) {
+			std::cout << "Filereader sending dataset." << std::endl;
+			auto t = inputBuffer.pop();
+			os.getBuffer().push(t);
 		}
-		
-		os.quit();
+		os.getBuffer().producerQuit();
 	});
 	
 	//std::cout << "Buffer created." << std::endl;
