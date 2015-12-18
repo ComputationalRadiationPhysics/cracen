@@ -1,4 +1,4 @@
-DSP
+# DSP
 ===
 
 A set of applications to fit modelfunctions und digital signals. The whole application is splitted in programs for data sources, compute nodes and data sinks.
@@ -13,6 +13,18 @@ Fits model function to a set of waveforms.
 ```bash
   git clone https://github.com/ComputationalRadiationPhysics/DSP.git
 ```
+
+## Dependencies
+
+- Cuda 7
+- pthread
+- boost 1.55 or higher
+- gtk3 
+- gtk3mm
+
+Optional:
+- propriatary acqiris library for the scope FileReader
+- root 6 for root file output
 
 ## Build
 
@@ -33,7 +45,7 @@ In addition to these executables, the zmq signalingserver must be compiled. How 
   # Read values from a file (source)
   ./FileReader
   
-  # Read values from Aquiris Scope (source)
+  # Read values from acqiris Scope (source)
   ./ScopeReader
 
   # Compute fit parameter (compute)
