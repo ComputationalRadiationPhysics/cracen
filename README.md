@@ -17,25 +17,38 @@ Fits model function to a set of waveforms.
 ## Build
 
 ```bash
-  cd DSP/src
+  cd DSP/build
+  cmake ..
   make
 ```
+In addition to these executables, the zmq signalingserver must be compiled. How this can be done is documented in the ZMQ repository.
 
 ## Run
 
 ```bash
-  # in DSP/src
-  make run
-  # or
-  ./DSP <FILENAME>
+  # in DSP
+  ./zmq_signaling
+
+  # in DSP/build
+  # Read values from a file (source)
+  ./FileReader
+  
+  # Read values from Aquiris Scope (source)
+  ./ScopeReader
+
+  # Compute fit parameter (compute)
+  ./Fitter
+  
+  # Write to file (json) (sink)
+  ./FileWriter
+  
+  # Write to file (root) (sink) (not yet implemented)
+  ./RootWriter
 ```
-
-## Checking results
-
-You can display the fit and orginal data in one diagram with the `Viewer`
+At least one source, compute and sink node must be started in parallel to establish a working programchain. Execution of all programs can start, after all
+participating programs have been started. Hotpluging of any program is not implemented at the moment.
+To get a list of all programoptions, each individual executable has an own help page. 
 
 ```bash
-   cd src/viewer/
-   make clean
-   make run
+   ./<program> --help
 ```
