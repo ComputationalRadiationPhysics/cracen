@@ -106,6 +106,13 @@ add_definitions(${GTK3MM_CFLAGS_OTHER})
 set(LIBS ${LIBS} ${GTK3MM_LIBRARIES})
 
 ###############################################################################
+# Root for the viewer
+###############################################################################
+
+find_package(ROOT)
+include_directories(/usr/include/root/)
+
+###############################################################################
 # Qt5 for the viewer
 ###############################################################################
 
@@ -177,6 +184,9 @@ target_link_libraries(FileReader ${LIBS})
 
 add_executable(FileWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileWriter.cpp")
 target_link_libraries(FileWriter ${LIBS})
+
+add_executable(RootWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/RootWriter.cpp")
+target_link_libraries(RootWriter ${LIBS})
 
 add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
 target_link_libraries(Viewer ${LIBS})

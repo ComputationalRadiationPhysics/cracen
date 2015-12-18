@@ -24,12 +24,13 @@ int main(int argc, char** argv) {
 	//sw.start();
 	for(unsigned int i = 0; i < freeDevices.size(); i++) {
 		/* Start threads to handle Nodes */
-		//devices.push_back(new Node(freeDevices[i], reader.getBuffer(), &(stream.getBuffer())));
+		devices.push_back(new Node(freeDevices[i], reader.getBuffer(), &(stream.getBuffer())));
 	}
 	
 	
 	InputBuffer* ib = reader.getBuffer();
 
+	/*
 	std::thread test([&](){
 		for(int i = 0; true; i++) {
 			ib->pop();
@@ -39,12 +40,13 @@ int main(int argc, char** argv) {
 			stream.send(o);
 		}
 	});
+	*/
 	
 	std::cout << "Nodes created." << std::endl;
 	
 	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;
-	test.join();
+	//test.join();
 	//Make sure all results are written back
 	//stream.join();
 	return 0;

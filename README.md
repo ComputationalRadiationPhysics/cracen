@@ -1,6 +1,11 @@
 DSP
 ===
 
+A set of applications to fit modelfunctions und digital signals. The whole application is splitted in programs for data sources, compute nodes and data sinks.
+Data sources can either be dump files from previous experiments or live measurement data. The data sinks write the fit data back into files in different files formats. 
+At the moment dump files in json format are supported, root files will be added soon. The compute node is a fixed application, however the fit function can be 
+customized. The applications can be split over a whole network in order to use dedicated hardware.
+
 Fits model function to a set of waveforms.
 
 ## Download
