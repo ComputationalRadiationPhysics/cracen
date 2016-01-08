@@ -20,6 +20,7 @@
 /*! \var SAMPLE_COUNT 
  *  \brief Number of samples per event */
 //const unsigned int SAMPLE_COUNT = 32767;
+
 /*! \var CHUNK_COUNT 
  *  \brief Number of events copied to the GPU in one step */
 const unsigned int CHUNK_COUNT = 1024;

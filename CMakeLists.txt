@@ -182,6 +182,9 @@ target_link_libraries(ScopeReader ${LIBS})
 add_executable(FileReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileReader.cpp")
 target_link_libraries(FileReader ${LIBS})
 
+add_executable(BenchReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/BenchReader.cpp")
+target_link_libraries(BenchReader ${LIBS})
+
 add_executable(FileWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileWriter.cpp")
 target_link_libraries(FileWriter ${LIBS})
 
