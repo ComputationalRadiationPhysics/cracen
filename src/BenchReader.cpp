@@ -10,9 +10,9 @@
 #include "Input/DataReader.hpp"
  
 
-const float a = -1;
-const float b = 1000;
-const float c = -249000;
+const float a = -0.01;
+const float b = 10;
+const float c = -2400;
 
 const float dataRate = 10; // Datarate in MB/s
 int main(int argc, char* argv[]) {
