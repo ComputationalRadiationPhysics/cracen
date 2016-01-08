@@ -12,7 +12,7 @@
 
 const float a = -1;
 const float b = 1000;
-const float c = -249000;
+const float c = -249200;
 
 const float dataRate = 10; // Datarate in MB/s
 int main(int argc, char* argv[]) {
