@@ -28,7 +28,9 @@ int main(int argc, char* argv[]) {
 		while(!inputBuffer->isFinished() || true) {
 			auto elem = inputBuffer->pop();
 			out << elem.status << " " << elem.woffset << " ";
-			std::cout << "Write fit:" << elem.status << " " << elem.woffset << " ";
+			std::cout << "Write fit:" << elem.status << " " 
+<< elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " 
+<< elem.param[2];
 			for(auto p : elem.param) out << p << " ";
 			out << std::endl;
 			std::cout << std::endl;
