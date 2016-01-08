@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 			Clock::time_point t1 = Clock::now();
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 			
-			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024  << "KiB/s" << std::endl;
+			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
 		};
 	});
 	
@@ -66,5 +66,6 @@ int main(int argc, char** argv) {
 	//test.join();
 	//Make sure all results are written back
 	//stream.join();
+	while(1);
 	return 0;
 }
