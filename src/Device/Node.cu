@@ -71,17 +71,23 @@ void Node::run() {
 			//std::cout << results[tex][0];
 			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
 					oBuffer->push(results[tex][i]);
-					if(fits != NULL) *fits = *fits + 1;
 			}
 			textureEmpty[tex] = true;
 		}
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
 		/* Copy to device */
-		Maybe<Chunk> buffer = iBuffer->popTry([&](Chunk& buffer){
-						cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(buffer.front()), 
-	                               sizeof(DATATYPE) * buffer.size(), 
-	                               cudaMemcpyHostToDevice, streams[tex]);
+		iBuffer->popTry([&](Chunk& buffer){
+			cudaMemcpyToArrayAsync(
+				texArrays[tex],
+				0,
+				0,
+				&(buffer.front()), 
+				sizeof(DATATYPE) * buffer.size(), 
+				cudaMemcpyHostToDevice, 
+				streams[tex]
+			);
+			
 			handleLastError();
 			/* Free ringbuffer 
 			   This is possible because at the moment we use pageable (non-pinnend)
@@ -96,6 +102,7 @@ void Node::run() {
 	         	*/
 			/*  for correct output the iBuffer->getSize() should be in the critical section */
 			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
+			if(fits != NULL) *fits = *fits + 1;
 			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT, &mem[size*tex]);
 			handleLastError();
 			cudaMemcpyAsync(results[tex], &fitData[tex*CHUNK_COUNT], sizeof(results)/numberOfTextures, cudaMemcpyDeviceToHost, streams[tex]);
