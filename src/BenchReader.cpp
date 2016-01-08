@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	std::cout << "GrayBatStream" << std::endl;	
 	
-	size_t fits;
+	size_t fits = 0;
 	std::thread cpyThread([&inputBuffer, &os, t0, &fits](){
 		Chunk chunk;
 		
@@ -55,8 +55,7 @@ int main(int argc, char* argv[]) {
 		while(!inputBuffer.isFinished()) {
 			Clock::time_point t1 = Clock::now();
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
-			if(static_cast<double>(s.count())*dataRate > static_cast<double>(sizeof(DATATYPE))*CHUNK_COUNT*SAMPLE_COUNT/1000000*chunks) {
-				chunks++;
+			if(static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 < dataRate) {
 				fits++;
 				os.getBuffer().push(chunk);
 			}
@@ -71,7 +70,7 @@ int main(int argc, char* argv[]) {
 			Clock::time_point t1 = Clock::now();
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 			
-			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024  << "KiB/s" << std::endl;
+			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
 		};
 	});
 	

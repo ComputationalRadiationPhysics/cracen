@@ -72,6 +72,7 @@ void Node::run() {
 			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
 					oBuffer->push(results[tex][i]);
 			}
+			if(fits != NULL) *fits = *fits + 1;
 			textureEmpty[tex] = true;
 		}
 		
