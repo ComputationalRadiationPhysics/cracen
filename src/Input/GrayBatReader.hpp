@@ -31,7 +31,7 @@ private:
 			Vertex sink = cage.hostedVertices.at(0);
 			std::vector<DataType> receive_buffer(1);
 			sink.collect(receive_buffer);
-			std::cout << "Receive" << std::endl;
+			//std::cout << "Receive" << std::endl;
 			iBuffer.push(receive_buffer[0]);
 		}
 	}
