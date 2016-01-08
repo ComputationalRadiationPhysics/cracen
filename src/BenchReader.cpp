@@ -15,8 +15,11 @@ const float a = -0.01;
 const float b = 10;
 const float c = -2400;
 
+using namespace std::chrono_literals;
+
 const float dataRate = 10; // Datarate in MB/s
 int main(int argc, char* argv[]) {
+	
 	typedef std::chrono::high_resolution_clock Clock;
 	typedef std::chrono::seconds Seconds;
 
@@ -34,7 +37,8 @@ int main(int argc, char* argv[]) {
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	std::cout << "GrayBatStream" << std::endl;	
 	
-	std::thread cpyThread([&inputBuffer, &os, t0](){
+	size_t fits;
+	std::thread cpyThread([&inputBuffer, &os, t0, &fits](){
 		Chunk chunk;
 		
 		size_t chunks = 0;
@@ -53,12 +57,24 @@ int main(int argc, char* argv[]) {
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 			if(static_cast<double>(s.count())*dataRate > static_cast<double>(sizeof(DATATYPE))*CHUNK_COUNT*SAMPLE_COUNT/1000000*chunks) {
 				chunks++;
+				fits++;
 				os.getBuffer().push(chunk);
 			}
 		}
 		os.getBuffer().producerQuit();
 	//	os.join();
 	});
+	
+	std::thread benchThread([&fits, t0](){
+		while(1) {
+			std::this_thread::sleep_for(10s);
+			Clock::time_point t1 = Clock::now();
+			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
+			
+			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024  << "KiB/s" << std::endl;
+		};
+	});
+	
 	std::cout << "cpyThread created." << std::endl;
 	
 	std::cout << "Data read." << std::endl;

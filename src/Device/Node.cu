@@ -5,11 +5,12 @@
 
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
 
-Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
+Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output, size_t* fits) :
 	deviceIdentifier(deviceIdentifier),
 	finish(false),
 	iBuffer(input),
-	oBuffer(output)
+	oBuffer(output),
+	fits(fits)
 {
 	pthread_create(&thread_tid, NULL, run_helper, this); 
 }
@@ -70,6 +71,7 @@ void Node::run() {
 			//std::cout << results[tex][0];
 			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
 					oBuffer->push(results[tex][i]);
+					if(fits != NULL) *fits = *fits + 1;
 			}
 			textureEmpty[tex] = true;
 		}

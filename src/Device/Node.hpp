@@ -17,6 +17,8 @@ private:
 	bool finish;
 	InputBuffer* iBuffer;
 	OutputBuffer* oBuffer;
+	size_t* fits;
+	
 	pthread_t thread_tid;
 	void run();
 	static void* run_helper(void* This) { 
@@ -40,7 +42,7 @@ public:
 	 *  \param input Buffer which provides the raw input data.
 	 *  \param output Buffer which will be filled with the result data.
 	 */
-	Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output);
+	Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output, size_t* fits = NULL);
 };
 
 #endif
