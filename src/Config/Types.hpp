@@ -80,7 +80,39 @@ struct FitData {
 };
 typedef FitData Output;
 //typedef std::vector<DATATYPE> Wform;
-typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+
+template <class type, size_t size_v>
+class FixedSizeVector {
+private:
+	std::vector<type> values;
+public:
+	FixedSizeVector() :
+		values(size_v)
+	{}
+	
+	type& operator[](size_t k) {
+		return values[k];
+	}
+	
+	type& at(size_t k) {
+		return values.at;
+	}
+	
+	type& front() {
+		return values.front();
+	}
+	
+	size_t size() {
+		return size_v;
+	};
+	
+	void swap(FixedSizeVector s) {
+		values.swap(s.values);
+	}
+};
+
+//typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+typedef FixedSizeVector<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
 typedef Ringbuffer<Chunk> InputBuffer;
 typedef Ringbuffer<Output> OutputBuffer;
 

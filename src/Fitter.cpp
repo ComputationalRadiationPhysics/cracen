@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <memory>
 
 #include "Config/Constants.hpp"
 #include "Config/CommandLineParser.hpp"
@@ -35,9 +36,6 @@ int main(int argc, char** argv) {
 		devices.push_back(new Node(freeDevices[i], reader.getBuffer(), &(stream.getBuffer()), &fits));
 	}
 	
-	
-	InputBuffer* ib = reader.getBuffer();
-
 	/*
 	std::thread test([&](){
 		for(int i = 0; true; i++) {

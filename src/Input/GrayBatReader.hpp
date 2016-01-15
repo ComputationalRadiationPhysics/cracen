@@ -2,6 +2,7 @@
 #define DATAREADER_HPP
 
 #include <thread>
+#include <chrono>
 
 #include "../Config/Types.hpp"
 #include "../Config/Constants.hpp"
@@ -10,6 +11,8 @@
 /*! GrayBatReader
  *  @brief
  */
+
+using namespace std::chrono_literals;
 
 template <class DataType, class Cage>
 class GrayBatReader {
@@ -30,6 +33,7 @@ private:
 		while(!done) {
 			Vertex sink = cage.hostedVertices.at(0);
 			std::vector<DataType> receive_buffer(1);
+			std::this_thread::sleep_for(1ms);
 			sink.collect(receive_buffer);
 			//std::cout << "Receive" << std::endl;
 			iBuffer.push(receive_buffer[0]);
