@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
 	
 	std::string output_filename =  vm["outputFile"].as<std::string>();
 		
-	GrayBatReader<Output, decltype(cage)> gbReader(cage);
+	GrayBatReader<GrayBatAdapter<Output>, decltype(cage)> gbReader(cage);
 	
 	std::cout << "Buffer created." << std::endl;
 
@@ -33,14 +33,15 @@ int main(int argc, char* argv[]) {
 &output_filename](){
 		std::ofstream out;
 		out.open(output_filename, std::ofstream::out);
-		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
+		Ringbuffer<GrayBatAdapter<Output>>* inputBuffer = gbReader.getBuffer();
 		
 		Clock::time_point t1 = Clock::now();
 		Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 		
 		while(!inputBuffer->isFinished() || true) {
 			
-			auto elem = inputBuffer->pop();
+			auto elemBuff = inputBuffer->pop();
+			auto elem = *(elemBuff.data());
 			fits++;
 			out << elem.status << " " << elem.woffset << " ";
 			//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];

@@ -43,7 +43,7 @@ public:
 	Ringbuffer(const unsigned int bSize, int producer);
 	~Ringbuffer() noexcept;
 	int push(Type input) noexcept;
-	int push(Type &&input) noexcept;
+	//int push(Type &&input) noexcept;
 	Type pop() noexcept;
 	template <class Funktor>
 	int popTry(Funktor popFunction) noexcept;
@@ -158,7 +158,7 @@ int Ringbuffer<Type>::push(Type input) noexcept
  *
  * \param inputOnHost Needs to be on host memory.
  */
-
+/*
 template <class Type>
 int Ringbuffer<Type>::push(Type &&input) noexcept
 {
@@ -173,6 +173,7 @@ int Ringbuffer<Type>::push(Type &&input) noexcept
     
 	return 0;
 }
+*/
 /**
  * Read data from the buffer to the host.
  *

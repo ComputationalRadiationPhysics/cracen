@@ -32,11 +32,16 @@ private:
 		assert(cage.hostedVertices.size() > 0);
 		while(!done) {
 			Vertex sink = cage.hostedVertices.at(0);
-			std::vector<DataType> receive_buffer(1);
+
 			std::this_thread::sleep_for(1ms);
-			sink.collect(receive_buffer);
-			//std::cout << "Receive" << std::endl;
-			iBuffer.push(receive_buffer[0]);
+			//sink.collect(receive_buffer);
+			DataType r;
+			
+			auto inEdges = cage.getInEdges(sink);
+			for(Edge e : inEdges) {
+				cage.recv(e, r);
+				iBuffer.push(r);
+			}
 		}
 	}
 public:

@@ -1,5 +1,5 @@
 #ifndef NODE_H
-#define NUDE_H
+#define NODE_H
 
 #include <pthread.h>
 #include "../Config/Types.hpp"

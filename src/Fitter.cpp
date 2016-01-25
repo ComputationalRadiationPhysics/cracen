@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 	
 	GrayBatReader<Chunk, decltype(cage)> reader(cage);
 	std::cout << "GrayBatReader created." << std::endl;
-	GrayBatStream<Output, decltype(cage)> stream(1,cage);
+	GrayBatStream<GrayBatAdapter<Output>, decltype(cage)> stream(1,cage);
 	std::cout << "GrayBatStream created." << std::endl;
 	Clock::time_point t0 = Clock::now();
 	

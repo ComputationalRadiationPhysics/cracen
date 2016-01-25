@@ -11,9 +11,6 @@
  
 
 
-const float a = -0.01;
-const float b = 10;
-const float c = -2400;
 
 using namespace std::chrono_literals;
 
@@ -43,13 +40,17 @@ int main(int argc, char* argv[]) {
 		
 		size_t chunks = 0;
 		
-		auto fn = [a, b, c](int x) { 
+		auto fn = [](int x) { 
+			const float a = -0.01;
+			const float b = 10;
+			const float c = -2400;
+
 			if(a*x*x + b*x+ c > 0) return a*x*x + b*x + c;
 			else return 0.0f;						
 		};
 		for(int cc = 0; cc < CHUNK_COUNT; cc++) {
 			for(int i = 0; i < SAMPLE_COUNT; i++) {
-				chunk[cc*CHUNK_COUNT + i] = fn(i);
+				chunk[cc*SAMPLE_COUNT + i] = fn(i);
 			}
 		}
 		while(!inputBuffer.isFinished()) {
@@ -59,6 +60,8 @@ int main(int argc, char* argv[]) {
 				fits++;
 				os.getBuffer().push(chunk);
 			}
+			std::this_thread::sleep_for(10ms);
+
 		}
 		os.getBuffer().producerQuit();
 	//	os.join();

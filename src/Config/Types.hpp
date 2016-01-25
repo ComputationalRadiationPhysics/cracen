@@ -78,43 +78,83 @@ struct FitData {
 	}
 	
 };
+
+template <class type>
+struct GrayBatAdapter {
+	typedef type value_type;
+	type d;
+	
+	GrayBatAdapter(type t) :
+		d(t)
+	{}
+	
+	void operator=(const GrayBatAdapter& rhs) { 
+		d = type(rhs.d);
+	}
+	
+	GrayBatAdapter() { }
+	
+	type* data() { return &d; }
+	
+	type const* data() const { return &d; }
+	
+	size_t size() const { return sizeof(type); };
+	
+	void swap(GrayBatAdapter rhs) { 
+		d.swap(rhs.d);
+	}
+};
+
 typedef FitData Output;
 //typedef std::vector<DATATYPE> Wform;
 
 template <class type, size_t size_v>
-class FixedSizeVector {
+struct FixedSizeVector {
 private:
 	std::vector<type> values;
+	//FixedSizeVector(const FixedSizeVector& rhs) {};
+	//FixedSizeVector& operator=(const FixedSizeVector& rhs) {};
 public:
+	typedef type value_type;
+	
 	FixedSizeVector() :
 		values(size_v)
 	{}
-	
+
 	type& operator[](size_t k) {
 		return values[k];
 	}
 	
 	type& at(size_t k) {
-		return values.at;
+		return values.at(k);
 	}
 	
 	type& front() {
 		return values.front();
 	}
 	
-	size_t size() {
+	size_t size() const {
 		return size_v;
 	};
 	
-	void swap(FixedSizeVector s) {
+	type* data() {
+		return values.data();
+	}
+	
+	type  const* data() const {
+		return values.data();
+	}
+	
+	void swap(FixedSizeVector& s) {
 		values.swap(s.values);
 	}
 };
 
+
 //typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
 typedef FixedSizeVector<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
 typedef Ringbuffer<Chunk> InputBuffer;
-typedef Ringbuffer<Output> OutputBuffer;
+typedef Ringbuffer<GrayBatAdapter<Output>> OutputBuffer;
 
 
 #endif
