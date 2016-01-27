@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
 	sw.start();
 	for(unsigned int i = 0; i < freeDevices.size(); i++) {
 		/* Start threads to handle Nodes */
-		devices.push_back(new Node(freeDevices[i], &inputBuffer, os.getBuffer()));
+		//TODO
+		//devices.push_back(new Node(freeDevices[i], &inputBuffer, os.getBuffer()));
 	}
 	reader.readToBuffer();
 	std::cout << "Data read." << std::endl;

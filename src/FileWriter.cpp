@@ -10,7 +10,12 @@
 #include "Input/ScopeReader.hpp"
 #include "Device/CudaUtil.hpp"
   
+using namespace std::chrono_literals;
+
 int main(int argc, char* argv[]) {
+	typedef std::chrono::high_resolution_clock Clock;
+	typedef std::chrono::seconds Seconds;
+	
 	auto vm = CommandLineParser::parse(argc, argv);
 	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
 	CageFactory::map(cage, vm);	
@@ -20,20 +25,49 @@ int main(int argc, char* argv[]) {
 	GrayBatReader<Output, decltype(cage)> gbReader(cage);
 	
 	std::cout << "Buffer created." << std::endl;
+	
+	size_t fits = 0;
+	std::thread writerThread([&gbReader, &fits, 
+&output_filename](){
+		std::ofstream out;
+		out.open(output_filename, std::ofstream::out);
 
-	std::thread writerThread([&gbReader](){
-		std::fstream out;
-		out.open("results.txt");
 		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
+		
+		fits = 0;
+		Clock::time_point t0 = Clock::now();
+		std::this_thread::sleep_for(10s);
+		Clock::time_point t1 = Clock::now();
+		
+		Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
+		
 		while(!inputBuffer->isFinished() || true) {
-			auto elem = inputBuffer->pop();
-			out << elem.status << " " << elem.woffset << " ";
-			std::cout << "Write fit:" << elem.status << " " << elem.woffset << " ";
-			for(auto p : elem.param) out << p << " ";
-			out << std::endl;
-			std::cout << std::endl;
+			
+			auto elemBuff = inputBuffer->pop();
+			
+			for(auto elem : elemBuff) {
+				fits++;
+				out << elem.status << " " << elem.woffset << " ";
+				//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
+				for(auto p : elem.param) out << p << " ";
+				out << std::endl;
+				//std::cout << std::endl;
+			}
 		}
 		out.close();
+	});
+	
+	std::thread benchThread([&fits](){
+		while(1) {
+			fits = 0;
+			Clock::time_point t0 = Clock::now();
+			std::this_thread::sleep_for(3s);
+			Clock::time_point t1 = Clock::now();
+			
+			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
+			
+			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
+		};
 	});
 	
 	gbReader.readToBuffer();

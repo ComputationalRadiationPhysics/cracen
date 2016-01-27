@@ -7,7 +7,7 @@ void OutputStream::run() {
 	ptree array;
 	while(!oBuffer.isFinished()) {
 		oBuffer.popTry([&array](Output& o){
-			o.save(array);
+			for(Output::value_type& i : o) i.save(array);
 		});
 	}
 	pt.add_child("fits", array);

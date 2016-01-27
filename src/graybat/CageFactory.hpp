@@ -99,7 +99,8 @@ namespace CageFactory {
 		std::string name = vm["programName"].as<std::string>();
 		name = name.substr(name.find_last_of("/") + 1); 
 		unsigned int peer;
-		if(name == "FileReader" || name == "ScopeReader") {
+		if(name == "FileReader" || name == "ScopeReader" || 
+name == "BenchReader") {
 			peer = 0;
 		} else if (name == "Fitter") {
 			peer = 1;

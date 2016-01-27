@@ -5,11 +5,12 @@
 
 typedef texture<DATATYPE, 2, cudaReadModeElementType> tex_t;
 
-Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output) :
+Node::Node(int deviceIdentifier, InputBuffer* input, OutputBuffer* output, size_t* fits) :
 	deviceIdentifier(deviceIdentifier),
 	finish(false),
 	iBuffer(input),
-	oBuffer(output)
+	oBuffer(output),
+	fits(fits)
 {
 	pthread_create(&thread_tid, NULL, run_helper, this); 
 }
@@ -68,18 +69,30 @@ void Node::run() {
 		if(!textureEmpty[tex]) {
 			cudaStreamSynchronize(streams[tex]);
 			//std::cout << results[tex][0];
+			Output o;
 			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
-					oBuffer->push(results[tex][i]);
+					o.at(i) = results[tex][i];
 			}
+
+			oBuffer->push(o);
+
+			if(fits != NULL) *fits = *fits + 1;
 			textureEmpty[tex] = true;
 		}
 		
 		/* Take a chunk from ringbuffer and copy to GPU */
 		/* Copy to device */
-		Maybe<Chunk> buffer = iBuffer->popTry([&](Chunk& buffer){
-						cudaMemcpyToArrayAsync(texArrays[tex], 0, 0, &(buffer.front()), 
-	                               sizeof(DATATYPE) * buffer.size(), 
-	                               cudaMemcpyHostToDevice, streams[tex]);
+		iBuffer->popTry([&](Chunk& buffer){
+			cudaMemcpyToArrayAsync(
+				texArrays[tex],
+				0,
+				0,
+				&(buffer.front()), 
+				sizeof(DATATYPE) * buffer.size(), 
+				cudaMemcpyHostToDevice, 
+				streams[tex]
+			);
+			
 			handleLastError();
 			/* Free ringbuffer 
 			   This is possible because at the moment we use pageable (non-pinnend)
@@ -93,7 +106,7 @@ void Node::run() {
 			   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
 	         	*/
 			/*  for correct output the iBuffer->getSize() should be in the critical section */
-			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
+			//std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT, &mem[size*tex]);
 			handleLastError();
 			cudaMemcpyAsync(results[tex], &fitData[tex*CHUNK_COUNT], sizeof(results)/numberOfTextures, cudaMemcpyDeviceToHost, streams[tex]);
@@ -103,6 +116,7 @@ void Node::run() {
 			textureEmpty[tex] = false;
 		});
 	}
+
 	cudaFree(mem);
 	for(unsigned int i = 0; i < numberOfTextures; i++) {
 		cudaDestroyTextureObject(texObj[i]);

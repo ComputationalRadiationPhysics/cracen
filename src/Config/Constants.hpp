@@ -20,6 +20,7 @@
 /*! \var SAMPLE_COUNT 
  *  \brief Number of samples per event */
 //const unsigned int SAMPLE_COUNT = 32767;
+
 /*! \var CHUNK_COUNT 
  *  \brief Number of events copied to the GPU in one step */
 const unsigned int CHUNK_COUNT = 1024;
@@ -35,7 +36,7 @@ const unsigned int INTERPOLATION_COUNT = 1;
 const unsigned int MAX_ITERATIONS = 1000;
 
 const unsigned int maxNumberOfDevices = 4;
-const unsigned int pipelineDepth = 1;
+const unsigned int pipelineDepth = 6;
 	
 const std::string OUTPUT_FILENAME = "results.txt";
 const std::string FILENAME_TESTFILE = "../data/default.cdb";

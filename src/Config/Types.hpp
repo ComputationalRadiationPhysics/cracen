@@ -26,7 +26,6 @@ struct FitData {
 	
 	
 	FitData() {}
-	~FitData() {}
 	
 	FitData(const FitData& cpy) :
 		status(cpy.status),
@@ -51,6 +50,7 @@ struct FitData {
 		}
 		return *this;
 	}
+	
 	
 	#ifndef __CUDACC__
 	void save(boost::property_tree::ptree& pt) {
@@ -78,9 +78,86 @@ struct FitData {
 	}
 	
 };
-typedef FitData Output;
+
+template <class type>
+struct GrayBatAdapter {
+	typedef type value_type;
+	type d;
+	
+	GrayBatAdapter(type t) :
+		d(t)
+	{}
+	
+	GrayBatAdapter() { }
+	
+	type* data() { return &d; }
+	
+	type const* data() const { return &d; }
+	
+	size_t size() const { return sizeof(type); };
+	
+	void swap(GrayBatAdapter rhs) { 
+		d.swap(rhs.d);
+	}
+};
+
 //typedef std::vector<DATATYPE> Wform;
-typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+
+template <class type, size_t size_v>
+struct FixedSizeVector {
+private:
+	std::vector<type> values;
+	//FixedSizeVector(const FixedSizeVector& rhs) {};
+	//FixedSizeVector& operator=(const FixedSizeVector& rhs) {};
+public:
+	typedef type value_type;
+	
+	FixedSizeVector() :
+		values(size_v)
+	{}
+	
+	type& operator[](size_t k) {
+		return values[k];
+	}
+	
+	type& at(size_t k) {
+		return values.at(k);
+	}
+	
+	type& front() {
+		return values.front();
+	}
+	
+	size_t size() const {
+		return size_v;
+	};
+	
+	type* data() {
+		return values.data();
+	}
+	
+	type  const* data() const {
+		return values.data();
+	}
+	
+	void swap(FixedSizeVector& s) {
+		values.swap(s.values);
+	}
+	
+	decltype(values.begin()) begin() {
+		return values.begin();
+	}
+	
+	decltype(values.end()) end() {
+		return values.end();
+	}
+};
+
+
+//typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+typedef FixedSizeVector<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+typedef FixedSizeVector<FitData, CHUNK_COUNT> Output;
+
 typedef Ringbuffer<Chunk> InputBuffer;
 typedef Ringbuffer<Output> OutputBuffer;
 

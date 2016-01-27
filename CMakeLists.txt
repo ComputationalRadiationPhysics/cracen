@@ -23,7 +23,7 @@ endif(${CXX_COMPILER_IS_G++})
 
 if(${CXX_COMPILER_IS_CLANG++})
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+# set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif(${CXX_COMPILER_IS_CLANG++})
 
 ###############################################################################
@@ -170,8 +170,8 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 #LIST(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cu)
 #LIST(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/OnlineDSP/*)
 
-cuda_add_executable(DSP "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
-target_link_libraries(DSP ${LIBS})
+#cuda_add_executable(DSP "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
+#target_link_libraries(DSP ${LIBS})
 
 cuda_add_executable(Fitter "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Fitter.cpp")
 target_link_libraries(Fitter ${LIBS})
@@ -182,17 +182,20 @@ target_link_libraries(ScopeReader ${LIBS})
 add_executable(FileReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileReader.cpp")
 target_link_libraries(FileReader ${LIBS})
 
+add_executable(BenchReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/BenchReader.cpp")
+target_link_libraries(BenchReader ${LIBS})
+
 add_executable(FileWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileWriter.cpp")
 target_link_libraries(FileWriter ${LIBS})
 
-add_executable(RootWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/RootWriter.cpp")
-target_link_libraries(RootWriter ${LIBS})
+#add_executable(RootWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/RootWriter.cpp")
+#target_link_libraries(RootWriter ${LIBS})
 
-add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
-target_link_libraries(Viewer ${LIBS})
+#add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
+#target_link_libraries(Viewer ${LIBS})
 
-add_executable(WhoAmI "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/WhoAmI.cpp")
-target_link_libraries(WhoAmI ${LIBS})
+#add_executable(WhoAmI "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/WhoAmI.cpp")
+#target_link_libraries(WhoAmI ${LIBS})
 
 #add_executable(OnlineDSP "${OnlineDSP_SRCFILES}")
 #target_link_libraries(OnlineDSP ${OnlineDSP_LIBS})
