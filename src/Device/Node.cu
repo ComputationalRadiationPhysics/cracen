@@ -69,9 +69,13 @@ void Node::run() {
 		if(!textureEmpty[tex]) {
 			cudaStreamSynchronize(streams[tex]);
 			//std::cout << results[tex][0];
+			Output o;
 			for(unsigned int i = 0; i < CHUNK_COUNT; i++) {
-					oBuffer->push(results[tex][i]);
+					o.at(i) = results[tex][i];
 			}
+
+			oBuffer->push(o);
+
 			if(fits != NULL) *fits = *fits + 1;
 			textureEmpty[tex] = true;
 		}
@@ -102,8 +106,7 @@ void Node::run() {
 			   http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/sync_async.html#MemcpyAsynchronousBehavior
 	         	*/
 			/*  for correct output the iBuffer->getSize() should be in the critical section */
-			std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
-			if(fits != NULL) *fits = *fits + 1;
+			//std::cout << "Chunk taken from input buffer (device " << deviceIdentifier << "). " << iBuffer->getSize() << " elements remaining in queue." << std::endl;
 			levenbergMarquardt<FitFunction>(streams[tex], texObj[tex], &fitData[tex*CHUNK_COUNT], SAMPLE_COUNT, window_size, CHUNK_COUNT, INTERPOLATION_COUNT, &mem[size*tex]);
 			handleLastError();
 			cudaMemcpyAsync(results[tex], &fitData[tex*CHUNK_COUNT], sizeof(results)/numberOfTextures, cudaMemcpyDeviceToHost, streams[tex]);
@@ -113,6 +116,7 @@ void Node::run() {
 			textureEmpty[tex] = false;
 		});
 	}
+
 	cudaFree(mem);
 	for(unsigned int i = 0; i < numberOfTextures; i++) {
 		cudaDestroyTextureObject(texObj[i]);

@@ -6,6 +6,28 @@
 #include <semaphore.h>
 #include <cassert>
 #include "Maybe.hpp"
+#include <queue>
+
+/*
+template <class type>
+class Ringbuffer {
+	std::queue<type> queue;
+	
+public:
+	Ringbuffer(const unsigned int bSize, int producer, type defaultItem) {}
+	Ringbuffer(const unsigned int bSize, int producer) {}
+	int push(type input) { queue.push(input); return 0; };
+	//int push(Type &&input) noexcept;
+	type pop() { while(queue.size() == 0); type result = queue.front(); queue.pop(); return result;};
+	template <class Funktor>
+	int popTry(Funktor popFunction) { while(queue.size() == 0); type result = queue.front(); popFunction(result); queue.pop(); return 0;};
+	
+	int getSize() const { return queue.size(); };
+	bool isEmpty() const { return (queue.size() == 0); };
+	bool isFinished() const { return false; };
+	void producerQuit() {};
+};
+*/
 
 /*! Ringbuffer
  *  @brief A ringbuffer template supporting non-host consumers/producers.
@@ -22,6 +44,7 @@
  *  For data reading/writing from host to host classic write/read methods
  *  are available.
  */
+
 
 template <class Type>
 class Ringbuffer {
@@ -186,9 +209,6 @@ int Ringbuffer<Type>::push(Type &&input) noexcept
 template <class Type>
 Type Ringbuffer<Type>::pop() noexcept
 {
-	int val;
-	sem_getvalue(space, &val);
-
 	Type result;
 	sem_wait(usage);   // is there some data in buffer?
 	//sem_wait(mtx);     // lock buffer
@@ -206,20 +226,23 @@ template <class Type>
 template <class Funktor>
 int Ringbuffer<Type>::popTry(Funktor popFunction) noexcept
 {
-	if(sem_trywait(usage) != 0) {
-       return 1;
+	const int err = sem_trywait(usage);
+	if(err == 0) {
+
+		Type result;
+		//sem_wait(mtx);     // lock buffer
+
+		result.swap(buffer.at(tail));
+		tail = (tail+1) % buffer.size();     // move tail
+
+		//sem_post(mtx);     // unlock buffer
+		sem_post(space);   // tell them that there is space in buffer
+
+		popFunction(result);
+		return 0;
+	} else {
+		return 1;
 	}
-	Type result;
-	//sem_wait(mtx);     // lock buffer
-    
-    result.swap(buffer.at(tail));
-    tail = (tail+1) % buffer.size();     // move tail
-    
-    //sem_post(mtx);     // unlock buffer
-    sem_post(space);   // tell them that there is space in buffer
-    
-    popFunction(result);
-	return 0;
 }
 /** Get amount of items stored in buffer.
  * \return Number of items in buffer

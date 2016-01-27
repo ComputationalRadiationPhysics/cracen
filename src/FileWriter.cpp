@@ -22,40 +22,48 @@ int main(int argc, char* argv[]) {
 	
 	std::string output_filename =  vm["outputFile"].as<std::string>();
 		
-	GrayBatReader<GrayBatAdapter<Output>, decltype(cage)> gbReader(cage);
+	GrayBatReader<Output, decltype(cage)> gbReader(cage);
 	
 	std::cout << "Buffer created." << std::endl;
-
-	Clock::time_point t0 = Clock::now();
-
+	
 	size_t fits = 0;
-	std::thread writerThread([&gbReader, &fits, t0, 
+	std::thread writerThread([&gbReader, &fits, 
 &output_filename](){
 		std::ofstream out;
 		out.open(output_filename, std::ofstream::out);
-		Ringbuffer<GrayBatAdapter<Output>>* inputBuffer = gbReader.getBuffer();
+
+		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
 		
+		fits = 0;
+		Clock::time_point t0 = Clock::now();
+		std::this_thread::sleep_for(10s);
 		Clock::time_point t1 = Clock::now();
+		
 		Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 		
 		while(!inputBuffer->isFinished() || true) {
 			
 			auto elemBuff = inputBuffer->pop();
-			auto elem = *(elemBuff.data());
-			fits++;
-			out << elem.status << " " << elem.woffset << " ";
-			//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
-			for(auto p : elem.param) out << p << " ";
-			out << std::endl;
-			//std::cout << std::endl;
+			
+			for(auto elem : elemBuff) {
+				fits++;
+				out << elem.status << " " << elem.woffset << " ";
+				//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
+				for(auto p : elem.param) out << p << " ";
+				out << std::endl;
+				//std::cout << std::endl;
+			}
 		}
 		out.close();
 	});
 	
-	std::thread benchThread([&fits, t0](){
+	std::thread benchThread([&fits](){
 		while(1) {
-			std::this_thread::sleep_for(10s);
+			fits = 0;
+			Clock::time_point t0 = Clock::now();
+			std::this_thread::sleep_for(3s);
 			Clock::time_point t1 = Clock::now();
+			
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 			
 			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;

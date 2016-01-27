@@ -26,7 +26,6 @@ struct FitData {
 	
 	
 	FitData() {}
-	~FitData() {}
 	
 	FitData(const FitData& cpy) :
 		status(cpy.status),
@@ -51,6 +50,7 @@ struct FitData {
 		}
 		return *this;
 	}
+	
 	
 	#ifndef __CUDACC__
 	void save(boost::property_tree::ptree& pt) {
@@ -88,10 +88,6 @@ struct GrayBatAdapter {
 		d(t)
 	{}
 	
-	void operator=(const GrayBatAdapter& rhs) { 
-		d = type(rhs.d);
-	}
-	
 	GrayBatAdapter() { }
 	
 	type* data() { return &d; }
@@ -105,7 +101,6 @@ struct GrayBatAdapter {
 	}
 };
 
-typedef FitData Output;
 //typedef std::vector<DATATYPE> Wform;
 
 template <class type, size_t size_v>
@@ -120,7 +115,7 @@ public:
 	FixedSizeVector() :
 		values(size_v)
 	{}
-
+	
 	type& operator[](size_t k) {
 		return values[k];
 	}
@@ -148,13 +143,23 @@ public:
 	void swap(FixedSizeVector& s) {
 		values.swap(s.values);
 	}
+	
+	decltype(values.begin()) begin() {
+		return values.begin();
+	}
+	
+	decltype(values.end()) end() {
+		return values.end();
+	}
 };
 
 
 //typedef std::array<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
 typedef FixedSizeVector<DATATYPE, CHUNK_COUNT*SAMPLE_COUNT> Chunk;
+typedef FixedSizeVector<FitData, CHUNK_COUNT> Output;
+
 typedef Ringbuffer<Chunk> InputBuffer;
-typedef Ringbuffer<GrayBatAdapter<Output>> OutputBuffer;
+typedef Ringbuffer<Output> OutputBuffer;
 
 
 #endif

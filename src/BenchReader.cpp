@@ -14,18 +14,16 @@
 
 using namespace std::chrono_literals;
 
-const float dataRate = 10; // Datarate in MB/s
+const float dataRate = 76; // Datarate in MB/s
 int main(int argc, char* argv[]) {
 	
 	typedef std::chrono::high_resolution_clock Clock;
 	typedef std::chrono::seconds Seconds;
-
-	Clock::time_point t0 = Clock::now();
-   
+	
 	auto vm = CommandLineParser::parse(argc, argv);
 	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
 	CageFactory::map(cage, vm);
-		
+	
     InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
 	
 	int nSample, nbrSegments, nWaveforms;
@@ -33,16 +31,17 @@ int main(int argc, char* argv[]) {
 	/* Initialize output buffer (with static elements) */
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	std::cout << "GrayBatStream" << std::endl;	
-	
+		
 	size_t fits = 0;
-	std::thread cpyThread([&inputBuffer, &os, t0, &fits](){
+	Clock::time_point t0;
+	std::thread cpyThread([&inputBuffer, &os, &t0, &fits](){
 		Chunk chunk;
 		
 		size_t chunks = 0;
 		
 		auto fn = [](int x) { 
 			const float a = -0.01;
-			const float b = 10;
+			const float b = 11;
 			const float c = -2400;
 
 			if(a*x*x + b*x+ c > 0) return a*x*x + b*x + c;
@@ -67,10 +66,13 @@ int main(int argc, char* argv[]) {
 	//	os.join();
 	});
 	
-	std::thread benchThread([&fits, t0](){
+	std::thread benchThread([&fits, &t0](){
 		while(1) {
-			std::this_thread::sleep_for(10s);
+			fits = 0;
+			t0 = Clock::now();
+			std::this_thread::sleep_for(3s);
 			Clock::time_point t1 = Clock::now();
+			
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 			
 			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
