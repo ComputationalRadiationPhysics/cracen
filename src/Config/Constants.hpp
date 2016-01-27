@@ -36,7 +36,7 @@ const unsigned int INTERPOLATION_COUNT = 1;
 const unsigned int MAX_ITERATIONS = 1000;
 
 const unsigned int maxNumberOfDevices = 4;
-const unsigned int pipelineDepth = 1;
+const unsigned int pipelineDepth = 6;
 	
 const std::string OUTPUT_FILENAME = "results.txt";
 const std::string FILENAME_TESTFILE = "../data/default.cdb";
