@@ -14,7 +14,7 @@
 
 using namespace std::chrono_literals;
 
-const float dataRate = 76; // Datarate in MB/s
+const float dataRate = 1000; // Datarate in MB/s
 int main(int argc, char* argv[]) {
 	
 	typedef std::chrono::high_resolution_clock Clock;
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 		
 		auto fn = [](int x) { 
 			const float a = -0.01;
-			const float b = 11;
+			const float b = 10;
 			const float c = -2400;
 
 			if(a*x*x + b*x+ c > 0) return a*x*x + b*x + c;
