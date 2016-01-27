@@ -50,10 +50,10 @@ namespace graybat {
                     comm.recv(vAddr, 0, context, recvData);
                     if(recvData[0] == stage){
                         peersWithSameTag.push_back(vAddr);
-						std::cout << "Peers with same Tag " << vAddr << std::endl;
-                    }
+					}
                 }
-
+				std::cout << "Peers with same Tag " << peersWithSameTag.size() << std::endl;
+                    
                 // Distribute vertices to peers with same tag
                 std::sort(peersWithSameTag.begin(), peersWithSameTag.end());
 
