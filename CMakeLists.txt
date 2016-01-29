@@ -161,7 +161,10 @@ file(GLOB_RECURSE SRCFILES
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/*"
 )
 
-list(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeReader.cpp)
+list(REMOVE_ITEM SRCFILES
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeReader.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeParameter.cpp
+)
 
 file(GLOB_RECURSE CUDASRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/Device/*")
 
