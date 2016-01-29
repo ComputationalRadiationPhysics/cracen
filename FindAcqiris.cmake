@@ -18,7 +18,7 @@ find_library(Acqiris_LIBRARY2 NAMES AgMD1 libAgMD1
              HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib 
              PATHS /usr/lib /usr/lib32)
 
-if(DEFINED Acqiris_INCLUDE_DIR AND DEFINED Acqiris_LIBRARY_1 DEFINED Acqiris_LIBRARY2)
+if(DEFINED Acqiris_INCLUDE_DIR AND DEFINED Acqiris_LIBRARY_1 AND DEFINED Acqiris_LIBRARY2)
 
 set(Acqiris_INCLUDE_DIRS ${Acqiris_INCLUDE_DIR})
 set(Acqiris_LIBRARIES "${Acqiris_LIBRARY_1}${Acqiris_LIBRARY_2}")
