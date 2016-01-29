@@ -10,17 +10,14 @@
  *  in Physics Research, Section A 623, 982-994 (2010)
  *
  */
- 
- #ifndef ScopeReader_HPP
-#define ScopeReader_HPP
 
 #include <iostream>
 #include <fstream> 
 #include <string> 
 #include <pthread.h>
 #include <memory>
-#include "../Config/Types.hpp"
-#include "../Config/Constants.hpp"
+#include "Config/Types.hpp"
+#include "Config/Constants.hpp"
 #include "AgMD1.h"
 #include "AgMD1Fundamental.h"
 #include "AgMD1FundamentalErrorCodes.h"
@@ -130,6 +127,5 @@ public:
      */
     int get_nWf() {return nWf;};
 };
+
 #endif
- 
- #endif

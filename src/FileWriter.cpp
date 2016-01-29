@@ -35,18 +35,13 @@ int main(int argc, char* argv[]) {
 		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
 		
 		fits = 0;
-		Clock::time_point t0 = Clock::now();
-		std::this_thread::sleep_for(10s);
-		Clock::time_point t1 = Clock::now();
-		
-		Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 		
 		while(!inputBuffer->isFinished() || true) {
 			
 			auto elemBuff = inputBuffer->pop();
-			
+			fits++;
 			for(auto elem : elemBuff) {
-				fits++;
+				
 				out << elem.status << " " << elem.woffset << " ";
 				//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
 				for(auto p : elem.param) out << p << " ";
@@ -66,7 +61,7 @@ int main(int argc, char* argv[]) {
 			
 			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
 			
-			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
+			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
 		};
 	});
 	

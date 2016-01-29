@@ -11,8 +11,8 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/any.hpp> /* boost::any_cast */
 
-#include "Utility/Whoami.hpp"
-#include "Config/Constants.hpp"
+#include "../Utility/Whoami.hpp"
+#include "../Config/Constants.hpp"
 
 namespace CommandLineParser {
 	
