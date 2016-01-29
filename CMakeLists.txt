@@ -30,20 +30,21 @@ endif(${CXX_COMPILER_IS_CLANG++})
 # CUDA
 ###############################################################################
 
-find_package(CUDA REQUIRED)
-set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED") #-Xptxas=-v;
-set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
+find_package(CUDA)
+if(${CUDA_FOUND})
+	set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED") #-Xptxas=-v;
+	set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
 
-# Separate C++ from CUDA file compilation (So we can use our own compiler)
-set(CUDA_SEPARABLE_COMPILATION ON)
-# Do not propagate CXX flags to the nvcc host compiler (especially -std=c++11)
-set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-
+	# Separate C++ from CUDA file compilation (So we can use our own compiler)
+	set(CUDA_SEPARABLE_COMPILATION ON)
+	# Do not propagate CXX flags to the nvcc host compiler (especially -std=c++11)
+	set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+endif(${CUDA_FOUND})
 ###############################################################################
 # PThreads
 ###############################################################################
 
-find_package(Threads)
+find_package(Threads REQUIRED)
 set(LIBS ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
 set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
@@ -54,8 +55,6 @@ set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 find_package(Boost 1.55.0 REQUIRED mpi regex system program_options)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
-set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${Boost_LIBRARIES})
-
 
 #nvcc + boost 1.55 work around
 if(Boost_VERSION EQUAL 105500)
@@ -67,12 +66,15 @@ endif(Boost_VERSION EQUAL 105500)
 # Acquiris Library for the ScopeReader
 ###############################################################################
 
-find_package(Acqiris REQUIRED)
-include_directories(${Acqiris_INCLUDE_DIRS})
-add_definitions(${Acqiris_CFLAGS})
-add_definitions(${Acqiris_LDFLAGS})
-add_definitions(${Acqiris_CFLAGS_OTHER})
-set(LIBS ${LIBS} ${Acqiris_LIBRARIES})
+find_package(Acqiris)
+if(${Acqiris_FOUND})
+	message(STATUS "Acqiris lib found.")
+	include_directories(${Acqiris_INCLUDE_DIRS})
+	add_definitions(${Acqiris_CFLAGS})
+	add_definitions(${Acqiris_LDFLAGS})
+	add_definitions(${Acqiris_CFLAGS_OTHER})
+	set(ALIBS ${Acqiris_LIBRARIES})
+endif(${Acqiris_FOUND})
 
 ################################################################################
 # GRAYBAT
@@ -89,29 +91,34 @@ set(LIBS ${LIBS} ${graybat_LIBRARIES})
 
 find_package(PkgConfig REQUIRED)
 
-PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
-include_directories(${GTK3_INCLUDE_DIRS})
-link_directories(${GTK3_LIBRARY_DIRS})
-add_definitions(${GTK3_CFLAGS})
-add_definitions(${GTK3_LDFLAGS})
-add_definitions(${GTK3_CFLAGS_OTHER})
-set(LIBS ${LIBS} ${GTK3_LIBRARIES})
-
+PKG_CHECK_MODULES(GTK3 gtk+-3.0)
+if(${GTK3_FOUND})
+	include_directories(${GTK3_INCLUDE_DIRS})
+	link_directories(${GTK3_LIBRARY_DIRS})
+	add_definitions(${GTK3_CFLAGS})
+	add_definitions(${GTK3_LDFLAGS})
+	add_definitions(${GTK3_CFLAGS_OTHER})
+	set(VIEWER_LIBS ${VIEWER_LIBS} ${GTK3_LIBRARIES})
+endif(${GTK3_FOUND})
 PKG_CHECK_MODULES(GTK3MM gtkmm-3.0)
 include_directories(${GTK3MM_INCLUDE_DIRS})
-link_directories(${GTK3MM_LIBRARY_DIRS})
-add_definitions(${GTK3MM_CFLAGS})
-add_definitions(${GTK3MM_LDFLAGS})
-add_definitions(${GTK3MM_CFLAGS_OTHER})
-set(LIBS ${LIBS} ${GTK3MM_LIBRARIES})
+if(${GTK3MM_FOUND})
+	link_directories(${GTK3MM_LIBRARY_DIRS})
+	add_definitions(${GTK3MM_CFLAGS})
+	add_definitions(${GTK3MM_LDFLAGS})
+	add_definitions(${GTK3MM_CFLAGS_OTHER})
+	set(VIEWER_LIBS ${VIEWER_LIBS} ${GTK3MM_LIBRARIES})
+endif(${GTK3MM_FOUND})
 
 ###############################################################################
 # Root for the viewer
 ###############################################################################
 
-find_package(ROOT)
-include_directories(/usr/include/root/)
+list(APPEND CMAKE_MODULE_PATH "/usr/local/lib/cmake/root/etc/cmake")
+#find_package(ROOT)
+if(ROOT_FOUND)
 
+endif(ROOT_FOUND)
 ###############################################################################
 # Qt5 for the viewer
 ###############################################################################
@@ -147,11 +154,15 @@ cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/Device)
 # Executables
 ###############################################################################
 
-file(GLOB_RECURSE SRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/Config/*"
-						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Input/*"
-						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Output/*"
-						   "${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/*")
-						  
+file(GLOB_RECURSE SRCFILES 
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Config/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Input/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Output/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/*"
+)
+
+list(REMOVE_ITEM SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeReader.cpp)
+
 file(GLOB_RECURSE CUDASRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/Device/*")
 
 file(GLOB_RECURSE OnlineDSP_SRCFILES "${CMAKE_CURRENT_SOURCE_DIR}/src/OnlineDSP/*")
@@ -173,11 +184,16 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 #cuda_add_executable(DSP "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Dsp.cpp")
 #target_link_libraries(DSP ${LIBS})
 
-cuda_add_executable(Fitter "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Fitter.cpp")
-target_link_libraries(Fitter ${LIBS})
+if(${CUDA_FOUND})
+	cuda_add_executable(Fitter "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Fitter.cpp")
+	target_link_libraries(Fitter ${LIBS})
+endif(${CUDA_FOUND})
 
-add_executable(ScopeReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeReader.cpp")
-target_link_libraries(ScopeReader ${LIBS})
+if(${Acqiris_FOUND})
+	add_executable(ScopeReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeReader.cpp;${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeReader.cpp")
+	set(SCOPEREADERLIBS ${ALIBS} ${LIBS})
+	target_link_libraries(ScopeReader "${SCOPEREADERLIBS}")
+endif(${Acqiris_FOUND})
 
 add_executable(FileReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileReader.cpp")
 target_link_libraries(FileReader ${LIBS})
@@ -188,14 +204,17 @@ target_link_libraries(BenchReader ${LIBS})
 add_executable(FileWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileWriter.cpp")
 target_link_libraries(FileWriter ${LIBS})
 
-#add_executable(RootWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/RootWriter.cpp")
-#target_link_libraries(RootWriter ${LIBS})
+if(ROOT_FOUND)
+	add_executable(RootWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/RootWriter.cpp")
+	target_link_libraries(RootWriter ${LIBS})
+endif(ROOT_FOUND)
 
 #add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
-#target_link_libraries(Viewer ${LIBS})
+#set(VLIBS ${VIEWER_LIBS} ${LIBS}) 
+#target_link_libraries(Viewer ${VLIBS})
 
-#add_executable(WhoAmI "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/WhoAmI.cpp")
-#target_link_libraries(WhoAmI ${LIBS})
+add_executable(WhoAmI "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/WhoAmI.cpp")
+target_link_libraries(WhoAmI ${LIBS})
 
 #add_executable(OnlineDSP "${OnlineDSP_SRCFILES}")
 #target_link_libraries(OnlineDSP ${OnlineDSP_LIBS})

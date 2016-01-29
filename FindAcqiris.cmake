@@ -18,9 +18,11 @@ find_library(Acqiris_LIBRARY2 NAMES AgMD1 libAgMD1
              HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib 
              PATHS /usr/lib /usr/lib32)
 
+if(DEFINED Acqiris_INCLUDE_DIR AND DEFINED Acqiris_LIBRARY_1 DEFINED Acqiris_LIBRARY2)
 
 set(Acqiris_INCLUDE_DIRS ${Acqiris_INCLUDE_DIR})
 set(Acqiris_LIBRARIES "${Acqiris_LIBRARY_1}${Acqiris_LIBRARY_2}")
+set(Acqiris_FOUND 1)
 
 # TODO: Add Switch for Windows
 set(Acqiris_CFLAGS "-D_LINUX")
@@ -34,3 +36,6 @@ find_package_handle_standard_args(Acqiris_LIBRARY_1 Acqiris_LIBRARY_2 Acqiris_IN
 # if all listed variables are TRUE
 mark_as_advanced(Acqiris_INCLUDE_DIR Acqiris_LIBRARY_1 Acqiris_LIBRARY_2)
 
+else()
+
+endif()
