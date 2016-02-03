@@ -9,10 +9,16 @@
 #include "Input/GrayBatReader.hpp"
 #include "Input/ScopeReader.hpp"
 #include "Device/CudaUtil.hpp"
+
+#include "root/TFile.h"
+#include "root/TNtuple.h"
+
   
 using namespace std::chrono_literals;
 
 int main(int argc, char* argv[]) {
+	
+
 	typedef std::chrono::high_resolution_clock Clock;
 	typedef std::chrono::seconds Seconds;
 	
@@ -27,9 +33,8 @@ int main(int argc, char* argv[]) {
 	std::cout << "Buffer created." << std::endl;
 	
 	size_t fits = 0;
-	std::thread writerThread([&gbReader, &fits, 
-&output_filename](){
-	
+	std::thread writerThread([&gbReader, &fits, &output_filename](){
+		
 		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
 		
 		fits = 0;
@@ -43,14 +48,14 @@ int main(int argc, char* argv[]) {
 			fits++;
 			for(auto elem : elemBuff) {
 				
-				out << elem.status << " " << elem.woffset << " ";
 				//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
-				fitData.fill(elem.status, elem.woffset, elem.param[0], elem.param[1], elem.param[2])
+				fitData.Fill(elem.status, elem.woffset, elem.param[0], elem.param[1], elem.param[2]);
 				fitData.Write();
 				//std::cout << std::endl;
 			}
 		}
-		outFile.close();
+		outFile.Close();
+		
 	});
 	
 	std::thread benchThread([&fits](){
