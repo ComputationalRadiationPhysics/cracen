@@ -111,13 +111,20 @@ if(${GTK3MM_FOUND})
 endif(${GTK3MM_FOUND})
 
 ###############################################################################
-# Root for the viewer
+# Root
 ###############################################################################
 
 list(APPEND CMAKE_MODULE_PATH "/usr/local/lib/cmake/root/etc/cmake")
-#find_package(ROOT)
+find_package(ROOT)
 if(ROOT_FOUND)
+message(STATUS "Root found.")
+include_directories(${ROOT_INCLUDE_DIRS})
 
+# include(${ROOT_USE_FILE})
+# ROOT_GENERATE_DICTIONARY(G__Event Event.h LINKDEF EventLinkDef.h)
+# ---Create a shared library with geneated dictionary
+# add_library(Event SHARED Event.cxx G__Event.cxx)
+# target_link_libraries(Event ${ROOT_LIBRARIES})
 endif(ROOT_FOUND)
 ###############################################################################
 # Qt5 for the viewer
@@ -206,7 +213,7 @@ target_link_libraries(FileWriter ${LIBS})
 
 if(ROOT_FOUND)
 	add_executable(RootWriter "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/RootWriter.cpp")
-	target_link_libraries(RootWriter ${LIBS})
+	target_link_libraries(RootWriter ${LIBS} ${ROOT_LIBRARIES})
 endif(ROOT_FOUND)
 
 #add_executable(Viewer "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/Viewer.cpp")
