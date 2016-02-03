@@ -25,9 +25,7 @@ int main(int argc, char* argv[]) {
 	CageFactory::map(cage, vm);
 	
     InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
-	
-	int nSample, nbrSegments, nWaveforms;
-	
+		
 	/* Initialize output buffer (with static elements) */
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
 	std::cout << "GrayBatStream" << std::endl;	
@@ -36,9 +34,7 @@ int main(int argc, char* argv[]) {
 	Clock::time_point t0;
 	std::thread cpyThread([&inputBuffer, &os, &t0, &fits](){
 		Chunk chunk;
-		
-		size_t chunks = 0;
-		
+				
 		auto fn = [](int x) { 
 			const float a = -0.01;
 			const float b = 10;
@@ -47,8 +43,8 @@ int main(int argc, char* argv[]) {
 			if(a*x*x + b*x+ c > 0) return a*x*x + b*x + c;
 			else return 0.0f;						
 		};
-		for(int cc = 0; cc < CHUNK_COUNT; cc++) {
-			for(int i = 0; i < SAMPLE_COUNT; i++) {
+		for(unsigned int cc = 0; cc < CHUNK_COUNT; cc++) {
+			for(unsigned int i = 0; i < SAMPLE_COUNT; i++) {
 				chunk[cc*SAMPLE_COUNT + i] = fn(i);
 			}
 		}
