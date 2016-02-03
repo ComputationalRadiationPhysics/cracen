@@ -24,9 +24,6 @@ int main(int argc, char** argv) {
 	
 	/* Initialize input buffer (with dynamic elements) */
 	ScopeReader::ScopeParameter parameter(scope_filename);
-	//int nSegments = parameter.nbrSegments;
-	//int nWaveforms = parameter.nbrWaveforms;
-	int nSample = parameter.nbrSamples;
 	ScopeReader reader(parameter, &inputBuffer, CHUNK_COUNT);
 	
 	GrayBatStream<Chunk, decltype(cage)> os(1, cage);
