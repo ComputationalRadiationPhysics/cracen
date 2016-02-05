@@ -18,7 +18,9 @@ find_library(Acqiris_LIBRARY2 NAMES AgMD1 libAgMD1
              HINTS ${CMAKE_CURRENT_SOURCE_DIR}/lib 
              PATHS /usr/lib /usr/lib32)
 
-if(EXISTS Acqiris_INCLUDE_DIR AND DEFINED Acqiris_LIBRARY_1 AND DEFINED Acqiris_LIBRARY2)
+# message(STATUS ${Acqiris_INCLUDE_DIR})
+
+if(EXISTS ${Acqiris_INCLUDE_DIR} AND DEFINED Acqiris_LIBRARY_1 AND DEFINED Acqiris_LIBRARY2)
 
 set(Acqiris_INCLUDE_DIRS ${Acqiris_INCLUDE_DIR})
 set(Acqiris_LIBRARIES "${Acqiris_LIBRARY_1}${Acqiris_LIBRARY_2}")
@@ -37,5 +39,20 @@ find_package_handle_standard_args(Acqiris_LIBRARY_1 Acqiris_LIBRARY_2 Acqiris_IN
 mark_as_advanced(Acqiris_INCLUDE_DIR Acqiris_LIBRARY_1 Acqiris_LIBRARY_2)
 
 else()
+
+message(STATUS "Acqiris runtime not found")
+if(EXISTS Acqiris_INCLUDE_DIR OR DEFINED Acqiris_LIBRARY_1 OR DEFINED Acqiris_LIBRARY2)
+
+if(NOT EXISTS Acqiris_INCLUDE_DIR)
+message(STATUS "Acqiris include dirs not found")
+endif()
+if(NOT DEFINED Acqiris_LIBRARY_1)
+message(STATUS "AgMD1Fundamental not found")
+endif()
+if(NOT DEFINED Acqiris_LIBRARY2)
+message(STATUS "AgMD1 not found")
+endif()
+
+endif()
 
 endif()
