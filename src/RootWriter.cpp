@@ -7,7 +7,6 @@
 #include "Config/CommandLineParser.hpp"
 #include "graybat/CageFactory.hpp"
 #include "Input/GrayBatReader.hpp"
-#include "Input/ScopeReader.hpp"
 #include "Device/CudaUtil.hpp"
 
 #include "root/TFile.h"
