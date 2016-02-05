@@ -38,20 +38,20 @@ int main(int argc, char* argv[]) {
 		
 		fits = 0;
 		
-		TFile outFile("results.root");
+		TFile outFile("results.root", "RECREATE");
 		TNtuple fitData("fitData", "FitTuple", "status:woffset:param0:param1:param2");
 		
 		while(!inputBuffer->isFinished() || true) {
 			
 			auto elemBuff = inputBuffer->pop();
 			fits++;
-			for(auto elem : elemBuff) {
+			for(auto& elem : elemBuff) {
 				
 				//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
 				fitData.Fill(elem.status, elem.woffset, elem.param[0], elem.param[1], elem.param[2]);
-				fitData.Write();
 				//std::cout << std::endl;
 			}
+			fitData.Write();
 		}
 		outFile.Close();
 		
