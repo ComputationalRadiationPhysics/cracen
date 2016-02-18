@@ -50,7 +50,7 @@ template <class Type>
 class Ringbuffer {
 
 private:
-	//sem_t* mtx;
+	sem_t* mtx;
 	sem_t* usage;
 	sem_t* space;
 	std::vector<Type> buffer;
@@ -82,7 +82,7 @@ template <class Type>
 void Ringbuffer<Type>::init()
 {
 	int semaphoreErrorValue = 0;
-//	mtx = new sem_t;
+	mtx = new sem_t;
 	usage = new sem_t;
 	space = new sem_t;
 //	semaphoreErrorValue |= sem_init(mtx, 0, 1);
@@ -162,12 +162,12 @@ template <class Type>
 int Ringbuffer<Type>::push(Type input) noexcept
 {
 	sem_wait(space);   // is there space in buffer?
-    //sem_wait(mtx);     // lock buffer
+    sem_wait(mtx);     // lock buffer
     
     buffer.at(head) = input;
     head = (head+1) % buffer.size();     // move head
 
-    //sem_post(mtx);     // unlock buffer
+    sem_post(mtx);     // unlock buffer
     sem_post(usage);   // tell them that there is something in buffer
     
 	return 0;
@@ -211,12 +211,12 @@ Type Ringbuffer<Type>::pop() noexcept
 {
 	Type result;
 	sem_wait(usage);   // is there some data in buffer?
-	//sem_wait(mtx);     // lock buffer
+	sem_wait(mtx);     // lock buffer
 
 	result.swap(buffer.at(tail));
 	tail = (tail+1) % buffer.size();     // move tail
 
-	//sem_post(mtx);     // unlock buffer
+	sem_post(mtx);     // unlock buffer
 	sem_post(space);   // tell them that there is space in buffer
 
 	return result;
@@ -230,12 +230,12 @@ int Ringbuffer<Type>::popTry(Funktor popFunction) noexcept
 	if(err == 0) {
 
 		Type result;
-		//sem_wait(mtx);     // lock buffer
+		sem_wait(mtx);     // lock buffer
 
 		result.swap(buffer.at(tail));
 		tail = (tail+1) % buffer.size();     // move tail
 
-		//sem_post(mtx);     // unlock buffer
+		sem_post(mtx);     // unlock buffer
 		sem_post(space);   // tell them that there is space in buffer
 
 		popFunction(result);

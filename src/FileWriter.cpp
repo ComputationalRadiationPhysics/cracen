@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
 	std::cout << "Buffer created." << std::endl;
 	
 	size_t fits = 0;
-			Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
-
+	Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
+	
 	std::thread writerThread([&gbReader, &fits, &inputBuffer, &output_filename](){
 		std::ofstream out;
 		out.open(output_filename, std::ofstream::out);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 			fits++;
 			for(auto elem : elemBuff) {
 				
-				out << elem.status << " " << elem.woffset << " ";
+				//out << elem.status << " " << elem.woffset << " ";
 				//std::cout << "Write fit:" << elem.status << " " << elem.woffset << " " << elem.param[0] << " " << elem.param[1] << " " << elem.param[2];
 				for(auto p : elem.param) out << p << " ";
 				out << std::endl;
