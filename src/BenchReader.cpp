@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <random>
 
 #include "Config/Constants.hpp"
 #include "Config/CommandLineParser.hpp"
@@ -16,7 +17,10 @@ using namespace std::chrono_literals;
 
 const float dataRate = 50; // Datarate in MB/s
 int main(int argc, char* argv[]) {
-	
+	std::random_device rd;
+	std::mt19937 gen(rd());	
+	std::normal_distribution<float> d(0,3);
+
 	typedef std::chrono::high_resolution_clock Clock;
 	
 	auto vm = CommandLineParser::parse(argc, argv);
@@ -31,15 +35,15 @@ int main(int argc, char* argv[]) {
 		
 	size_t fits = 0;
 	Clock::time_point t0;
-	std::thread cpyThread([&inputBuffer, &os, &t0, &fits](){
+	std::thread cpyThread([&inputBuffer, &os, &t0, &fits, &gen, &d](){
 		Chunk chunk;
 				
-		auto fn = [](int x) { 
+		auto fn = [&](int x) { 
 			const float a = -0.01;
 			const float b = 10;
 			const float c = -2400;
 
-			if(a*x*x + b*x+ c > 0) return a*x*x + b*x + c;
+			if(a*x*x + b*x+ c > 0) return a*x*x + b*x + c + d(gen);
 			else return 0.0f;						
 		};
 		for(unsigned int cc = 0; cc < CHUNK_COUNT; cc++) {
