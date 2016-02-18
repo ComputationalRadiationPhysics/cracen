@@ -8,7 +8,8 @@
 #include "graybat/CageFactory.hpp"
 #include "Input/GrayBatReader.hpp"
 #include "Device/CudaUtil.hpp"
-  
+#include "StaticTTY.h"
+
 using namespace std::chrono_literals;
 
 int main(int argc, char* argv[]) {
@@ -26,12 +27,12 @@ int main(int argc, char* argv[]) {
 	std::cout << "Buffer created." << std::endl;
 	
 	size_t fits = 0;
-	std::thread writerThread([&gbReader, &fits, 
-&output_filename](){
+			Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
+
+	std::thread writerThread([&gbReader, &fits, &inputBuffer, &output_filename](){
 		std::ofstream out;
 		out.open(output_filename, std::ofstream::out);
 
-		Ringbuffer<Output>* inputBuffer = gbReader.getBuffer();
 		
 		fits = 0;
 		
@@ -51,23 +52,46 @@ int main(int argc, char* argv[]) {
 		out.close();
 	});
 	
-	std::thread benchThread([&fits](){
+	float writeRateLogic = 0;
+	float writeRatePhysical = 0;
+	unsigned int outputBufferSize = 0;
+	unsigned int inputBufferSize = 0;
+	
+	std::thread benchThread([&fits, &gbReader, &inputBuffer, &writeRateLogic, &writeRatePhysical, &outputBufferSize, &inputBufferSize](){
+		Clock::time_point t0;
 		while(1) {
 			fits = 0;
-			Clock::time_point t0 = Clock::now();
-			std::this_thread::sleep_for(3s);
+			const unsigned int fps = 2;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000/fps));
 			Clock::time_point t1 = Clock::now();
 			
-			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
-			
-			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
+			auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+
+			outputBufferSize = inputBuffer->getSize();
+			inputBufferSize = gbReader.getBuffer()->getSize();
+
+			writeRateLogic = static_cast<float>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / ms.count() / 1024 / 1024 * 1000;
+			const unsigned int CharsPerFloat = 10;
+			const unsigned int CharsPerLine = FitFunction::numberOfParams * (CharsPerFloat + 1); //+1 for space and linebreak
+			writeRatePhysical = static_cast<float>(fits)*CharsPerLine*CHUNK_COUNT / ms.count() / 1024 / 1024 * 1000;	
+
+			fits = 0;
+			t0 = Clock::now();
 		};
 	});
+	
+	StaticTTY tty;
+	tty << HSpace('#') << " FileWriter " << HSpace('#') << "\n";
+	tty << "\n";
+	tty << "Input buffer usage:" << HSpace(' ') << ProgressBar<unsigned int>(30, 0, CHUNK_BUFFER_COUNT, inputBufferSize) << "   \n";
+	tty << "Output buffer usage:" << HSpace(' ') << ProgressBar<unsigned int>(30, 0, CHUNK_BUFFER_COUNT, outputBufferSize) << "   \n";
+	tty << "Write rate logical: " << writeRateLogic << " Mib/s\n";
+	tty << "Write rate physical: " << writeRatePhysical << " Mib/s\n";
 	
 	gbReader.readToBuffer();
 	std::cout << "Data read." << std::endl;
 	while(1);
-
+	tty.finish();
 	//Make sure all results are written back
 	//writerThread.join();
 	

@@ -40,6 +40,7 @@ if(${CUDA_FOUND})
 	# Do not propagate CXX flags to the nvcc host compiler (especially -std=c++11)
 	set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 endif(${CUDA_FOUND})
+
 ###############################################################################
 # PThreads
 ###############################################################################
@@ -61,6 +62,13 @@ if(Boost_VERSION EQUAL 105500)
   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \"-DBOOST_NOINLINE=__attribute__((noinline))\" ")
 endif(Boost_VERSION EQUAL 105500)
 
+###############################################################################
+# staticTTY
+###############################################################################
+
+find_package(staticTTY REQUIRED CONFIG)
+include_directories(${staticTTY_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${staticTTY_LIBRARIES})
 
 ###############################################################################
 # Acquiris Library for the ScopeReader

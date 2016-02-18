@@ -8,17 +8,16 @@
 #include "Device/Node.hpp"
 #include "Output/GrayBatStream.hpp"
 #include "Input/DataReader.hpp"
- 
+#include "StaticTTY.h"
 
 
 
 using namespace std::chrono_literals;
 
-const float dataRate = 1000; // Datarate in MB/s
+const float dataRate = 50; // Datarate in MB/s
 int main(int argc, char* argv[]) {
 	
 	typedef std::chrono::high_resolution_clock Clock;
-	typedef std::chrono::seconds Seconds;
 	
 	auto vm = CommandLineParser::parse(argc, argv);
 	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
@@ -50,8 +49,8 @@ int main(int argc, char* argv[]) {
 		}
 		while(!inputBuffer.isFinished()) {
 			Clock::time_point t1 = Clock::now();
-			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
-			if(static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 < dataRate) {
+			auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+			if(static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / ms.count() * 1000 / 1024 / 1024 < dataRate) {
 				fits++;
 				os.getBuffer().push(chunk);
 			}
@@ -62,24 +61,32 @@ int main(int argc, char* argv[]) {
 	//	os.join();
 	});
 	
-	std::thread benchThread([&fits, &t0](){
+	float dataRateOut = 0;
+	unsigned int outputBufferSize = 0;
+	
+	std::thread benchThread([&t0, &fits, &os, &dataRateOut, &outputBufferSize](){
 		while(1) {
 			fits = 0;
+			const unsigned int fps = 2;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000/fps));
+			Clock::time_point t2 = Clock::now();
+			
+			auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t0);
+
+			outputBufferSize = os.getBuffer().getSize();
+			dataRateOut = static_cast<float>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / ms.count() / 1024 / 1024 * 1000;	
+			fits = 0;
 			t0 = Clock::now();
-			std::this_thread::sleep_for(3s);
-			Clock::time_point t1 = Clock::now();
-			
-			Seconds s = std::chrono::duration_cast<Seconds>(t1 - t0);
-			
-			std::cout << static_cast<double>(fits)*SAMPLE_COUNT*CHUNK_COUNT*sizeof(DATATYPE) / s.count() / 1024 / 1024 << "MiB/s" << std::endl;
 		};
 	});
 	
-	std::cout << "cpyThread created." << std::endl;
-	
-	std::cout << "Data read." << std::endl;
-	cpyThread.join();
-	//Make sure all results are written back
+	StaticTTY tty;
+	tty << HSpace('#') << " BenchReader " << HSpace('#') << "\n";
+	tty << "\n";
+	tty << "Output buffer usage:" << HSpace(' ') << ProgressBar<unsigned int>(30, 0, CHUNK_BUFFER_COUNT, outputBufferSize) << "   \n";
+	tty << "Output data rate: " << dataRateOut << " Mib/s\n";
 
+	cpyThread.join();	
+	tty.finish();	
 	return 0;
 }
