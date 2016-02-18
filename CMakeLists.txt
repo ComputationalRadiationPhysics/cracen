@@ -208,7 +208,8 @@ if(${CUDA_FOUND})
 endif(${CUDA_FOUND})
 
 if(${Acqiris_FOUND})
-	add_executable(ScopeReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeReader.cpp;${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeReader.cpp")
+	add_executable(ScopeReader 
+"${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeReader.cpp;${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeReader.cpp;${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeReader.cpp;${CMAKE_CURRENT_SOURCE_DIR}/src/Input/ScopeParameter.cpp")
 	set(SCOPEREADERLIBS ${ALIBS} ${LIBS})
 	target_link_libraries(ScopeReader "${SCOPEREADERLIBS}")
 endif(${Acqiris_FOUND})

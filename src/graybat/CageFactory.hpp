@@ -47,11 +47,11 @@ namespace CageFactory {
 			peer = 0;
 		} else if (name == "Fitter") {
 			peer = 1;
-		} else if (name == "FileWriter") {
+		} else if (name == "FileWriter" || name == "RootWriter") {
 			peer = 2;
 		} else {
 			std::cerr << "Could not assign peer to executable. PeerGroupMapping not possible." << std::endl;
-			std::cerr << "Program name has to be one of [FileReader, ScopeReader, Fitter, FileWriter], to assign the peer to the executable." << std::endl;
+			std::cerr << "Program name has to be one of [FileReader, ScopeReader, Fitter, FileWriter, RootWriter], to assign the peer to the executable." << std::endl;
 			std::cerr << "Program name given was: " << name << std::endl;
 			std::exit(1);
 		}
@@ -104,11 +104,11 @@ name == "BenchReader") {
 			peer = 0;
 		} else if (name == "Fitter") {
 			peer = 1;
-		} else if (name == "FileWriter") {
+		} else if (name == "FileWriter" || name == "RootWriter") {
 			peer = 2;
 		} else {
 			std::cerr << "Could not assign peer to executable. PeerGroupMapping not possible." << std::endl;
-			std::cerr << "Program name has to be one of [FileReader, ScopeReader, Fitter, FileWriter], to assign the peer to the executable." << std::endl;
+			std::cerr << "Program name has to be one of [FileReader, ScopeReader, Fitter, FileWriter, RootWriter], to assign the peer to the executable." << std::endl;
 			std::cerr << "Program name given was: " << name << std::endl;
 			std::exit(1);
 		}
