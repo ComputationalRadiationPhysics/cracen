@@ -16,9 +16,10 @@ Fits model function to a set of waveforms.
 
 ## Dependencies
 
-- Cuda 7
+- gcc/5.1 or higher
+- Cuda 7.5
 - pthread
-- boost 1.55 or higher
+- boost 1.59 or higher
 - gtk3
 - gtk3mm
 - staticTTY 
