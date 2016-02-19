@@ -19,11 +19,13 @@ Fits model function to a set of waveforms.
 - Cuda 7
 - pthread
 - boost 1.55 or higher
-- gtk3 
+- gtk3
 - gtk3mm
+- staticTTY 
+  - https://github.com/ComputationalRadiationPhysics/staticTTY
 
 Optional:
-- propriatary acqiris library for the scope FileReader
+- propriatary acqiris library for the scopeReader
 - root 6 for root file output
 
 ## Build
@@ -33,7 +35,7 @@ Optional:
   cmake ..
   make
 ```
-In addition to these executables, the zmq signalingserver must be compiled. How this can be done is documented in the ZMQ repository.
+In addition to these executables, the zmq signaling server must be compiled. How this can be done is documented in the ZMQ repository.
 
 ## Run
 
