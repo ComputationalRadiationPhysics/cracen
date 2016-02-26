@@ -81,7 +81,8 @@ namespace CageFactory {
 		std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = vm["sources"].as<unsigned int>() + vm["fitters"].as<unsigned int>() + vm["sinks"].as<unsigned int>();
 
-		return CP::Config({masterUri, peerUri, contextSize});
+		return CP::Config({masterUri, peerUri, contextSize}); //ZMQ Config
+		//return CP::Config({}); //BMPI Config
 	}
 	
 	auto graphPoly(boost::program_options::variables_map vm) {

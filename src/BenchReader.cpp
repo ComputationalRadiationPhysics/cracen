@@ -15,7 +15,7 @@
 
 using namespace std::chrono_literals;
 
-const float dataRate = 50; // Datarate in MB/s
+const float dataRate = 500000; // Datarate in MB/s
 int main(int argc, char* argv[]) {
 	std::random_device rd;
 	std::mt19937 gen(rd());	

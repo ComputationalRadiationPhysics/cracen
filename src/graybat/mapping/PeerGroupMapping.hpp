@@ -70,7 +70,7 @@ namespace graybat {
                             myVertices.push_back(vertices[i]);
                             
                         }
-                        peer_i = (peer_i + 1 % nPeers);
+                        peer_i = ((peer_i + 1) % nPeers);
                         
                     }
 
