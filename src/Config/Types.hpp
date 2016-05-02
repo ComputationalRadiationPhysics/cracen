@@ -5,6 +5,8 @@
 #include <array>
 #include <iostream>
 #include "Constants.hpp"
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "../Utility/Ringbuffer.hpp"
 #ifndef __CUDACC__
 #include <boost/property_tree/ptree.hpp>
@@ -41,6 +43,17 @@ struct FitData {
 		std::swap(status, rhs.status);
 		std::swap(woffset, rhs.woffset);
 	}
+
+	friend class boost::serialization::access;
+	#ifndef __CUDACC__
+	template <typename Archive>
+  	void serialize(Archive &ar, const unsigned int version) {
+		ar & status;
+		ar & woffset;
+		ar & param;
+	}
+	#endif
+
 	
 	FitData & operator= (const FitData & assign) {
 		status = assign.status;

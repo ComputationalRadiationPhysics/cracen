@@ -32,7 +32,7 @@ endif(${CXX_COMPILER_IS_CLANG++})
 
 find_package(CUDA)
 if(${CUDA_FOUND})
-	set(CUDA_NVCC_FLAGS "-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED") #-Xptxas=-v;
+	set(CUDA_NVCC_FLAGS "-D_MWAITXINTRIN_H_INCLUDED;-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED") #-Xptxas=-v;
 	set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
 
 	# Separate C++ from CUDA file compilation (So we can use our own compiler)
@@ -40,6 +40,8 @@ if(${CUDA_FOUND})
 	# Do not propagate CXX flags to the nvcc host compiler (especially -std=c++11)
 	set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 endif(${CUDA_FOUND})
+
+message(STATUS "Cuda toolkik path:${CUDA_TOOLKIT_ROOT_DIR}")
 
 ###############################################################################
 # PThreads
@@ -53,7 +55,7 @@ set(OnlineDSP_LIBS ${OnlineDSP_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 # Boost
 ###############################################################################
 
-find_package(Boost 1.55.0 REQUIRED mpi regex system program_options)
+find_package(Boost 1.55.0 REQUIRED regex system program_options)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
