@@ -142,10 +142,10 @@ Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
 template <class Type>
 Ringbuffer<Type>::~Ringbuffer() noexcept
 {
-//    sem_destroy(mtx);
+    sem_destroy(mtx);
     sem_destroy(usage);
     sem_destroy(space);
-//	delete mtx;
+	delete mtx;
 	delete usage;
 	delete space;
 }

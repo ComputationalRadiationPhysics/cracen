@@ -10,6 +10,7 @@
 #include "Output/GrayBatStream.hpp"
 #include "Device/Node.hpp"
 #include "StaticTTY.h"
+#include "Cracen/Cracen.hpp"
 
 using namespace std::chrono_literals;
 

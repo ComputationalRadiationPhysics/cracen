@@ -244,3 +244,5 @@ ADD_CUSTOM_TARGET (
 	DEPENDS DSP
 	COMMENT "Executing programm." VERBATIM
 )
+
+add_subdirectory(src/Cracen)
