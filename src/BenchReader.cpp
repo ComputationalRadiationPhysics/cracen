@@ -24,8 +24,9 @@ int main(int argc, char* argv[]) {
 	typedef std::chrono::high_resolution_clock Clock;
 	
 	auto vm = CommandLineParser::parse(argc, argv);
-	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
-	CageFactory::map(cage, vm);
+	CageFactory cageFactory(vm);
+	CageFactory::Cage cage(cageFactory.commPoly(), cageFactory.graphPoly());
+	cageFactory.map(cage);
 	
     InputBuffer inputBuffer(CHUNK_BUFFER_COUNT, 1);
 		

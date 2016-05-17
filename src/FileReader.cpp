@@ -10,8 +10,9 @@
   
 int main(int argc, char* argv[]) {
 	auto vm = CommandLineParser::parse(argc, argv);
-	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
-	CageFactory::map(cage, vm);
+	CageFactory cageFactory(vm);
+	CageFactory::Cage cage(cageFactory.commPoly(), cageFactory.graphPoly());
+	cageFactory.map(cage);
 	
 	std::string input_filename = vm["inputFile"].as<std::string>();
 	

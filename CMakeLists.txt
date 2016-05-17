@@ -19,6 +19,9 @@ if(${CXX_COMPILER_IS_G++})
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  # Supress boost hana warning
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-cpp")
+  
 endif(${CXX_COMPILER_IS_G++})
 
 if(${CXX_COMPILER_IS_CLANG++})
@@ -30,9 +33,11 @@ endif(${CXX_COMPILER_IS_CLANG++})
 # CUDA
 ###############################################################################
 
+
+
 find_package(CUDA)
 if(${CUDA_FOUND})
-	set(CUDA_NVCC_FLAGS "-D_MWAITXINTRIN_H_INCLUDED;-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED") #-Xptxas=-v;
+	set(CUDA_NVCC_FLAGS "-D_MWAITXINTRIN_H_INCLUDED;-use_fast_math;-arch=compute_35;-code=sm_35;-O3;-std=c++11;-DDEBUG_ENABLED;-D__CORRECT_ISO_CPP11_MATH_H_PROTO") #-Xptxas=-v;
 	set(CUDA_ARCH sm_35 CACHE STRING "Set GPU architecture")
 
 	# Separate C++ from CUDA file compilation (So we can use our own compiler)
@@ -205,8 +210,8 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 #target_link_libraries(DSP ${LIBS})
 
 if(${CUDA_FOUND})
-	cuda_add_executable(Fitter "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Fitter.cpp")
-	target_link_libraries(Fitter ${LIBS})
+#	cuda_add_executable(Fitter "${SRCFILES};${CUDASRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Fitter.cpp")
+#	target_link_libraries(Fitter ${LIBS})
 endif(${CUDA_FOUND})
 
 if(${Acqiris_FOUND})
@@ -215,6 +220,12 @@ if(${Acqiris_FOUND})
 	set(SCOPEREADERLIBS ${ALIBS} ${LIBS})
 	target_link_libraries(ScopeReader "${SCOPEREADERLIBS}")
 endif(${Acqiris_FOUND})
+
+add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/CracenSource.cpp")
+target_link_libraries(CracenSource ${LIBS})
+
+add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/CracenSink.cpp")
+target_link_libraries(CracenSink ${LIBS})
 
 add_executable(FileReader "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/FileReader.cpp")
 target_link_libraries(FileReader ${LIBS})
@@ -246,5 +257,3 @@ ADD_CUSTOM_TARGET (
 	DEPENDS DSP
 	COMMENT "Executing programm." VERBATIM
 )
-
-add_subdirectory(src/Cracen)

@@ -13,8 +13,9 @@ int main(int argc, char** argv) {
 	std::cout << sizeof(Chunk) << std::endl;
 
 	auto vm = CommandLineParser::parse(argc, argv);
-	CageFactory::Cage cage(CageFactory::commPoly(vm), CageFactory::graphPoly(vm));
-	CageFactory::map(cage, vm);
+	CageFactory cageFactory(vm);
+	CageFactory::Cage cage(cageFactory.commPoly(), cageFactory.graphPoly());
+	cageFactory.map(cage);
 	
 	/* Get number of devices */
 	std::string scope_filename = vm["scopeFile"].as<std::string>();
