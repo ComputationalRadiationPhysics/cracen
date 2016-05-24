@@ -40,13 +40,13 @@ namespace graybat {
 
                 // Get the information about who wants to
                 // host vertices with the same tag
-                std::array<size_t, 1> sendData{stage};                
+                std::array<size_t, 1> sendData{{stage}};                
                 for(VAddr vAddr = 0; vAddr < context.size(); vAddr++){
                     comm.asyncSend(vAddr, 0, context, sendData);
                 }
 
                 for(VAddr vAddr = 0; vAddr < context.size(); vAddr++){
-                    std::array<size_t, 1> recvData{0};
+                    std::array<size_t, 1> recvData{{0}};
                     comm.recv(vAddr, 0, context, recvData);
                     if(recvData[0] == stage){
                         peersWithSameTag.push_back(vAddr);
