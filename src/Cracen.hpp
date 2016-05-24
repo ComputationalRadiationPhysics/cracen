@@ -4,11 +4,12 @@
 #include <functional>
 #include <list>
 #include <tuple>
+#include <vector>
 #include <graybat/Cage.hpp>
 #include <graybat/graphPolicy/BGL.hpp>
 #include <graybat/communicationPolicy/ZMQ.hpp>
 
-#include "../Utility/Ringbuffer.hpp"
+#include "Ringbuffer.hpp"
 
 #include "BufferTraits.hpp"
 #include "SendPolicies.hpp"

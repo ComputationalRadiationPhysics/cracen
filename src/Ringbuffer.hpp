@@ -5,7 +5,6 @@
 #include <iostream>
 #include <semaphore.h>
 #include <cassert>
-#include "Maybe.hpp"
 #include <queue>
 
 /*
