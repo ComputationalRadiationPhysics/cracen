@@ -100,8 +100,9 @@ class Cracen :
 		>::type * = nullptr
 	>
 	void run() {
+		KernelFunktor kf;
 		while(true) {
-			this->outputBuffer.push(KernelFunktor()(this->inputBuffer.pop()));
+			this->outputBuffer.push(kf(this->inputBuffer.pop()));
 		}
 	}
 	
@@ -114,8 +115,9 @@ class Cracen :
 		>::type * = nullptr
 	>
 	void run() {
+		KernelFunktor kf;
 		while(true) {
-			this->outputBuffer.push(KernelFunktor()()); 
+			this->outputBuffer.push(kf()); 
 		}
 	}
 	
@@ -128,8 +130,9 @@ class Cracen :
 		>::type * = nullptr
 	>
 	void run() {
+		KernelFunktor kf;
 		while(true) {
-			KernelFunktor()(this->inputBuffer.pop());
+			kf(this->inputBuffer.pop());
 			
 		}
 	}
@@ -158,7 +161,7 @@ public:
 		};
 	}
 	
-	void release(){
+	void release() {
 		receiveThread.join();
 		kernelThread.join();
 		sendThread.join();

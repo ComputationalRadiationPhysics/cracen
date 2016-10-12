@@ -9,8 +9,8 @@
 #include <graybat/communicationPolicy/ZMQ.hpp>
 #include <graybat/communicationPolicy/BMPI.hpp>
 #include <graybat/graphPolicy/BGL.hpp>
-#include <graybat/mapping/PeerGroupMapping.hpp>
-#include <graybat/pattern/Pipeline.hpp>
+#include <Cracen/graybat/mapping/PeerGroupMapping.hpp>
+#include <Cracen/graybat/pattern/Pipeline.hpp>
 
 #include <boost/program_options.hpp>
 

@@ -1,6 +1,8 @@
 project(cracen)
 cmake_minimum_required(VERSION 3.0.1)
 
+set(cracen_INCLUDE_DIRS ${cracen_DIR}/src)
+
 ###############################################################################
 # PThreads
 ###############################################################################
@@ -13,7 +15,7 @@ set(cracen_LIBARIES ${CMAKE_THREAD_LIBS_INIT})
 ###############################################################################
 
 find_package(Boost 1.55.0 REQUIRED regex system)
-set(cracen_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+set(cracen_INCLUDE_DIRS ${cracen_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 set(cracen_LIBARIES ${cracen_LIBARIES} ${Boost_LIBRARIES})
 
 ################################################################################
