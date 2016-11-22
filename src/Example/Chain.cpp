@@ -3,20 +3,48 @@
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
 
-#include "array"
+#include <array>
 
+/*
 class SendFunctor {
 public:
 	using InputType = void;
-	using OutputType = std::array<char, 12>;
+	using OutputType = int;
+	
+	int i;
+	SendFunctor() :
+		i(0)
+	{};
 	
 	OutputType operator()() {
 		std::this_thread::sleep_for(std::chrono::seconds(1));
-		std::cout << "Push \"Hello World!\" to output Buffer" << std::endl;
-		return {{'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!'}};
+		return i++;
 	}
 };
 
+class IntermediateFunctor {
+public:
+	using InputType = int;
+	using OutputType = int;
+	
+	OutputType operator()(int i) {
+		std::string received = std::to_string(i);
+		int message = i + 2;
+		std::cout << "Intermediate received:" << i << " adding two and sending:" << message << std::endl;
+		return message;
+	}
+};
+
+class ReceiveFunctor {
+public:
+	using InputType = int;
+	using OutputType = void;
+	
+	OutputType operator()(int i) {
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::cout << "End node received: " << i << std::endl;
+	}
+};
 struct CageFactory {
 private:
 public:
@@ -63,8 +91,23 @@ int main(int argc, char* argv[]) {
 		CageFactory,
 		Cracen::BroadCastPolicy
 	> sendCracen(cf);
+	
+	Cracen::Cracen<
+		IntermediateFunctor,
+		CageFactory,
+		Cracen::BroadCastPolicy
+	> intermediateCracen(cf);
+	
+	Cracen::Cracen<
+		ReceiveFunctor,
+		CageFactory,
+		Cracen::BroadCastPolicy
+	> endCracen(cf);
 		
 	sendCracen.release();
-	
+	intermediateCracen.release();
+	endCracen.release();
+
 	return 0;
 }
+*/

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <type_traits>
+#include "Ringbuffer.hpp"
+
 namespace Cracen {
-	
+
 template <class Type, typename enable = void>
 class InputBufferEnable;
 

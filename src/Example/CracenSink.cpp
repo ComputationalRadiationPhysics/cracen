@@ -41,7 +41,7 @@ public:
 	}
 };
 
-std::ostream& operator<<(std::ostream& lhs, const  std::array<char, 12>& rhs) {
+std::ostream& operator<<(std::ostream& lhs, const  std::vector<char>& rhs) {
 	for(const char c : rhs) {
 		lhs << c;
 	}
@@ -50,7 +50,7 @@ std::ostream& operator<<(std::ostream& lhs, const  std::array<char, 12>& rhs) {
 
 class ReceiveFunctor {
 public:
-	using InputType =  std::array<char, 12>;
+	using InputType =  std::vector<char>;
 	using OutputType = void;
 	
 	OutputType operator()(InputType in) {

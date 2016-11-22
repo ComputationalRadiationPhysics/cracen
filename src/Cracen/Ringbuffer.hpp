@@ -11,7 +11,7 @@
 template <class type>
 class Ringbuffer {
 	std::queue<type> queue;
-	
+
 public:
 	Ringbuffer(const unsigned int bSize, int producer, type defaultItem) {}
 	Ringbuffer(const unsigned int bSize, int producer) {}
@@ -20,7 +20,7 @@ public:
 	type pop() { while(queue.size() == 0); type result = queue.front(); queue.pop(); return result;};
 	template <class Funktor>
 	int popTry(Funktor popFunction) { while(queue.size() == 0); type result = queue.front(); popFunction(result); queue.pop(); return 0;};
-	
+
 	int getSize() const { return queue.size(); };
 	bool isEmpty() const { return (queue.size() == 0); };
 	bool isFinished() const { return false; };
@@ -34,9 +34,9 @@ public:
  *  Data is written to the head of the buffer and read from the tail.
  *  The buffer will block write attempts if full and block read attempts
  *  if empty.
- *  To enable reading to devices like graphic cards the tail of the 
+ *  To enable reading to devices like graphic cards the tail of the
  *  buffer can be reserved. In the reserved state copy operations can
- *  be performed externally. After copying the head needs to be 
+ *  be performed externally. After copying the head needs to be
  *  freed.
  *  The same mechanism is available for writing to the buffer from other
  *  devices.
@@ -55,26 +55,25 @@ private:
 	std::vector<Type> buffer;
 	unsigned int head, tail;
 	unsigned int producer;
-	
-	Ringbuffer(const Ringbuffer& rb) {}
-	Ringbuffer& operator=(const Ringbuffer& rb) { return *this; }
-	
+
 public:
 	void init();
 	Ringbuffer(const unsigned int bSize, int producer, Type defaultItem);
 	Ringbuffer(const unsigned int bSize, int producer);
+	Ringbuffer(const Ringbuffer& rb) {}
+	Ringbuffer& operator=(const Ringbuffer& rb) { return *this; }
 	~Ringbuffer() noexcept;
 	int push(Type input) noexcept;
 	//int push(Type &&input) noexcept;
 	Type pop() noexcept;
 	template <class Funktor>
 	int popTry(Funktor popFunction) noexcept;
-	
+
 	int getSize() const noexcept;
 	bool isEmpty() const noexcept;
 	bool isFinished() const noexcept;
 	void producerQuit() noexcept;
-	
+
 };
 
 template <class Type>
@@ -96,18 +95,18 @@ void Ringbuffer<Type>::init()
 /**
  * Constructor for dynamic size elements.
  *
- * Reserves buffer memory. The buffer holds bSize items. The 
- * items consist of itemSize elements of type Type. These elements 
+ * Reserves buffer memory. The buffer holds bSize items. The
+ * items consist of itemSize elements of type Type. These elements
  * may be of a dynamic size type but they need to have the same size.
  *
  * \param bSize Amount of items the buffer can hold.
- * \param producer number of producers feeding the buffer. 
+ * \param producer number of producers feeding the buffer.
  * \param defaultItem A default item to store in the buffer. This fixes
  *                    the memory available for variable length types
  *                    like std::vector.
  */
 template <class Type>
-Ringbuffer<Type>::Ringbuffer(const unsigned int bSize, 
+Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
                              int producer,
                              Type defaultItem) :
     buffer(bSize, defaultItem),
@@ -152,7 +151,7 @@ Ringbuffer<Type>::~Ringbuffer() noexcept
 /**
  * Write data to the buffer from the host.
  *
- * The call blocks if there is no space available on the buffer or if the 
+ * The call blocks if there is no space available on the buffer or if the
  * buffer is already used by another thread.
  *
  * \param inputOnHost Needs to be on host memory.
@@ -162,20 +161,20 @@ int Ringbuffer<Type>::push(Type input) noexcept
 {
 	sem_wait(space);   // is there space in buffer?
     sem_wait(mtx);     // lock buffer
-    
+
     buffer.at(head) = input;
     head = (head+1) % buffer.size();     // move head
 
     sem_post(mtx);     // unlock buffer
     sem_post(usage);   // tell them that there is something in buffer
-    
+
 	return 0;
 }
 
 /**
  * Write data to the buffer from the host.
  *
- * The call blocks if there is no space available on the buffer or if the 
+ * The call blocks if there is no space available on the buffer or if the
  * buffer is already used by another thread.
  *
  * \param inputOnHost Needs to be on host memory.
@@ -186,13 +185,13 @@ int Ringbuffer<Type>::push(Type &&input) noexcept
 {
 	sem_wait(space);   // is there space in buffer?
     //sem_wait(mtx);     // lock buffer
-    
+
     buffer.at(head) = input;
     head = (head+1) % buffer.size();     // move head
 
     //sem_post(mtx);     // unlock buffer
     sem_post(usage);   // tell them that there is something in buffer
-    
+
 	return 0;
 }
 */
@@ -266,7 +265,7 @@ bool Ringbuffer<Type>::isEmpty() const noexcept {
 
 /** Tell if buffer is empty and will stay empty. This is the case if
  *  all produces ceased to add data and no data is in the buffer.
- * \return True if there are no elements in buffer and all producers 
+ * \return True if there are no elements in buffer and all producers
  * announced that they stopped adding elements. False otherwise.
  */
 template <class Type>
@@ -274,7 +273,7 @@ bool Ringbuffer<Type>::isFinished() const noexcept {
 	return (producer==0) && isEmpty();
 }
 
-/** Lets a producer announce that it is adding no more elements to the 
+/** Lets a producer announce that it is adding no more elements to the
  *  buffer.
  *  To be called only once per producer. This is not checked.
  */

@@ -16,7 +16,11 @@
 
 namespace Cracen {
 
-template <class KernelFunktor, class CageFactory, template<class, class> class SendPolicy>
+template <
+    class KernelFunktor,
+    class CageFactory,
+    template<class, class> class SendPolicy
+>
 class Cracen : 
 	public InputBufferEnable<typename KernelFunktor::InputType>,
 	public OutputBufferEnable<typename KernelFunktor::OutputType>
@@ -34,7 +38,8 @@ class Cracen :
 	std::thread sendThread;
 	std::thread kernelThread;
 	
-	
+	KernelFunktor kf;
+
 	template <
 		class ReceiveType = Input,
 		typename std::enable_if<
@@ -46,7 +51,7 @@ class Cracen :
 		assert(cage.hostedVertices.size() > 0);
 		
 		while(true) {
-			ReceiveType data;
+			ReceiveType data();
 			cage.recv(data);
 			this->inputBuffer.push(data);
 		}
@@ -75,8 +80,8 @@ class Cracen :
 		
 		while(!this->outputBuffer.isFinished()) {
 			//Send dataset away	
-			Vertex source = cage.hostedVertices.at(0);
-			std::vector<Edge> source_sink = cage.getOutEdges(source);
+			//Vertex source = cage.hostedVertices.at(0);
+			//std::vector<Edge> source_sink = cage.getOutEdges(source);
 			
 			const SendType out = this->outputBuffer.pop(); 
 			sendPolicy(out);
@@ -100,7 +105,6 @@ class Cracen :
 		>::type * = nullptr
 	>
 	void run() {
-		KernelFunktor kf;
 		while(true) {
 			this->outputBuffer.push(kf(this->inputBuffer.pop()));
 		}
@@ -115,7 +119,6 @@ class Cracen :
 		>::type * = nullptr
 	>
 	void run() {
-		KernelFunktor kf;
 		while(true) {
 			this->outputBuffer.push(kf()); 
 		}
@@ -130,7 +133,6 @@ class Cracen :
 		>::type * = nullptr
 	>
 	void run() {
-		KernelFunktor kf;
 		while(true) {
 			kf(this->inputBuffer.pop());
 			
@@ -149,7 +151,9 @@ public:
 	{
 		//Graybat mapping
 		cage.distribute(cf.mapping());;
-		
+	}
+	
+	void release() {
 		//Fork threads
 		try {
 			std::thread receiveThread([=](){this->receive<>();});
@@ -157,14 +161,16 @@ public:
 			this->run<>();
 			//std::thread kernelThread([=](){this->run<>();});
 		} catch(std::exception e) {
-			
+			std::cerr << "Exception thrown" << std::endl;
 		};
-	}
-	
-	void release() {
+		
 		receiveThread.join();
 		kernelThread.join();
 		sendThread.join();
+	}
+	
+	KernelFunktor& getKernel() {
+		return kf;
 	}
 
 };
