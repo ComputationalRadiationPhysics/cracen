@@ -53,12 +53,13 @@ int main() {
 	trivialTypedArraySource[1] = { 1 , 'b' };
 	trivialTypedArraySource[2] = { 2 , 'c' };
 	std::vector<TrivialType> trivialTypedVectorSource { {0, 'a'}, {1, 'b'}, {2, 'c'}}, trivialTypedVectorDestination;
+	std::string stringSource = "Hello World", stringDestination;
 
 	copyTest(builtinTypedVariableSource, builtinTypedVariableDestination);
 	copyTest(trivialTypedVariableSource, trivialTypedVariableDestination);
 	copyTest(trivialTypedArraySource, trivialTypedArrayDestination);
 	copyTest(trivialTypedVectorSource, trivialTypedVectorDestination);
-
+	copyTest(stringSource, stringDestination);
 
 	if(!failed) std::cout << "All tests run successfully" << std::endl;
 	else std::cout << "Some tests failed." << std::endl;
