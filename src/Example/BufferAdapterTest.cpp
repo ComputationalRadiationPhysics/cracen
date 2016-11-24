@@ -91,7 +91,7 @@ int main() {
 	std::deque<int> stdDequeSource { 1, 2, 3, 4, 5} , stdDequeDestination;
 	std::bitset<8> stdBitsetSource(42), stdBitsetDestination;
 	std::chrono::high_resolution_clock::time_point timePointSource(std::chrono::high_resolution_clock::now()), timePointDestination;
-
+	std::vector<std::string> vectorStringSource {"Hallo", "Welt"}, vectorStringDestination;
 	std::vector<std::vector<std::string>>
 		vectorVectorStringSource {
 			{ "1", "2", "3", "4", "5", "6"},
@@ -111,6 +111,7 @@ int main() {
 	copyTest(stdDequeSource, stdDequeDestination);
 	copyTest(stdBitsetSource, stdBitsetDestination);
 	copyTest(timePointSource, timePointDestination);
+	copyTest(vectorStringSource, vectorStringDestination);
 	copyTest(vectorVectorStringSource, vectorVectorStringDestination);
 
 	if(!failed) std::cout << "All tests run successfully" << std::endl;

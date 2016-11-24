@@ -129,7 +129,7 @@ struct BufferAdapter<
 
 	~BufferAdapter() {
 		if(owningData) {
-			::operator delete(data);
+			delete[] data;
 		}
 	}
 
