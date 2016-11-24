@@ -8,71 +8,26 @@
 
 namespace Util {
 
+template <class Type>
+using  linear_memory_check = std::is_trivially_destructible<Type>;
+//using  linear_memory_check = std::is_pod<Type>;
+//using  linear_memory_check = std::is_trivial<Type>;
+//using  linear_memory_check = std::is_trivially_copyable<Type>;
+//using  linear_memory_check = std::is_standard_layout<Type>;
+
+
+struct MutableBuffer {
+	std::uint8_t* const data;
+	const size_t size;
+	MutableBuffer(std::uint8_t* data, size_t size) :
+		data(data),
+		size(size)
+	{}
+}; // End of struct MutableBuffer
+
 template <class Type, class enable = void>
 struct BufferAdapter; // End of class BufferAdapter
 
-template <
-	class Type
->
-struct BufferAdapter<
-	std::vector<Type>,
-	typename std::enable_if<
-		std::is_trivially_copyable<Type>::value
-	>::type
-> {
-
-	const void* data;
-	const size_t size;
-
-	BufferAdapter(std::vector<Type>& input) :
-		data(input.data()),
-		size(input.size()*sizeof(Type))
-	{};
-
-	BufferAdapter(void* data, size_t size) :
-		data(data),
-		size(size)
-	{};
-
-	void copyTo(std::vector<Type>& destination) {
-		destination.resize(size / sizeof(Type));
-		memcpy(
-			destination.data(),
-			data,
-			size
-		);
-	}
-
-}; // End of struct BufferAdapter
-
-template <>
-struct BufferAdapter<
-	std::string
-> {
-
-	const void* data;
-	const size_t size;
-
-	BufferAdapter(std::string& input) :
-		data(input.data()),
-		size(input.size()*sizeof(char))
-	{};
-
-	BufferAdapter(void* data, size_t size) :
-		data(data),
-		size(size)
-	{};
-
-	void copyTo(std::string& destination) {
-		destination.resize(size / sizeof(char));
-		memcpy(
-			&destination[0],
-			data,
-			size
-		);
-	}
-
-}; // End of struct BufferAdapter
 
 template <
 	class Type
@@ -80,20 +35,23 @@ template <
 struct BufferAdapter<
 	Type,
 	typename std::enable_if<
-		std::is_trivially_copyable<Type>::value
+		linear_memory_check<Type>::value
 	>::type
-> {
-	const void* data;
-	const size_t size;
-
+> :
+	public MutableBuffer
+{
 	BufferAdapter(Type& input) :
-		data(&input),
-		size(sizeof(Type))
+		MutableBuffer(
+			reinterpret_cast<decltype(MutableBuffer::data)>(&input),
+			sizeof(Type)
+		)
 	{};
 
-	BufferAdapter(void* data, size_t size) :
-		data(data),
-		size(size)
+	BufferAdapter(decltype(MutableBuffer::data) data, size_t size) :
+		MutableBuffer(
+			data,
+			size
+		)
 	{};
 
 	void copyTo(Type& destination) {
