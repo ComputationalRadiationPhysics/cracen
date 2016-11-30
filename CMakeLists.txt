@@ -47,11 +47,11 @@ message(STATUS "SRCFILES:" ${SRCFILES})
 
 add_library(Cracen SHARED "${SRCFILES}")
 
-#add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSource.cpp")
-#target_link_libraries(CracenSource ${LIBS})
-#
-#add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSink.cpp")
-#target_link_libraries(CracenSink ${LIBS})
+add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSource.cpp")
+target_link_libraries(CracenSource ${LIBS})
+
+add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSink.cpp")
+target_link_libraries(CracenSink ${LIBS})
 #
 #add_executable(CApi "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CApi.cpp")
 #target_link_libraries(CApi ${LIBS})

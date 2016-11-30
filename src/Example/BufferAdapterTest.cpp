@@ -76,7 +76,37 @@ void copyTest(T& source, T& destination) {
 		std::cout << "Test failed" << std::endl;
 	}
 }
+
+struct Foo {
+	int* bar;
+	Foo() :
+		bar(new  int)
+	{
+		std::cout << "new int" << std::endl;
+	}
+
+	Foo(const Foo& cpy) :
+		bar(new int)
+	{
+		*bar = *(cpy.bar);
+	}
+
+	~Foo() {
+		std::cout << "delete int" << std::endl;
+		delete bar;
+	}
+};
+
+Foo createFoo() {
+	return Foo();
+}
+
 int main() {
+	Foo a;
+
+	a = createFoo();
+	*(a.bar) = 5;
+
 	int builtinTypedVariableSource = 5, builtinTypedVariableDestination = 0;
 	TrivialType trivialTypedVariableSource {5, 'a'}, trivialTypedVariableDestination {0, ' '};
 	PrivateType privateTypeSource(5,15), privateTypeDestination(0,0);

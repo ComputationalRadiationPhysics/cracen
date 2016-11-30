@@ -1,5 +1,5 @@
 #include <string>
-#include "../Cracen.hpp"
+#include "../Cracen/Cracen.hpp"
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
 
@@ -9,7 +9,7 @@ class SendFunctor {
 public:
 	using InputType = void;
 	using OutputType = std::vector<char>;
-	
+
 	OutputType operator()() {
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << "Push \"Hello World!\" to output Buffer" << std::endl;
@@ -20,15 +20,15 @@ public:
 struct CageFactory {
 private:
 public:
-	
+
 	typedef graybat::communicationPolicy::ZMQ CP;
 	//typedef graybat::communicationPolicy::BMPI CP;
 	typedef graybat::graphPolicy::BGL<unsigned int>    GP;
 	typedef graybat::Cage<CP, GP> Cage;
-	
+
 	CageFactory()
 	{}
-	
+
 	CP::Config commPoly() {
 		const std::string signalingIp = "127.0.0.1";
 		const std::string localIp = "127.0.0.1";
@@ -40,7 +40,7 @@ public:
 		return CP::Config({masterUri, peerUri, contextSize}); //ZMQ Config
 		//return CP::Config({}); //BMPI Config
 	}
-	
+
 	auto graphPoly() {
 		return graybat::pattern::Pipeline<GP>(
 			std::vector<unsigned int>({
@@ -49,7 +49,7 @@ public:
 			})
 		);
 	}
-	
+
 	auto mapping() {
 		return graybat::mapping::PeerGroupMapping(0);
 	}
@@ -57,7 +57,7 @@ public:
 
 template <class Cage, class OutputType>
 class DynamicSendPolicy {
-	
+
 };
 
 
@@ -69,8 +69,8 @@ int main(int argc, char* argv[]) {
 		CageFactory,
 		Cracen::BroadCastPolicy
 	> sendCracen(cf);
-		
+
 	sendCracen.release();
-	
+
 	return 0;
 }

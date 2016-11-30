@@ -1,20 +1,20 @@
 #include <string>
-#include "../Cracen.hpp"
+#include "../Cracen/Cracen.hpp"
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
 
 struct CageFactory {
 private:
 public:
-	
+
 	typedef graybat::communicationPolicy::ZMQ CP;
 	//typedef graybat::communicationPolicy::BMPI CP;
 	typedef graybat::graphPolicy::BGL<unsigned int>    GP;
 	typedef graybat::Cage<CP, GP> Cage;
-	
+
 	CageFactory()
 	{}
-	
+
 	CP::Config commPoly() {
 		const std::string signalingIp = "127.0.0.1";
 		const std::string localIp = "127.0.0.1";
@@ -26,7 +26,7 @@ public:
 		return CP::Config({masterUri, peerUri, contextSize}); //ZMQ Config
 		//return CP::Config({}); //BMPI Config
 	}
-	
+
 	auto graphPoly() {
 		return graybat::pattern::Pipeline<GP>(
 			std::vector<unsigned int>({
@@ -35,7 +35,7 @@ public:
 			})
 		);
 	}
-	
+
 	auto mapping() {
 		return graybat::mapping::PeerGroupMapping(1);
 	}
@@ -52,7 +52,7 @@ class ReceiveFunctor {
 public:
 	using InputType =  std::vector<char>;
 	using OutputType = void;
-	
+
 	OutputType operator()(InputType in) {
 		std::cout << in << std::endl;
 		return OutputType();
@@ -62,15 +62,15 @@ public:
 int main(int argc, char* argv[]) {
 	CageFactory cf;
 
-	
+
 	Cracen::Cracen<
 		ReceiveFunctor,
 		CageFactory,
 		Cracen::BroadCastPolicy
 	>
 	receiveCracen(cf);
-	
+
 	receiveCracen.release();
-	
+
 	return 0;
 }
