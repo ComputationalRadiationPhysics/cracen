@@ -5,6 +5,7 @@
 #include <list>
 #include <tuple>
 #include <vector>
+#include <future>
 #include <graybat/Cage.hpp>
 #include <graybat/graphPolicy/BGL.hpp>
 #include <graybat/communicationPolicy/ZMQ.hpp>
@@ -16,14 +17,42 @@
 
 namespace Cracen {
 
+template <class Type, class enable = void>
+struct Identity;
+
+template <class Type>
+struct Identity<
+	Type,
+	typename std::enable_if<!std::is_same<Type,void>::value>::type
+>
+{
+	Type operator()(Type value) {
+		return value;
+	}
+};
+
+template <class Type>
+struct Identity<
+	Type,
+	typename std::enable_if<std::is_same<Type,void>::value>::type
+>
+{
+	Type operator()() {
+	}
+};
+
 template <
     class KernelFunktor,
     class CageFactory,
-    template<class, class> class SendPolicy
+    template<class, class> class SendPolicy,
+	class Incoming = Identity<typename KernelFunktor::InputType>,
+	class Outgoing = Identity<typename KernelFunktor::OutputType>,
+	std::launch IncomingPolicy = std::launch::deferred,
+	std::launch OutgoingPolicy = std::launch::deferred
 >
 class Cracen :
-	public InputBufferEnable<typename KernelFunktor::InputType>,
-	public OutputBufferEnable<typename KernelFunktor::OutputType>
+	public InputBufferEnable<std::future<typename KernelFunktor::InputType>>,
+	public OutputBufferEnable<std::future<typename KernelFunktor::OutputType>>
 {
 	using Output = typename KernelFunktor::OutputType;
 	using Input = typename KernelFunktor::InputType;
@@ -38,7 +67,9 @@ class Cracen :
 	std::thread sendThread;
 	std::thread kernelThread;
 
+	Incoming incomingFunctor;
 	KernelFunktor kf;
+	Outgoing outgoingFunctor;
 
 	template <
 		class ReceiveType = Input,
@@ -53,7 +84,13 @@ class Cracen :
 		while(true) {
 			ReceiveType data;
 			cage.recv(data);
-			this->inputBuffer.push(data);
+			this->inputBuffer.push(
+				std::async(
+					IncomingPolicy,
+					incomingFunctor,
+					data
+				)
+			);
 		}
 	}
 
@@ -82,9 +119,8 @@ class Cracen :
 			//Send dataset away
 			//Vertex source = cage.hostedVertices.at(0);
 			//std::vector<Edge> source_sink = cage.getOutEdges(source);
-
-			const SendType out = this->outputBuffer.pop();
-			sendPolicy(out);
+			auto sendFuture = this->outputBuffer.pop();
+			sendPolicy(sendFuture.get());
 		}
 	}
 
@@ -106,7 +142,13 @@ class Cracen :
 	>
 	void run() {
 		while(true) {
-			this->outputBuffer.push(kf(this->inputBuffer.pop()));
+			this->outputBuffer.push(
+				std::async(
+					OutgoingPolicy,
+					outgoingFunctor,
+					kf(this->inputBuffer.pop())
+				)
+			);
 		}
 	}
 
@@ -120,7 +162,13 @@ class Cracen :
 	>
 	void run() {
 		while(true) {
-			this->outputBuffer.push(kf());
+			this->outputBuffer.push(
+				std::async(
+					OutgoingPolicy,
+					outgoingFunctor,
+					kf()
+				)
+			);
 		}
 	}
 
@@ -134,8 +182,7 @@ class Cracen :
 	>
 	void run() {
 		while(true) {
-			kf(this->inputBuffer.pop());
-
+			kf(this->inputBuffer.pop().get());
 		}
 	}
 
@@ -143,10 +190,11 @@ public:
 	const static int inputBufferSize = 1000;
 	const static int outputBufferSize = 1000;
 	Cracen(CageFactory cf) :
-		InputBufferEnable<Input>(inputBufferSize, 1),
-		OutputBufferEnable<Output>(outputBufferSize, 1),
-		cage(cf.commPoly(),
-			 cf.graphPoly()
+		InputBufferEnable<std::future<Input>>(inputBufferSize, 1),
+		OutputBufferEnable<std::future<Output>>(outputBufferSize, 1),
+		cage(
+			cf.commPoly(),
+			cf.graphPoly()
 		)
 	{
 		//Graybat mapping

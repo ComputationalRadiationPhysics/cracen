@@ -128,7 +128,7 @@ Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
 template <class Type>
 Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
                              int producer) :
-	buffer(bSize, Type()),
+	buffer(bSize),
 	head(0),// We write new item to this position
 	tail(0),// We read stored item from this position
 	producer(producer)
@@ -162,7 +162,7 @@ int Ringbuffer<Type>::push(Type input) noexcept
 	sem_wait(space);   // is there space in buffer?
     sem_wait(mtx);     // lock buffer
 
-    buffer.at(head) = input;
+    std::swap(buffer.at(head), input);
     head = (head+1) % buffer.size();     // move head
 
     sem_post(mtx);     // unlock buffer
@@ -211,7 +211,7 @@ Type Ringbuffer<Type>::pop() noexcept
 	sem_wait(usage);   // is there some data in buffer?
 	sem_wait(mtx);     // lock buffer
 
-	result.swap(buffer.at(tail));
+	std::swap(result, buffer.at(tail));
 	tail = (tail+1) % buffer.size();     // move tail
 
 	sem_post(mtx);     // unlock buffer
