@@ -22,6 +22,10 @@ class InputBufferEnable<
 public:
 	InputBufferEnable(int size, int producer)
 	{}
+
+	unsigned int getInputBufferSize() {
+		return 0;
+	}
 };
 
 template <class Type>
@@ -31,6 +35,10 @@ public:
 	InputBufferEnable(int size, int producer) :
 		inputBuffer(size, producer)
 	{}
+
+	unsigned int getInputBufferSize() {
+		return inputBuffer.getSize();
+	}
 };
 
 template <class Type, typename enable = void>
@@ -41,6 +49,10 @@ class OutputBufferEnable<Type, typename std::enable_if<std::is_same<Type, void>:
 public:
 	OutputBufferEnable(int size, int producer)
 	{}
+
+	unsigned int getOutputBufferSize() {
+		return 0;
+	}
 };
 
 template <class Type>
@@ -50,6 +62,10 @@ public:
 	OutputBufferEnable(int size, int producer) :
 		outputBuffer(size, producer)
 	{}
+
+	unsigned int getOutputBufferSize() {
+		return outputBuffer.getSize();
+	}
 };
 
 }

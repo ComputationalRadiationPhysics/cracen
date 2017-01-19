@@ -64,7 +64,7 @@ namespace graybat {
                 std::vector<Vertex> myVertices;
 
 				std::cout << "vertices size" << vertices.size() << std::endl;
-                for(size_t i = 0; i < vertices.size(); ++i){
+                for(size_t i = 0; i < vertices.size(); ++i) {
                     if(vertices[i]() == stage){
                         if(peersWithSameTag.at(peer_i) == context.getVAddr()){
                             myVertices.push_back(vertices[i]);

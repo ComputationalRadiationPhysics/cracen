@@ -45,7 +45,9 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 message(STATUS "REMOVE_SOURCES:" ${REMOVE_SOURCES})
 message(STATUS "SRCFILES:" ${SRCFILES})
 
-add_library(Cracen SHARED "${SRCFILES}")
+add_library(Cracen STATIC "${SRCFILES}")
+target_link_libraries(Cracen ${LIBS})
+set(LIBS "Cracen" ${LIBS})
 
 add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSource.cpp")
 target_link_libraries(CracenSource ${LIBS})
@@ -56,7 +58,7 @@ target_link_libraries(CracenSink ${LIBS})
 #add_executable(CApi "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CApi.cpp")
 #target_link_libraries(CApi ${LIBS})
 
-add_executable(BufferAdapterTest "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/BufferAdapterTest.cpp")
+add_executable(BufferAdapterTest EXCLUDE_FROM_ALL "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/BufferAdapterTest.cpp")
 target_link_libraries(BufferAdapterTest ${LIBS})
 
 #add_executable(Chain "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/example/Chain.cpp")

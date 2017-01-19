@@ -4,5 +4,5 @@ build/*
 slides/*
 DSP Graphics/*
 tmp/*
-.kev4
-DSP.kdev4
+.kev4/
+*.kdev4

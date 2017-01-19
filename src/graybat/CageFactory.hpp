@@ -24,16 +24,16 @@ class CageFactory {
 private:
 	boost::program_options::variables_map vm;
 public:
-	
+
 	typedef graybat::communicationPolicy::ZMQ CP;
 	//typedef graybat::communicationPolicy::BMPI CP;
 	typedef graybat::graphPolicy::BGL<unsigned int>    GP;
 	typedef graybat::Cage<CP, GP> Cage;
-	
+
 	CageFactory(boost::program_options::variables_map vm) :
 		vm(vm)
 	{}
-	
+
 	CP::Config commPoly() {
 		const std::string signalingIp = vm["signalingIp"].as<std::string>();
 		const std::string localIp = Whoami(signalingIp);
@@ -45,21 +45,21 @@ public:
 		return CP::Config({masterUri, peerUri, contextSize}); //ZMQ Config
 		//return CP::Config({}); //BMPI Config
 	}
-	
+
 	auto graphPoly() {
 		return graybat::pattern::Pipeline<GP>(
 			std::vector<unsigned int>({
 				vm["sources"].as<unsigned int>(),
 				vm["fitters"].as<unsigned int>(),
 				vm["sinks"].as<unsigned int>()
-				
+
 			})
 		);
 	}
-	
+
 	void map(Cage& cage) {
 		std::string name = vm["programName"].as<std::string>();
-		name = name.substr(name.find_last_of("/") + 1); 
+		name = name.substr(name.find_last_of("/") + 1);
 		unsigned int peer;
 		if(name == "FileReader" || name == "ScopeReader" || name == "BenchReader") {
 			peer = 0;
@@ -73,13 +73,13 @@ public:
 			std::cerr << "Program name given was: " << name << std::endl;
 			std::exit(1);
 		}
-		
+
 		cage.distribute(graybat::mapping::PeerGroupMapping(peer));
 	}
-	
+
 	auto mapping() {
 		std::string name = vm["programName"].as<std::string>();
-		name = name.substr(name.find_last_of("/") + 1); 
+		name = name.substr(name.find_last_of("/") + 1);
 		unsigned int peer;
 		if(name == "FileReader" || name == "ScopeReader" || name == "BenchReader") {
 			peer = 0;
@@ -93,7 +93,7 @@ public:
 			std::cerr << "Program name given was: " << name << std::endl;
 			std::exit(1);
 		}
-		
+
 		return graybat::mapping::PeerGroupMapping(peer);
 	}
 };

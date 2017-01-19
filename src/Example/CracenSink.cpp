@@ -1,7 +1,18 @@
 #include <string>
+#include <typeinfo>
 #include "../Cracen/Cracen.hpp"
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
+
+class ReceiveFunctor {
+public:
+	void operator()(std::array<char,12> in) {
+		for(char c : in) {
+			std::cout << c;
+		}
+		std::cout << std::endl;
+	}
+};
 
 struct CageFactory {
 private:
@@ -15,7 +26,7 @@ public:
 	CageFactory()
 	{}
 
-	CP::Config commPoly() {
+	CP::Config commPoly(std::string contextName) {
 		const std::string signalingIp = "127.0.0.1";
 		const std::string localIp = "127.0.0.1";
 		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(5000);
@@ -23,7 +34,7 @@ public:
 		std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = 2;
 
-		return CP::Config({masterUri, peerUri, contextSize}); //ZMQ Config
+		return CP::Config({masterUri, peerUri, contextSize, contextName}); //ZMQ Config
 		//return CP::Config({}); //BMPI Config
 	}
 
@@ -41,34 +52,21 @@ public:
 	}
 };
 
-std::ostream& operator<<(std::ostream& lhs, const  std::vector<char>& rhs) {
-	for(const char c : rhs) {
-		lhs << c;
-	}
-	return lhs;
-}
-
-class ReceiveFunctor {
-public:
-	using InputType =  std::vector<char>;
-	using OutputType = void;
-
-	OutputType operator()(InputType in) {
-		std::cout << in << std::endl;
-		return OutputType();
-	}
-};
-
-int main(int argc, char* argv[]) {
-	CageFactory cf;
-
-
+using CracenType =
 	Cracen::Cracen<
 		ReceiveFunctor,
 		CageFactory,
 		Cracen::BroadCastPolicy
-	>
-	receiveCracen(cf);
+	>;
+
+int main(int argc, char* argv[]) {
+
+	std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
+	std::cout << "Output:" << typeid(CracenType::Output).name() << std::endl;
+
+	CageFactory cf;
+
+	CracenType receiveCracen(cf);
 
 	receiveCracen.release();
 

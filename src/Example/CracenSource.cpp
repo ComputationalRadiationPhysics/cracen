@@ -1,17 +1,15 @@
 #include <string>
+#include <typeinfo>
+
 #include "../Cracen/Cracen.hpp"
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
-
 #include "array"
 
 class SendFunctor {
 public:
-	using InputType = void;
-	using OutputType = std::vector<char>;
-
-	OutputType operator()() {
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+	std::array<char,12> operator()() {
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		std::cout << "Push \"Hello World!\" to output Buffer" << std::endl;
 		return {{'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!'}};
 	}
@@ -29,7 +27,7 @@ public:
 	CageFactory()
 	{}
 
-	CP::Config commPoly() {
+	CP::Config commPoly(std::string contextName) {
 		const std::string signalingIp = "127.0.0.1";
 		const std::string localIp = "127.0.0.1";
 		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(5000);
@@ -37,7 +35,7 @@ public:
 		std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = 2;
 
-		return CP::Config({masterUri, peerUri, contextSize}); //ZMQ Config
+		return CP::Config({masterUri, peerUri, contextSize, contextName}); //ZMQ Config
 		//return CP::Config({}); //BMPI Config
 	}
 
@@ -60,15 +58,21 @@ class DynamicSendPolicy {
 
 };
 
-
-int main(int argc, char* argv[]) {
-	CageFactory cf;
-
+using CracenType =
 	Cracen::Cracen<
 		SendFunctor,
 		CageFactory,
 		Cracen::BroadCastPolicy
-	> sendCracen(cf);
+	>;
+
+int main(int argc, char* argv[]) {
+
+	std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
+	std::cout << "Output:" << typeid(CracenType::Output).name() << std::endl;
+
+	CageFactory cf;
+
+	CracenType sendCracen(cf);
 
 	sendCracen.release();
 
