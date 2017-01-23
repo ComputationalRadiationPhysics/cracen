@@ -29,6 +29,15 @@ set(LIBS ${LIBS} ${cracen_LIBARIES})
 set(INCLUDE_DIRS ${INCLUDE_DIRS} ${cracen_INCLUDE_DIRS})
 
 ###############################################################################
+# Find Boost
+###############################################################################
+find_package(Boost 1.60.0 COMPONENTS unit_test_framework REQUIRED)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${Boost_LIBRARIES})
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
+enable_testing()
+
+###############################################################################
 # Executables
 ###############################################################################
 
@@ -38,11 +47,13 @@ file(GLOB_RECURSE SRCFILES
 	"src/*"
 )
 file(GLOB_RECURSE REMOVE_SOURCES "src/Example/*")
+file(GLOB_RECURSE REMOVE_TESTS "src/Test/*")
 
 LIST(REMOVE_ITEM SRCFILES ${REMOVE_SOURCES})
+LIST(REMOVE_ITEM SRCFILES ${REMOVE_TESTS})
 LIST(REMOVE_DUPLICATES SRCFILES)
 
-message(STATUS "REMOVE_SOURCES:" ${REMOVE_SOURCES})
+message(STATUS "CXX_FLAGS:" ${CMAKE_CXX_FLAGS})
 message(STATUS "SRCFILES:" ${SRCFILES})
 
 add_library(Cracen STATIC "${SRCFILES}")
@@ -54,12 +65,19 @@ target_link_libraries(CracenSource ${LIBS})
 
 add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSink.cpp")
 target_link_libraries(CracenSink ${LIBS})
+
+# Test cases
+file(GLOB TESTS Tests/*.cpp)
+add_executable(unittest "${SRCFILES};${REMOVE_TESTS}")
+target_link_libraries(unittest ${LIBS})
+add_test(ALL unittest)
+
 #
 #add_executable(CApi "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CApi.cpp")
 #target_link_libraries(CApi ${LIBS})
 
-add_executable(BufferAdapterTest EXCLUDE_FROM_ALL "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/BufferAdapterTest.cpp")
-target_link_libraries(BufferAdapterTest ${LIBS})
+#add_executable(BufferAdapterTest EXCLUDE_FROM_ALL "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/BufferAdapterTest.cpp")
+#target_link_libraries(BufferAdapterTest ${LIBS})
 
 #add_executable(Chain "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/example/Chain.cpp")
 #target_link_libraries(Chain ${LIBS})
