@@ -45,7 +45,7 @@ public:
 	}
 };
 
-template <class Cage, class OutputType>
+template <class Cracen>
 class DynamicSendPolicy {
 
 };

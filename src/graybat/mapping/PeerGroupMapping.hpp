@@ -21,7 +21,7 @@ namespace graybat {
 
             PeerGroupMapping(unsigned int stage):
                 stage(stage){
-				std::cout << "Stage : " << stage << std::endl;
+				//std::cout << "Stage : " << stage << std::endl;
             }
 
 	    template<typename T_Cage>
@@ -52,7 +52,7 @@ namespace graybat {
                         peersWithSameTag.push_back(vAddr);
 					}
                 }
-				std::cout << "Peers with same Tag " << peersWithSameTag.size() << std::endl;
+				//std::cout << "Peers with same Tag " << peersWithSameTag.size() << std::endl;
 
                 // Distribute vertices to peers with same tag
                 std::sort(peersWithSameTag.begin(), peersWithSameTag.end());
@@ -63,7 +63,7 @@ namespace graybat {
                 std::vector<Vertex> vertices = cage.getVertices();
                 std::vector<Vertex> myVertices;
 
-				std::cout << "vertices size" << vertices.size() << std::endl;
+				//std::cout << "vertices size" << vertices.size() << std::endl;
                 for(size_t i = 0; i < vertices.size(); ++i) {
                     if(vertices[i]() == stage){
                         if(peersWithSameTag.at(peer_i) == context.getVAddr()){
@@ -76,7 +76,7 @@ namespace graybat {
 
                 }
 
-	            std::cout << "myVertices size " << myVertices.size() << std::endl;
+	            //std::cout << "myVertices size " << myVertices.size() << std::endl;
 
  		return myVertices;
 

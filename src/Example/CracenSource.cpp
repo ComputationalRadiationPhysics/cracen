@@ -10,7 +10,6 @@ class SendFunctor {
 public:
 	std::array<char,12> operator()() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		std::cout << "Push \"Hello World!\" to output Buffer" << std::endl;
 		return {{'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!'}};
 	}
 };
@@ -32,7 +31,7 @@ public:
 		const std::string localIp = "127.0.0.1";
 		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(5000);
 		const std::string peerUri = "tcp://"+localIp+":"+std::to_string(5002);
-		std::cout << "My URI =" << peerUri << std::endl;
+		//std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = 2;
 
 		return CP::Config({masterUri, peerUri, contextSize, contextName}); //ZMQ Config
@@ -67,8 +66,8 @@ using CracenType =
 
 int main(int argc, char* argv[]) {
 
-	std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
-	std::cout << "Output:" << typeid(CracenType::Output).name() << std::endl;
+	//std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
+	//std::cout << "Output:" << typeid(CracenType::Output).name() << std::endl;
 
 	CageFactory cf;
 

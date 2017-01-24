@@ -52,7 +52,6 @@ public:
 				vm["sources"].as<unsigned int>(),
 				vm["fitters"].as<unsigned int>(),
 				vm["sinks"].as<unsigned int>()
-
 			})
 		);
 	}

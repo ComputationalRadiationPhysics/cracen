@@ -31,7 +31,7 @@ public:
 		const std::string localIp = "127.0.0.1";
 		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(5000);
 		const std::string peerUri = "tcp://"+localIp+":"+std::to_string(5001);
-		std::cout << "My URI =" << peerUri << std::endl;
+		//std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = 2;
 
 		return CP::Config({masterUri, peerUri, contextSize, contextName}); //ZMQ Config
@@ -61,8 +61,8 @@ using CracenType =
 
 int main(int argc, char* argv[]) {
 
-	std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
-	std::cout << "Output:" << typeid(CracenType::Output).name() << std::endl;
+	//std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
+	//std::cout << "Output:" << typeid(CracenType::Output).name() << std::endl;
 
 	CageFactory cf;
 

@@ -27,7 +27,7 @@ namespace Cracen {
 template <
     class KernelFunktor,
     class CageFactory,
-    template<class, class> class SendPolicy,
+    template<class> class SendPolicy,
 	template<class> class Incoming = Functor::Identity,
 	template<class> class Outgoing = Functor::Identity,
 	std::launch IncomingPolicy = std::launch::deferred,
@@ -35,12 +35,22 @@ template <
 >
 class Cracen
 {
+	using Self = Cracen<
+		KernelFunktor,
+		CageFactory,
+		SendPolicy,
+		Incoming,
+		Outgoing,
+		IncomingPolicy,
+		OutgoingPolicy
+	>;
 	using KernelInfo = Meta::FunctionInfo<KernelFunktor>;
 	static_assert(std::tuple_size<typename KernelInfo::ParamList>::value <= 1, "Kernels for cracen can have at most 1 Argument.");
 
-	// Get in- and output from Functor
+	const static int inputBufferSize = 1000;
+	const static int outputBufferSize = 1000;
 
-public:
+public: 	// Get in- and output from Functor
 	using Input = typename std::tuple_element<
 		0, // Get first element of parameter list
 		typename std::conditional< // check if parameter is empty
@@ -58,15 +68,18 @@ public:
 		>::type
 	>::type;
 
+	struct KeepAlive {
+		unsigned int edgeWeight;
+	};
+
+	using Cage = typename CageFactory::Cage;
+
 private:
 	// Define graybat types
-	using Cage = typename CageFactory::Cage;
+
 	using Vertex = typename Cage::Vertex;
 	using Edge = typename Cage::Edge;
 	using Event = typename Cage::Event;
-
-	// KeepAlive message type
-	using KeepAlive = struct { unsigned int edgeWeight;};
 
 	// Ringbuffers for in and output
 	OptionalAttribute<Ringbuffer<std::future<Input>>, !std::is_same<Input, void>::value> inputBuffer;
@@ -77,7 +90,7 @@ private:
 	Cage metaCage;
 
 	// SendPolicy instance
-	OptionalAttribute<SendPolicy<Cage, Output>, !std::is_same<Output, void>::value> sendPolicy;
+	OptionalAttribute<SendPolicy<Self>, !std::is_same<Output, void>::value> sendPolicy;
 
 	std::map<
 		typename Cage::Vertex::VertexID,
@@ -209,8 +222,6 @@ private:
 	}
 
 public:
-	const static int inputBufferSize = 1000;
-	const static int outputBufferSize = 1000;
 	Cracen(CageFactory cf) :
 		inputBuffer(inputBufferSize, 1),
 		outputBuffer(outputBufferSize, 1),

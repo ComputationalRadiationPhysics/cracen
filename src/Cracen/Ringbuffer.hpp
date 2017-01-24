@@ -88,8 +88,8 @@ void Ringbuffer<Type>::init()
     semaphoreErrorValue |= sem_init(space, 0, buffer.size());
 	if(semaphoreErrorValue != 0) std::cerr << "Initialization of semaphore failed." << std::endl;
 	assert(semaphoreErrorValue == 0);
-	std::cout << "usage << " << usage << std::endl;
-	std::cout << "space << " << space << std::endl;
+	//std::cout << "usage << " << usage << std::endl;
+	//std::cout << "space << " << space << std::endl;
 }
 
 /**
