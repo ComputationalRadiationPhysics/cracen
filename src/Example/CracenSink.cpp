@@ -4,6 +4,8 @@
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
 
+#include "SignalHandler.hpp"
+
 class ReceiveFunctor {
 public:
 	void operator()(std::array<char,12> in) {
@@ -68,6 +70,8 @@ int main(int argc, char* argv[]) {
 
 	CracenType receiveCracen(cf);
 
+	waitForSignal(SIGINT);
+	std::cout << "Received SIGINT. Shutting down." << std::endl;
 	receiveCracen.release();
 
 	return 0;

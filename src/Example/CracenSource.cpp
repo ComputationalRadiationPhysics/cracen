@@ -4,7 +4,9 @@
 #include "../Cracen/Cracen.hpp"
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
-#include "array"
+#include <array>
+
+#include "SignalHandler.hpp"
 
 class SendFunctor {
 public:
@@ -73,6 +75,9 @@ int main(int argc, char* argv[]) {
 
 	CracenType sendCracen(cf);
 
+
+	waitForSignal(SIGINT);
+	std::cout << "Received SIGINT. Shutting down." << std::endl;
 	sendCracen.release();
 
 	return 0;

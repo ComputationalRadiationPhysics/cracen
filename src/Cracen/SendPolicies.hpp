@@ -33,6 +33,7 @@ public:
 	}
 
 	void operator()(const typename Cracen::Output& out) {
+		//TODO: Wrap in std::async to terminate on !running
 		cage.send(outEdges.at(roundRobinCounter), out);
 
 		roundRobinCounter = (roundRobinCounter+1) % outEdges.size();
@@ -70,6 +71,7 @@ public:
 				minEdge = edgePair.first;
 			}
 		}
+		//TODO: Wrap in std::async to terminate on !running
 		cage.send(minEdge, out);
 		edgeWeights[minEdge]++;
 	}
@@ -104,6 +106,7 @@ public:
 
 	void operator()(const OutputType& out) {
 		for(auto& edge : outEdges) {
+			//TODO: Wrap in std::async to terminate on !running
 			cage.send(edge, out);
 		}
 	}
