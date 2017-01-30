@@ -28,7 +28,7 @@ namespace Cracen {
 template <
     class KernelFunktor,
     class CageFactory,
-    template<class> class SendPolicy = SendPolicyBase,
+    template<class> class SendPolicy = NoSend,
 	template<class> class Incoming = Functor::Identity,
 	template<class> class Outgoing = Functor::Identity,
 	std::launch IncomingPolicy = std::launch::deferred,
@@ -278,8 +278,8 @@ private:
 					std::cout << "Received KeepAlive from " << std::get<0>(kam).source.id << std::endl;
 					// Received KeepAlive, update record
 					const typename Cage::Edge& edge = std::get<0>(kam);
-					const unsigned int weight = std::get<1>(kam).at(0).edgeWeight;
-					sendPolicy.template optionalCall<decltype(&SendPolicy<Self>::receiveKeepAlive)>(edge, weight);
+					const KeepAlive& ka = std::get<1>(kam).at(0);
+					sendPolicy.template optionalCall(&SendPolicy<Self>::receiveKeepAlive, edge, ka);
 
 					//edgeWeights[edge.source.id] = std::get<1>(kam).at(0).edgeWeight;
 					//TODO: Call send policy with edge and weight
@@ -300,7 +300,7 @@ private:
 			for(auto& vertex : metaCage.getHostedVertices()) {
 				KeepAlive ka;
 				using BufferType = typename decltype(inputBuffer)::type;
-				ka.edgeWeight = inputBuffer.template optionalCall<decltype(&BufferType::getSize), &BufferType::getSize, int>();
+				ka.edgeWeight = inputBuffer.template optionalCall(&BufferType::getSize);
 				std::vector<KeepAlive> kam { ka };
 				for(typename Cage::Edge& e : metaCage.getOutEdges(vertex)) {
 					std::cout << "Send KeepAlive {" << ka.edgeWeight << "} to " << e.target.id << std::endl;

@@ -5,17 +5,23 @@
 namespace Cracen {
 
 template <class Cracen>
-class SendPolicyBase {
+class NoSend {
 public:
-	unsigned int keepAliveInterval = std::numeric_limits<unsigned int>::max(); // Interval between two keepAlive messages in ms
+	NoSend(typename Cracen::Cage& cage)
+	{}
 
-	void receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) {};
+	/*
+	void operator()(const typename Cracen::Output& out) {
+		std::cout << "The NoSend Policy is not meant to be used. For cracen with outgoing edges you have to specify a valid SendPolicy." << std::endl;
+		assert(false);
+	}
+	*/
+
+	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 };
 
 template <class Cracen>
-class RoundRobinPolicy :
-	public SendPolicyBase<Cracen>
-{
+class RoundRobinPolicy {
 	int roundRobinCounter;
 	std::vector<typename Cracen::Cage::Edge> outEdges;
 	typename Cracen::Cage& cage;
@@ -38,12 +44,13 @@ public:
 
 		roundRobinCounter = (roundRobinCounter+1) % outEdges.size();
 	}
+
+	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
+
 };
 
 template <class Cracen>
-class MinimumWorkloadPolicy  :
-	public SendPolicyBase<typename Cracen::Cage>
-{
+class MinimumWorkloadPolicy {
 	std::map<typename Cracen::Cage::Edge, unsigned int> edgeWeights;
 
 	typename Cracen::Cage& cage;
@@ -76,15 +83,14 @@ public:
 		edgeWeights[minEdge]++;
 	}
 
-	void receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::Cage::KeepAlive ka) {
+	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::Cage::KeepAlive ka) {
 		edgeWeights[e] = ka.edgeWeight;
+		return 0;
 	}
 };
 
 template <class Cracen>
-class BroadCastPolicy  :
-	public SendPolicyBase<Cracen>
-{
+class BroadCastPolicy {
 private:
 	using Cage = typename Cracen::Cage;
 	using Edge = typename Cage::Edge;
@@ -110,6 +116,8 @@ public:
 			cage.send(edge, out);
 		}
 	}
+
+	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 };
 
 

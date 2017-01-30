@@ -5,13 +5,15 @@ cmake_minimum_required(VERSION 3.0.1)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/lib/x86_64-linux-gnu/" "$ENV{CUDA_ROOT}" "$ENV{BOOST_ROOT}")
 
+message(STATUS "CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}")
+
 ###############################################################################
 # Compiler Flags
 ###############################################################################
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")

@@ -57,8 +57,7 @@ public:
 using CracenType =
 	Cracen::Cracen<
 		ReceiveFunctor,
-		CageFactory,
-		Cracen::BroadCastPolicy
+		CageFactory
 	>;
 
 int main(int argc, char* argv[]) {

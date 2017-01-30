@@ -20,12 +20,18 @@ struct OptionalAttribute<
 	};
 
 	template <
-		class Function,
-		Function function,
-		class ReturnType,
+		class Return,
 		class... Args
 	>
-	ReturnType optionalCall(Args... args) {
+	Return optionalCall(Return (Type::*function)(Args...), Args... args) {
+		return {};
+	}
+
+	template <
+		class Return,
+		class... Args
+	>
+	Return optionalCall(Return (Type::*function)(Args...) const, Args... args) const {
 		return {};
 	}
 };
@@ -43,12 +49,18 @@ struct OptionalAttribute<
 	using type = Type;
 
 	template <
-		class Function,
-		Function function,
-		class ReturnType,
+		class Return,
 		class... Args
 	>
-	ReturnType optionalCall(Args... args) {
+	Return optionalCall(Return (Type::*function)(Args...), Args... args) {
+		return (this->*function)(args...);
+	}
+
+	template <
+		class Return,
+		class... Args
+	>
+	Return optionalCall(Return (Type::*function)(Args...) const, Args... args) const {
 		return (this->*function)(args...);
 	}
 };
