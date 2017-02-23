@@ -58,15 +58,18 @@ LIST(REMOVE_DUPLICATES SRCFILES)
 message(STATUS "CXX_FLAGS:" ${CMAKE_CXX_FLAGS})
 message(STATUS "SRCFILES:" ${SRCFILES})
 
-add_library(Cracen STATIC "${SRCFILES}")
-target_link_libraries(Cracen ${LIBS})
-set(LIBS "Cracen" ${LIBS})
+#add_library(Cracen STATIC "${SRCFILES}")
+#target_link_libraries(Cracen ${LIBS})
+#set(LIBS "Cracen" ${LIBS})
 
 add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSource.cpp")
 target_link_libraries(CracenSource ${LIBS})
 
 add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSink.cpp")
 target_link_libraries(CracenSink ${LIBS})
+
+add_executable(Benchmark "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/Benchmark.cpp")
+target_link_libraries(Benchmark ${LIBS})
 
 # Test cases
 file(GLOB TESTS Tests/*.cpp)

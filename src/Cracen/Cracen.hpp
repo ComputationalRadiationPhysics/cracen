@@ -28,7 +28,7 @@ namespace Cracen {
 template <
     class KernelFunktor,
     class CageFactory,
-    template<class> class SendPolicy = NoSend,
+    class SendPolicy = NoSend,
 	template<class> class Incoming = Functor::Identity,
 	template<class> class Outgoing = Functor::Identity,
 	std::launch IncomingPolicy = std::launch::deferred,
@@ -94,7 +94,7 @@ private:
 	Cage metaCage;
 
 	// SendPolicy instance
-	OptionalAttribute<SendPolicy<Self>, !std::is_same<Output, void>::value> sendPolicy;
+	OptionalAttribute<SendPolicy, !std::is_same<Output, void>::value> sendPolicy;
 
 	std::shared_ptr<std::atomic<bool>> running;
 	std::thread receiveThread;
@@ -166,9 +166,6 @@ private:
 		>::type * = nullptr
 	>
 	void send() {
-		if(dataCage.getHostedVertices().size() == 0) std::cerr << "Error: No hostedVertices!" << std::endl;
-		assert(dataCage.getHostedVertices().size() > 0);
-
 		while(*running) {
 			//Send dataset away
 			//Vertex source = dataCage.hostedVertices.at(0);
@@ -176,7 +173,7 @@ private:
 			auto sendFuture = this->outputBuffer.pop();
 			auto  message = sendFuture.get();
 			std::cout << "Message sent.("<< &message[0] <<")" << std::endl;
-			sendPolicy(std::move(message));
+			sendPolicy.template operator()<Self>(dataCage, std::move(message));
 
 		}
 	}
@@ -203,7 +200,7 @@ private:
 				std::async(
 					OutgoingPolicy,
 					outgoingFunctor,
-					kf(this->inputBuffer.pop())
+					kf(this->inputBuffer.pop().get())
 				)
 			);
 		}
@@ -279,7 +276,7 @@ private:
 					// Received KeepAlive, update record
 					const typename Cage::Edge& edge = std::get<0>(kam);
 					const KeepAlive& ka = std::get<1>(kam).at(0);
-					sendPolicy.template optionalCall(&SendPolicy<Self>::receiveKeepAlive, edge, ka);
+					sendPolicy.template optionalCall(&SendPolicy::template receiveKeepAlive<Self>, edge, ka);
 
 					//edgeWeights[edge.source.id] = std::get<1>(kam).at(0).edgeWeight;
 					//TODO: Call send policy with edge and weight
@@ -323,7 +320,7 @@ private:
 
 
 public:
-	Cracen(CageFactory cf) :
+	Cracen(KernelFunktor kf, CageFactory cf, SendPolicy sendPolicy = NoSend()) :
 		inputBuffer(inputBufferSize, 1),
 		outputBuffer(outputBufferSize, 1),
 		dataCage(
@@ -334,36 +331,33 @@ public:
 			cf.commPoly("MetaContext"),
 			mirrorEdges(cf.graphPoly())
 		),
-		sendPolicy( // distribute dataCage, for the sendPolicy to be initilised correctly
-			[](Cage& dataCage, Cage& metaCage, CageFactory& cf) -> std::reference_wrapper<Cage> {
-				dataCage.distribute(cf.mapping());
-				metaCage.distribute(cf.mapping());
-				std::cout << "Cages distributed." << std::endl;
-				return std::ref(dataCage);
-			}(dataCage, metaCage, cf)
-		),
-		running(std::make_shared<std::atomic<bool>>(true)),
-		receiveThread(
+		sendPolicy( sendPolicy),
+		running(std::make_shared<std::atomic<bool>>(true))
+	{
+		dataCage.distribute(cf.mapping());
+		metaCage.distribute(cf.mapping());
+		std::cout << "Cages distributed." << std::endl;
+		receiveThread = std::thread(
 			[=](){
 				this->receive<>();
 			}
-		),
-		sendThread(
+		);
+		sendThread = std::thread(
 			[=](){
 				this->send<>();
 			}
-		),
-		kernelThread(
+		);
+		kernelThread = std::thread(
 			[=](){
 				this->run<>();
 			}
-		),
-		keepAliveThread(
+		);
+		keepAliveThread = std::thread(
 			[=](){
 				this->keepAlive();
 			}
-		)
-	{}
+		);
+	}
 
 	~Cracen() {
 		receiveThread.join();
@@ -372,10 +366,11 @@ public:
 		keepAliveThread.join();
 	}
 
+	Cracen(Cracen&& rhs) = delete;
+	Self& operator=(Cracen&& rhs) = delete;
+
 	Cracen(const Cracen& cracen) = delete;
-	Cracen(const Cracen&& cracen) = delete;
 	void operator=(const Cracen& cracen) = delete;
-	void operator=(Cracen&& cracen) = delete;
 
 	void release() {
 		*running = false;
@@ -386,5 +381,10 @@ public:
 	}
 
 };
+
+template <class... Args>
+std::unique_ptr<Cracen<Args...>> make_cracen(Args... args) {
+	return std::unique_ptr<Cracen<Args...>>(new Cracen<Args...>(args...));
+}
 
 }

@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 
 	CageFactory cf;
 
-	CracenType sendCracen(cf);
+	auto sendCracen = Cracen::make_cracen(SendFunctor(), cf, Cracen::BroadCastPolicy());
 
 
 	waitForSignal(SIGINT);

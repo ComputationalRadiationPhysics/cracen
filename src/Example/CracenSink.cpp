@@ -54,12 +54,6 @@ public:
 	}
 };
 
-using CracenType =
-	Cracen::Cracen<
-		ReceiveFunctor,
-		CageFactory
-	>;
-
 int main(int argc, char* argv[]) {
 
 	//std::cout << "Input:" << typeid(CracenType::Input).name() << std::endl;
@@ -67,7 +61,7 @@ int main(int argc, char* argv[]) {
 
 	CageFactory cf;
 
-	CracenType receiveCracen(cf);
+	auto receiveCracen = Cracen::make_cracen(ReceiveFunctor(), cf);
 
 	waitForSignal(SIGINT);
 	std::cout << "Received SIGINT. Shutting down." << std::endl;

@@ -4,11 +4,8 @@
 
 namespace Cracen {
 
-template <class Cracen>
 class NoSend {
 public:
-	NoSend(typename Cracen::Cage& cage)
-	{}
 
 	/*
 	void operator()(const typename Cracen::Output& out) {
@@ -17,106 +14,85 @@ public:
 	}
 	*/
 
+	template <class Cracen>
 	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 };
 
-template <class Cracen>
 class RoundRobinPolicy {
-	int roundRobinCounter;
-	std::vector<typename Cracen::Cage::Edge> outEdges;
-	typename Cracen::Cage& cage;
+	int vertexCounter;
+	int edgeCounter;
 
 public:
-	RoundRobinPolicy(typename Cracen::Cage& cage) :
-		roundRobinCounter(0),
-		cage(cage)
-	{
-		for(typename Cracen::Cage::Vertex& v : cage.hostedVertices) {
-			for(typename Cracen::Cage::Edge e : cage.getOutEdges(v)) {
-				outEdges.push_back(e);
-			}
-		}
-	}
+	RoundRobinPolicy() :
+		vertexCounter(0),
+		edgeCounter(0)
+	{}
 
-	void operator()(const typename Cracen::Output& out) {
+	template <class Cracen>
+	void operator()(typename Cracen::Cage& cage, const typename Cracen::Output& out) {
 		//TODO: Wrap in std::async to terminate on !running
-		cage.send(outEdges.at(roundRobinCounter), out);
-
-		roundRobinCounter = (roundRobinCounter+1) % outEdges.size();
+		auto& vertices = cage.getHostedVertices();
+		while(edgeCounter > vertices.at(vertexCounter).getOutEdges()) {
+			vertexCounter = (vertexCounter + 1) % vertices.size();
+			edgeCounter = 0;
+		}
+		cage.send(vertices.at(vertexCounter).getOutEdges().at(edgeCounter), out);
+		edgeCounter++;
 	}
 
+	template <class Cracen>
 	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 
 };
 
-template <class Cracen>
 class MinimumWorkloadPolicy {
-	std::map<typename Cracen::Cage::Edge, unsigned int> edgeWeights;
+	std::map<unsigned int, unsigned int> edgeWeights; // Map from edgeId to edgeWeight
 
-	typename Cracen::Cage& cage;
-	unsigned int maxEdgeWeight = 200; // Maximum edge weight. if the edgeWeight extends that value, the edge is considered broken
-	unsigned int keepAliveInterval = 500; // Interval between two keepAlive messages in ms
+	//unsigned int maxEdgeWeight = 200; // Maximum edge weight. if the edgeWeight extends that value, the edge is considered broken
+	//unsigned int keepAliveInterval = 500; // Interval between two keepAlive messages in ms
 
 public:
 
-	MinimumWorkloadPolicy(typename Cracen::Cage& cage) :
-		cage(cage)
-	{
-		for(typename Cracen::Cage::Vertex& v : cage.hostedVertices) {
-			for(typename Cracen::Cage::Edge e : cage.getOutEdges(v)) {
-				edgeWeights[e] = 0;
-			}
-		}
-	}
-
-	void operator()(const typename Cracen::Output& out) {
+	template <class Cracen>
+	void operator()(typename Cracen::Cage& cage, const typename Cracen::Output& out) {
 		unsigned int minWeight = std::numeric_limits<unsigned int>::max();
 		typename Cracen::Cage::Edge minEdge;
-		for(const auto& edgePair : edgeWeights) {
-			if(edgePair.second < minWeight) {
-				minWeight = edgePair.second;
-				minEdge = edgePair.first;
+
+		for(typename Cracen::Cage::Vertex& v : cage.getHostedVertices()) {
+			for(typename Cracen::Cage::Edge e : cage.getOutEdges(v)) {
+				if(edgeWeights[e.id] < minWeight) {
+					minWeight = edgeWeights[e.id];
+					minEdge = e;
+				}
 			}
 		}
+
 		//TODO: Wrap in std::async to terminate on !running
 		cage.send(minEdge, out);
-		edgeWeights[minEdge]++;
+		edgeWeights[minEdge.id]++;
 	}
 
+	template <class Cracen>
 	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::Cage::KeepAlive ka) {
-		edgeWeights[e] = ka.edgeWeight;
+		edgeWeights[e.id] = ka.edgeWeight;
 		return 0;
 	}
 };
 
-template <class Cracen>
-class BroadCastPolicy {
-private:
-	using Cage = typename Cracen::Cage;
-	using Edge = typename Cage::Edge;
-	using OutputType = typename Cracen::Output;
+struct BroadCastPolicy {
 
-	std::vector<Edge> outEdges;
-	Cage& cage;
+	template <class Cracen>
+	void operator()(typename Cracen::Cage& cage, const typename Cracen::Output& out) {
 
-public:
-	BroadCastPolicy(Cage& cage) :
-		cage(cage)
-	{
-		for(typename Cage::Vertex& v : cage.getHostedVertices()) {
-			for(typename Cage::Edge e : cage.getOutEdges(v)) {
-				outEdges.push_back(e);
+		for(typename Cracen::Cage::Vertex& v : cage.getHostedVertices()) {
+			for(typename Cracen::Cage::Edge e : cage.getOutEdges(v)) {
+				//TODO: Wrap in std::async to terminate on !running
+				cage.send(e, out);
 			}
 		}
 	}
 
-	void operator()(const OutputType& out) {
-		for(auto& edge : outEdges) {
-			//TODO: Wrap in std::async to terminate on !running
-			cage.send(edge, out);
-		}
-	}
-
+	template <class Cracen>
 	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 };
 
