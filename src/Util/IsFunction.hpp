@@ -1,10 +1,11 @@
 #pragma once
 
+#include <type_traits>
+
 namespace Detail {
 
 template <
 	class Function,
-	Function fn,
 	class Result,
 	class Enable,
 	class... Args
@@ -21,12 +22,11 @@ template <
 >
 struct isFunctionImpl <
 	Function,
-	fn,
 	Result,
 	typename std::enable_if<
 		std::is_same<
 			Result,
-			decltype(fn(*reinterpret_cast<Arg*>(0)...))
+			decltype(std::declval<Function>()(*reinterpret_cast<Arg*>(0)...))
 		>::value
 	>::type,
 	Arg...
@@ -38,10 +38,9 @@ struct isFunctionImpl <
 
 template <
 	class Function,
-	Function fn,
 	class Result,
 	class... Args
 >
 struct isFunction {
-	static constexpr bool value = Detail::isFunctionImpl<Function, fn, Result, void, Args...>::value;
+	static constexpr bool value = Detail::isFunctionImpl<Function, Result, void, Args...>::value;
 };

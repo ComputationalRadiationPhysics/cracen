@@ -138,7 +138,7 @@ private:
 			) {
 				if(!*running) return;
 			}
-			std::cout << "Message received." << std::endl;
+			//std::cout << "Message received." << std::endl;
 			this->inputBuffer.push(
 				std::async(
 					IncomingPolicy,
@@ -172,7 +172,7 @@ private:
 			//std::vector<Edge> source_sink = dataCage.getOutEdges(source);
 			auto sendFuture = this->outputBuffer.pop();
 			auto  message = sendFuture.get();
-			std::cout << "Message sent.("<< &message[0] <<")" << std::endl;
+			//std::cout << "Message sent.("<< &message[0] <<")" << std::endl;
 			sendPolicy.template operator()<Self>(dataCage, std::move(message));
 
 		}
@@ -272,7 +272,7 @@ private:
 			//Check for received KeepAlives
 			for(auto& kam : keepAliveMessages) {
 				if(std::get<2>(kam).at(0).ready()) {
-					std::cout << "Received KeepAlive from " << std::get<0>(kam).source.id << std::endl;
+					//std::cout << "Received KeepAlive from " << std::get<0>(kam).source.id << std::endl;
 					// Received KeepAlive, update record
 					const typename Cage::Edge& edge = std::get<0>(kam);
 					const KeepAlive& ka = std::get<1>(kam).at(0);
@@ -300,7 +300,7 @@ private:
 				ka.edgeWeight = inputBuffer.template optionalCall(&BufferType::getSize);
 				std::vector<KeepAlive> kam { ka };
 				for(typename Cage::Edge& e : metaCage.getOutEdges(vertex)) {
-					std::cout << "Send KeepAlive {" << ka.edgeWeight << "} to " << e.target.id << std::endl;
+					//std::cout << "Send KeepAlive {" << ka.edgeWeight << "} to " << e.target.id << std::endl;
 					Util::terminateAble(
 						[&](){
 							metaCage.send( e, kam, sendEvent);

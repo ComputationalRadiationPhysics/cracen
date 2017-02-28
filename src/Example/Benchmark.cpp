@@ -2,7 +2,9 @@
 
 #include <mpi.h>
 #include <array>
+#include <vector>
 #include <cstdint>
+#include <chrono>
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
 
@@ -11,10 +13,13 @@ constexpr unsigned int kilo = 1024;
 constexpr unsigned int mega = kilo * 1024;
 using Chunk = std::array<std::uint8_t, mega>;
 
+std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> actions;
+
 struct BandwidthSource {
 	Chunk chunk;
 
 	Chunk operator()() {
+		actions.push_back(std::chrono::high_resolution_clock::now());
 		return chunk;
 	}
 };
@@ -23,6 +28,7 @@ struct BandwidthIntermediate {
 	Chunk chunk;
 
 	Chunk operator()(Chunk chunk) {
+		actions.push_back(std::chrono::high_resolution_clock::now());
 		return chunk;
 	}
 };
@@ -31,6 +37,7 @@ struct BandwidthSink {
 	Chunk chunk;
 
 	void operator()(Chunk) {
+		actions.push_back(std::chrono::high_resolution_clock::now());
 	}
 };
 
@@ -102,6 +109,18 @@ int main(int argc, char* argv[]) {
 
 	int stageSize = worldSize / 3;
 	int overhang = worldSize - stageSize * 3;
+
+	constexpr size_t chunkSize = sizeof(Chunk::value_type) * Chunk().size();
+
+	std::thread printer([&]() {
+		while(true) {
+			if(actions.size() == 0) continue;
+			float rate = actions.size() * chunkSize / std::chrono::duration<float>(actions.back() - actions.front()).count();
+			std::cout << "Datarate = " << rate / mega << "MiB/s" << std::endl;
+			actions.clear();
+			std::this_thread::sleep_for(std::chrono::seconds(2));
+		}
+	});
 
 	CageFactory cf(worldSize, rank);
 	try {
