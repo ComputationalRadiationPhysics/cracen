@@ -46,6 +46,13 @@ struct OptionalAttribute<
 	using Type::Type;
 	using Type::operator=;
 
+	template <class... Args>
+	OptionalAttribute(Args... args) :
+		Type(args...)
+	{
+
+	};
+
 	using type = Type;
 
 	template <

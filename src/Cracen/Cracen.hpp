@@ -331,8 +331,11 @@ public:
 			cf.commPoly("MetaContext"),
 			mirrorEdges(cf.graphPoly())
 		),
-		sendPolicy( sendPolicy),
-		running(std::make_shared<std::atomic<bool>>(true))
+		sendPolicy( sendPolicy ),
+		running(
+			new std::atomic<bool>(true)
+		),
+		kf(kf)
 	{
 		dataCage.distribute(cf.mapping());
 		metaCage.distribute(cf.mapping());

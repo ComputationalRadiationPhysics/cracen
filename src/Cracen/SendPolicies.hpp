@@ -4,7 +4,7 @@
 
 namespace Cracen {
 
-class NoSend {
+struct NoSend {
 public:
 
 	/*
@@ -18,7 +18,7 @@ public:
 	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 };
 
-class RoundRobinPolicy {
+struct RoundRobinPolicy {
 	int vertexCounter;
 	int edgeCounter;
 
@@ -45,7 +45,7 @@ public:
 
 };
 
-class MinimumWorkloadPolicy {
+struct MinimumWorkloadPolicy {
 	std::map<unsigned int, unsigned int> edgeWeights; // Map from edgeId to edgeWeight
 
 	//unsigned int maxEdgeWeight = 200; // Maximum edge weight. if the edgeWeight extends that value, the edge is considered broken
