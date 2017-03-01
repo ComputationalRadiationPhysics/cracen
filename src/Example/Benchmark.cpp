@@ -10,16 +10,22 @@
 
 
 constexpr unsigned int kilo = 1024;
-constexpr unsigned int mega = kilo * 1024;
-using Chunk = std::array<std::uint8_t, mega>;
+constexpr unsigned int mega = kilo * kilo;
+using Chunk = std::vector<char>;
+Chunk DefaultChunk(mega);
 
-std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> actions;
+unsigned int actions;
 
 struct BandwidthSource {
 	Chunk chunk;
 
+	BandwidthSource() :
+		chunk(mega)
+	{}
+
 	Chunk operator()() {
-		actions.push_back(std::chrono::high_resolution_clock::now());
+// 		std::cout << "Send" << std::endl;
+		actions++;
 		return chunk;
 	}
 };
@@ -27,17 +33,27 @@ struct BandwidthSource {
 struct BandwidthIntermediate {
 	Chunk chunk;
 
+	BandwidthIntermediate() :
+		chunk(mega)
+	{}
+
 	Chunk operator()(Chunk chunk) {
-		actions.push_back(std::chrono::high_resolution_clock::now());
+// 		std::cout << "Forward" << std::endl;
+		actions++;
 		return chunk;
 	}
 };
 
 struct BandwidthSink {
+	BandwidthSink() :
+		chunk(mega)
+	{}
+
 	Chunk chunk;
 
 	void operator()(Chunk) {
-		actions.push_back(std::chrono::high_resolution_clock::now());
+// 		std::cout << "Receive" << std::endl;
+		actions++;
 	}
 };
 
@@ -109,14 +125,15 @@ int main(int argc, char* argv[]) {
 	int stageSize = worldSize / 3;
 	int overhang = worldSize - stageSize * 3;
 
-	constexpr size_t chunkSize = sizeof(Chunk::value_type) * Chunk().size();
+	constexpr size_t chunkSize = sizeof(Chunk::value_type) * mega;
 
 	std::thread printer([&]() {
+		std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
 		while(true) {
-			if(actions.size() == 0) continue;
-			float rate = actions.size() * chunkSize / std::chrono::duration<float>(actions.back() - actions.front()).count();
+			float rate = actions * chunkSize / std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - begin).count();
 			std::cout << "Datarate = " << rate / mega << "MiB/s" << std::endl;
-			actions.clear();
+			actions = 0;
+			begin = std::chrono::high_resolution_clock::now();
 			std::this_thread::sleep_for(std::chrono::seconds(2));
 		}
 	});

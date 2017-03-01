@@ -18,7 +18,7 @@
 #include "Cracen/Functor/Identity.hpp"
 #include "Cracen/Meta/FunctionInfo.hpp"
 #include "Cracen/Meta/ConditionalInvoke.hpp"
-#include "Cracen/Util/TerminatableCall.hpp"
+//#include "Cracen/Util/TerminatableCall.hpp"
 
 #include "BufferTraits.hpp"
 #include "SendPolicies.hpp"
@@ -48,11 +48,11 @@ class Cracen
 	using KernelInfo = Meta::FunctionInfo<KernelFunktor>;
 	static_assert(std::tuple_size<typename KernelInfo::ParamList>::value <= 1, "Kernels for cracen can have at most 1 Argument.");
 
-	const int inputBufferSize = 1000;
-	const int outputBufferSize = 1000;
+	const int inputBufferSize = 100;
+	const int outputBufferSize = 100;
 	// Interval in which cracen is checking if it has to terminate in milliseconds
 	// Don't make this interval too short, since it can cause little overhead and a second is acceptable for termination
-	const int pollingInterval = 1000;
+	const int pollingInterval = 100;
 
 public: 	// Get in- and output from Functor
 	using Input = typename std::tuple_element<
@@ -123,27 +123,15 @@ private:
 			std::exit(EXIT_FAILURE);
 		}
 		while(*running) {
-			std::future<ReceiveType> receiveOperation = std::async(
-				std::launch::async,
-				[this]() -> ReceiveType {
-					ReceiveType data;
-					dataCage.recv(data);
-					return data;
-				}
-			);
-			while(
-				receiveOperation.wait_for(
-					std::chrono::milliseconds(pollingInterval)
-				) != std::future_status::ready
-			) {
-				if(!*running) return;
-			}
+// 			std::cout << "Receive " << this->inputBuffer.getSize() << std::endl;
+			ReceiveType data;
+			dataCage.recv(data);
 			//std::cout << "Message received." << std::endl;
 			this->inputBuffer.push(
 				std::async(
 					IncomingPolicy,
 					incomingFunctor,
-					receiveOperation.get()
+					data
 				)
 			);
 		}
@@ -170,6 +158,7 @@ private:
 			//Send dataset away
 			//Vertex source = dataCage.hostedVertices.at(0);
 			//std::vector<Edge> source_sink = dataCage.getOutEdges(source);
+// 			std::cout << "SendBuffer " << this->outputBuffer.getSize() << std::endl;
 			auto sendFuture = this->outputBuffer.pop();
 			auto  message = sendFuture.get();
 			//std::cout << "Message sent.("<< &message[0] <<")" << std::endl;
@@ -301,13 +290,15 @@ private:
 				std::vector<KeepAlive> kam { ka };
 				for(typename Cage::Edge& e : metaCage.getOutEdges(vertex)) {
 					//std::cout << "Send KeepAlive {" << ka.edgeWeight << "} to " << e.target.id << std::endl;
+					metaCage.send( e, kam, sendEvent);
+					/*
 					Util::terminateAble(
 						[&](){
 							metaCage.send( e, kam, sendEvent);
 						},
 						running
 					);
-
+					*/
 				}
 			}
 
