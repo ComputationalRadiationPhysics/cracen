@@ -1,6 +1,6 @@
 #include "../Cracen/Cracen.hpp"
 
-#include <mpi.h>
+#include <boost/mpi.hpp>
 #include <array>
 #include <vector>
 #include <cstdint>
@@ -97,15 +97,14 @@ public:
 
 int main(int argc, char* argv[]) {
 
-	MPI_Init(NULL, NULL);
+	boost::mpi::environment env;
+	boost::mpi::communicator world;
 
     // Get the number of processes
-    int worldSize;
-    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+    int worldSize = world.size();
 
     // Get the rank of the process
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int rank = world.rank();
 
 	int stageSize = worldSize / 3;
 	int overhang = worldSize - stageSize * 3;
@@ -135,6 +134,6 @@ int main(int argc, char* argv[]) {
 	} catch(std::exception e) {
 		std::cout << e.what() << std::endl;
 	}
-	MPI_Finalize();
+
 	return 0;
 };
