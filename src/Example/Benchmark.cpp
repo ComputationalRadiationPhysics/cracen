@@ -139,18 +139,26 @@ int main(int argc, char* argv[]) {
 	});
 
 	CageFactory cf(worldSize, rank);
-	try {
+
 	if(rank < stageSize + overhang ) {
 		auto cracen = Cracen::make_cracen(BandwidthSource(), cf, Cracen::BroadCastPolicy());
+		std::thread([&](){
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			cracen->release();
+		});
 	} else if(rank < stageSize * 2 + overhang) {
 		auto cracen = Cracen::make_cracen(BandwidthIntermediate(), cf, Cracen::BroadCastPolicy());
+		std::thread([&](){
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			cracen->release();
+		});
 	} else {
 		auto cracen = Cracen::make_cracen(BandwidthSink(), cf, Cracen::BroadCastPolicy());
-
+		std::thread([&](){
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			cracen->release();
+		});
 	};
-	} catch(std::exception e) {
-		std::cout << e.what() << std::endl;
-	}
 
 	return 0;
 };
