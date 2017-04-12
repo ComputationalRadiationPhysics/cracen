@@ -1,9 +1,29 @@
+/**
+ *
+ * @file
+ *
+ * @brief This file contains all SendPolicies, that come with the cracen library.
+ *
+ */
+
+
 #pragma once
 
 #include <limits>
 
 namespace Cracen {
 
+/**
+ *
+ * @class Cracen::NoSend
+ *
+ * @brief The NoSend send policy.
+ *
+ * This policy is used for sinks, since they dont send any data an therefore dont need a send policy.
+ * It is important to use this policy in these cases, because the sendPolicy may block on creation, if
+ * there are no hosted verticies.
+ *
+ */
 struct NoSend {
 public:
 
@@ -18,6 +38,15 @@ public:
 	int receiveKeepAlive(typename Cracen::Cage::Edge e, typename Cracen::KeepAlive ka) { return 0; };
 };
 
+/**
+ *
+ * @class Cracen::RoundRobinPolicy
+ *
+ * @brief The RoundRobin send policy.
+ *
+ * This is a simple send policy, that implements the round robin algorith.
+ *
+ */
 struct RoundRobinPolicy {
 	int vertexCounter;
 	int edgeCounter;
@@ -45,6 +74,19 @@ public:
 
 };
 
+/**
+ *
+ * @class Cracen::MinimumWorkloadPolicy
+ *
+ * @brief The minimum workload send policy.
+ *
+ * This policy takes incomeing keep alive messages into account and selects the edge, where the corresponding
+ * cracen has the least amount of items in its working queue. Since this policy does send less and less
+ * packages to "dead" nodes, it also provides a level of fault tolerance. In cases where it is not acceptable
+ * to loose any package, the user has keep track of sending and receiving packages. For these purposes,
+ * the additional hooks can be used.
+ *
+ */
 struct MinimumWorkloadPolicy {
 	std::map<unsigned int, unsigned int> edgeWeights; // Map from edgeId to edgeWeight
 
@@ -79,6 +121,15 @@ public:
 	}
 };
 
+/**
+ *
+ * @class Cracen::BroadCastPolicy
+ *
+ * @brief The BroadCast send policy.
+ *
+ * This is a simple send policy, that implements a broadcast of every package.
+ *
+ */
 struct BroadCastPolicy {
 
 	template <class Cracen>
