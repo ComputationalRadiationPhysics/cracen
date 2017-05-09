@@ -62,18 +62,18 @@ message(STATUS "SRCFILES:" ${SRCFILES})
 #target_link_libraries(Cracen ${LIBS})
 #set(LIBS "Cracen" ${LIBS})
 
-add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSource.cpp")
+add_executable(CracenSource "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSource.cpp;${graybat_GENERATED_FILES}")
 target_link_libraries(CracenSource ${LIBS})
 
-add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSink.cpp")
+add_executable(CracenSink "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/CracenSink.cpp;${graybat_GENERATED_FILES}")
 target_link_libraries(CracenSink ${LIBS})
 
-add_executable(Benchmark "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/Benchmark.cpp")
+add_executable(Benchmark "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/Benchmark.cpp;${graybat_GENERATED_FILES}")
 target_link_libraries(Benchmark ${LIBS})
 
 # Test cases
 file(GLOB TESTS Tests/*.cpp)
-add_executable(unittest "${SRCFILES};${REMOVE_TESTS}")
+add_executable(unittest "${SRCFILES};${REMOVE_TESTS};${graybat_GENERATED_FILES}")
 target_link_libraries(unittest ${LIBS})
 add_test(ALL unittest)
 

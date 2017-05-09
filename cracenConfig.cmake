@@ -21,6 +21,7 @@ set(cracen_LIBARIES ${cracen_LIBARIES} ${Boost_LIBRARIES})
 ################################################################################
 # GRAYBAT
 ################################################################################
+
 find_package(graybat REQUIRED CONFIG)
 set(cracen_INCLUDE_DIRS ${cracen_INCLUDE_DIRS} ${graybat_INCLUDE_DIRS})
 set(cracen_LIBARIES ${cracen_LIBARIES} ${graybat_LIBRARIES})

@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include <cstdint>
+#include <atomic>
 #include <chrono>
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
@@ -77,7 +78,7 @@ public:
 	CP::Config commPoly(std::string contextName) {
 		const std::string signalingIp = "127.0.0.1";
 		const std::string localIp = "127.0.0.1";
-		const std::string masterUri = "tcp://"+signalingIp+":"+std::to_string(5000);
+		const std::string masterUri = "localhost:"+std::to_string(5000);
 		const std::string peerUri = "tcp://"+localIp+":"+std::to_string(5002);
 		//std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = worldSize;
@@ -112,7 +113,7 @@ public:
 };
 
 int main(int argc, char* argv[]) {
-
+	std::atomic<bool> done(false);
 	boost::mpi::environment env;
 	boost::mpi::communicator world;
 
@@ -129,7 +130,7 @@ int main(int argc, char* argv[]) {
 
 	std::thread printer([&]() {
 		std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
-		while(true) {
+		while(!done) {
 			float rate = actions * chunkSize / std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - begin).count();
 			std::cout << "Datarate = " << rate / mega << "MiB/s" << std::endl;
 			actions = 0;
@@ -142,23 +143,22 @@ int main(int argc, char* argv[]) {
 
 	if(rank < stageSize + overhang ) {
 		auto cracen = Cracen::make_cracen(BandwidthSource(), cf, Cracen::BroadCastPolicy());
-		std::thread([&](){
-			std::this_thread::sleep_for(std::chrono::seconds(10));
-			cracen->release();
-		});
+		std::this_thread::sleep_for(std::chrono::seconds(10));
+		cracen->release();
+		done = true;
 	} else if(rank < stageSize * 2 + overhang) {
 		auto cracen = Cracen::make_cracen(BandwidthIntermediate(), cf, Cracen::BroadCastPolicy());
-		std::thread([&](){
-			std::this_thread::sleep_for(std::chrono::seconds(10));
-			cracen->release();
-		});
+		std::this_thread::sleep_for(std::chrono::seconds(12));
+		cracen->release();
+		done = true;
 	} else {
 		auto cracen = Cracen::make_cracen(BandwidthSink(), cf, Cracen::BroadCastPolicy());
-		std::thread([&](){
-			std::this_thread::sleep_for(std::chrono::seconds(10));
-			cracen->release();
-		});
+		std::this_thread::sleep_for(std::chrono::seconds(15));
+		cracen->release();
+		done = true;
 	};
+
+	printer.join();
 
 	return 0;
 };

@@ -124,13 +124,15 @@ class Cracen
 	using KernelInfo = Meta::FunctionInfo<KernelFunktor>;
 	static_assert(std::tuple_size<typename KernelInfo::ParamList>::value <= 1, "Kernels for cracen can have at most 1 Argument.");
 
-	//TODO: make buffer sizes configurable
-	const int inputBufferSize = 100;
-	const int outputBufferSize = 100;
-	// Interval in which cracen is checking if it has to terminate in milliseconds
-	// Don't make this interval too short, since it can cause little overhead and a second is acceptable for termination
-	//TODO: make polling interval configurable
-	const int pollingInterval = 100;
+	//TODO: Add doxygen
+	struct Config {
+		const int inputBufferSize;
+		const int outputBufferSize;
+		// Interval in which cracen is checking if it has to terminate in milliseconds
+		// Don't make this interval too short, since it can cause little overhead and a second is acceptable for termination
+		const int pollingInterval;
+		std::chrono::milliseconds terminationInterval;
+	} config;
 
 public: 	// Get in- and output from Functor
 
@@ -212,6 +214,16 @@ private:
 	KernelFunktor kf;
 	Outgoing<Output> outgoingFunctor;
 
+	template <class T>
+	bool tryWait(std::future<T> future) {
+		while(
+			*running &&
+			future.wait_for(config.terminationInterval) != std::future_status::ready
+		) {
+		}
+		return *running;
+	}
+
 
 	template <
 		class ReceiveType = Input,
@@ -232,15 +244,19 @@ private:
 		while(*running) {
 // 			std::cout << "Receive " << this->inputBuffer.getSize() << std::endl;
 			ReceiveType data;
-			dataCage.recv(data);
-			//std::cout << "Message received." << std::endl;
-			this->inputBuffer.push(
-				std::async(
-					IncomingPolicy,
-					incomingFunctor,
-					data
-				)
-			);
+			if(tryWait( dataCage.asyncRecv(data) ) ) {
+				//std::cout << "Data Received" << std::endl;
+				//std::cout << "Message received." << std::endl;
+				this->inputBuffer.push(
+					std::async(
+						IncomingPolicy,
+						incomingFunctor,
+						data
+					)
+				);
+			} else {
+				std::cout << "Timeout" << std::endl;
+			}
 		}
 	}
 
@@ -269,11 +285,12 @@ private:
 			//Vertex source = dataCage.hostedVertices.at(0);
 			//std::vector<Edge> source_sink = dataCage.getOutEdges(source);
 // 			std::cout << "SendBuffer " << this->outputBuffer.getSize() << std::endl;
-			auto sendFuture = this->outputBuffer.pop();
-			auto  message = sendFuture.get();
-			//std::cout << "Message sent.("<< &message[0] <<")" << std::endl;
-			sendPolicy.template operator()<Self>(dataCage, std::move(message));
-
+			std::future<Output> sendFuture;
+			if(this->outputBuffer.pop(config.terminationInterval, sendFuture)) {
+				auto  message = sendFuture.get();
+				//std::cout << "Message sent.("<< &message[0] <<")" << std::endl;
+				sendPolicy.template operator()<Self>(dataCage, std::move(message));
+			}
 		}
 	}
 
@@ -299,13 +316,16 @@ private:
 	>
 	void run() {
 		while(*running) {
-			this->outputBuffer.push(
-				std::async(
-					OutgoingPolicy,
-					outgoingFunctor,
-					kf(this->inputBuffer.pop().get())
-				)
-			);
+			std::future<Input> data;
+				if(this->inputBuffer.pop(config.terminationInterval, data)) {
+					this->outputBuffer.push(
+					std::async(
+						OutgoingPolicy,
+						outgoingFunctor,
+						kf(data.get())
+					)
+				);
+			}
 		}
 	}
 
@@ -319,14 +339,18 @@ private:
 		>::type * = nullptr
 	>
 	void run() {
+		auto data = kf();
 		while(*running) {
-			this->outputBuffer.push(
+			if(outputBuffer.push(
+				config.terminationInterval,
 				std::async(
 					OutgoingPolicy,
 					outgoingFunctor,
-					kf()
+					data
 				)
-			);
+			)) {
+				data = kf();
+			};
 		}
 	}
 
@@ -341,7 +365,10 @@ private:
 	>
 	void run() {
 		while(*running) {
-			kf(this->inputBuffer.pop().get());
+			std::future<Input> data;
+				if(this->inputBuffer.pop(config.terminationInterval, data)) {
+				kf(data.get());
+			};
 		}
 	}
 
@@ -364,7 +391,6 @@ private:
 		for(const auto& vertex : metaCage.getHostedVertices()) {
 			for(const auto& edge : metaCage.getInEdges(vertex)) {
 				keepAliveMessages.push_back(KeepAliveMessage(edge, std::vector<KeepAlive>(1), {}));
-				//TODO: Wrap in std::async to terminate on !running
 				metaCage.recv(
 					std::get<0>(keepAliveMessages.back()),
 					std::get<1>(keepAliveMessages.back()),
@@ -384,12 +410,10 @@ private:
 					sendPolicy.template optionalCall(&SendPolicy::template receiveKeepAlive<Self>, edge, ka);
 
 					//edgeWeights[edge.source.id] = std::get<1>(kam).at(0).edgeWeight;
-					//TODO: Call send policy with edge and weight
 					std::get<1>(kam).clear();
 					std::get<1>(kam).push_back(KeepAlive());
 					std::get<2>(kam).clear();
 					// Try to receive next Message
-					//TODO: Wrap in std::async to terminate on !running
 					metaCage.recv(
 						std::get<0>(kam),
 						std::get<1>(kam),
@@ -406,16 +430,7 @@ private:
 				std::vector<KeepAlive> kam { ka };
 				for(typename Cage::Edge& e : metaCage.getOutEdges(vertex)) {
 					//std::cout << "Send KeepAlive {" << ka.edgeWeight << "} to " << e.target.id << std::endl;
-					// TODO: fix termination
 					metaCage.send( e, kam, sendEvent);
-					/*
-					Util::terminateAble(
-						[&](){
-							metaCage.send( e, kam, sendEvent);
-						},
-						running
-					);
-					*/
 				}
 			}
 
@@ -436,19 +451,32 @@ public:
 	 *     block the execution until the cages are distributed and the communication context is
 	 *     established for all participants.
 	 *
-	 * @param KernelFunctor
+	 * @param kf
 	 *     The executed functor object. See the corresponding template parameter for additional info.
 	 *
-	 * @param CageFactory
+	 * @param cf
 	 *     The cage factory object. See the corresponding template parameter for additional info.
 	 *
-	 * @param SendPolicy
+	 * @param sendPolicy
 	 *     The send policy object. See the corresponding template parameter for additional info.
 	 *
 	 */
-	Cracen(KernelFunktor kf, CageFactory cf, SendPolicy sendPolicy = NoSend()) :
-		inputBuffer(inputBufferSize, 1),
-		outputBuffer(outputBufferSize, 1),
+	Cracen(
+		KernelFunktor kf,
+		CageFactory cf,
+		SendPolicy sendPolicy = NoSend(),
+		const Config& config = Config(
+			{
+				100,
+				100,
+				100,
+				std::chrono::milliseconds(1000)
+			}
+		)
+	) :
+		config(config),
+		inputBuffer(config.inputBufferSize, 1),
+		outputBuffer(config.inputBufferSize, 1),
 		dataCage(
 			cf.commPoly("DataContext"),
 			cf.graphPoly()

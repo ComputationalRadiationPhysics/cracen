@@ -5,7 +5,5 @@
 
 BOOST_AUTO_TEST_CASE( SourceSinkTest )
 {
-
-
 	BOOST_CHECK( false );
 }

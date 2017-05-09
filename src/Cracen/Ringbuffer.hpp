@@ -16,7 +16,7 @@ public:
 	Ringbuffer(const unsigned int bSize, int producer, type defaultItem) {}
 	Ringbuffer(const unsigned int bSize, int producer) {}
 	int push(type input) { queue.push(input); return 0; };
-	//int push(Type &&input) noexcept;
+	//int push(Type &&input);
 	type pop() { while(queue.size() == 0); type result = queue.front(); queue.pop(); return result;};
 	template <class Funktor>
 	int popTry(Funktor popFunction) { while(queue.size() == 0); type result = queue.front(); popFunction(result); queue.pop(); return 0;};
@@ -62,18 +62,24 @@ public:
 	Ringbuffer(const unsigned int bSize, int producer);
 	Ringbuffer(const Ringbuffer& rb) {}
 	Ringbuffer& operator=(const Ringbuffer& rb) { return *this; }
-	~Ringbuffer() noexcept;
-	int push(Type input) noexcept;
-	//int push(Type &&input) noexcept;
-	Type pop() noexcept;
-	template <class Funktor>
-	int popTry(Funktor popFunction) noexcept;
+	~Ringbuffer();
+	bool push(Type input);
+	bool push(std::chrono::nanoseconds timeout, Type input);
 
-	int getSize() const noexcept;
-	bool isEmpty() const noexcept;
-	bool isFinished() const noexcept;
-	void producerQuit() noexcept;
+	//int push(Type &&input);
+	Type pop();
+	bool pop(std::chrono::nanoseconds timeout, Type& data);
+	bool popTry(Type& result);
 
+	int getSize() const;
+	bool isEmpty() const;
+	bool isFinished() const;
+	void producerQuit();
+
+private:
+	static constexpr long int constexpr_pow(long int base, long int power) {
+		return power==0 ? 1 : base * pow(base, power-1);
+	}
 };
 
 template <class Type>
@@ -138,7 +144,7 @@ Ringbuffer<Type>::Ringbuffer(const unsigned int bSize,
 
 
 template <class Type>
-Ringbuffer<Type>::~Ringbuffer() noexcept
+Ringbuffer<Type>::~Ringbuffer()
 {
     sem_destroy(mtx);
     sem_destroy(usage);
@@ -157,7 +163,7 @@ Ringbuffer<Type>::~Ringbuffer() noexcept
  * \param inputOnHost Needs to be on host memory.
  */
 template <class Type>
-int Ringbuffer<Type>::push(Type input) noexcept
+bool Ringbuffer<Type>::push(Type input)
 {
 	sem_wait(space);   // is there space in buffer?
     sem_wait(mtx);     // lock buffer
@@ -168,9 +174,29 @@ int Ringbuffer<Type>::push(Type input) noexcept
     sem_post(mtx);     // unlock buffer
     sem_post(usage);   // tell them that there is something in buffer
 
-	return 0;
+	return true;
 }
 
+template <class Type>
+bool Ringbuffer<Type>::push(std::chrono::nanoseconds timeout, Type input)
+{
+	timespec to;
+	to.tv_nsec = timeout.count() % constexpr_pow(10,9);
+	to.tv_sec =  timeout.count() / constexpr_pow(10,9);
+
+	if(sem_timedwait(space, &to) == 0) {   // is there space in buffer?
+    sem_wait(mtx);     // lock buffer
+
+    std::swap(buffer.at(head), input);
+    head = (head+1) % buffer.size();     // move head
+
+    sem_post(mtx);     // unlock buffer
+    sem_post(usage);   // tell them that there is something in buffer
+	} else {
+		return false;
+	}
+	return true;
+}
 /**
  * Write data to the buffer from the host.
  *
@@ -181,7 +207,7 @@ int Ringbuffer<Type>::push(Type input) noexcept
  */
 /*
 template <class Type>
-int Ringbuffer<Type>::push(Type &&input) noexcept
+int Ringbuffer<Type>::push(Type &&input)
 {
 	sem_wait(space);   // is there space in buffer?
     //sem_wait(mtx);     // lock buffer
@@ -205,7 +231,7 @@ int Ringbuffer<Type>::push(Type &&input) noexcept
  *        written.
  */
 template <class Type>
-Type Ringbuffer<Type>::pop() noexcept
+Type Ringbuffer<Type>::pop()
 {
 	Type result;
 	sem_wait(usage);   // is there some data in buffer?
@@ -221,32 +247,51 @@ Type Ringbuffer<Type>::pop() noexcept
 }
 
 template <class Type>
-template <class Funktor>
-int Ringbuffer<Type>::popTry(Funktor popFunction) noexcept
+bool Ringbuffer<Type>::pop(std::chrono::nanoseconds timeout, Type& result)
 {
-	const int err = sem_trywait(usage);
-	if(err == 0) {
 
-		Type result;
+	timespec to;
+	to.tv_nsec = timeout.count() % constexpr_pow(10,9);
+	to.tv_sec =  timeout.count() / constexpr_pow(10,9);
+	if(sem_timedwait(usage, &to) == 0) {   // is there some data in buffer?
 		sem_wait(mtx);     // lock buffer
 
-		result.swap(buffer.at(tail));
+		std::swap(result, buffer.at(tail));
 		tail = (tail+1) % buffer.size();     // move tail
 
 		sem_post(mtx);     // unlock buffer
 		sem_post(space);   // tell them that there is space in buffer
 
-		popFunction(result);
-		return 0;
+		return true;
+	}
+
+	return false;
+}
+
+template <class Type>
+bool Ringbuffer<Type>::popTry(Type& result)
+{
+	const int err = sem_trywait(usage);
+	if(err == 0) {
+
+		sem_wait(mtx);     // lock buffer
+
+		std::swap(result, buffer.at(tail));
+		tail = (tail+1) % buffer.size();     // move tail
+
+		sem_post(mtx);     // unlock buffer
+		sem_post(space);   // tell them that there is space in buffer
+
+		return true;
 	} else {
-		return 1;
+		return false;
 	}
 }
 /** Get amount of items stored in buffer.
  * \return Number of items in buffer
  */
 template <class Type>
-int Ringbuffer<Type>::getSize() const noexcept {
+int Ringbuffer<Type>::getSize() const  {
 	int full_value;
 	sem_getvalue(const_cast<sem_t*>(usage), &full_value);
 	return full_value;
@@ -256,7 +301,7 @@ int Ringbuffer<Type>::getSize() const noexcept {
  * \return True if no elements are in buffer. False otherwise.
  */
 template <class Type>
-bool Ringbuffer<Type>::isEmpty() const noexcept {
+bool Ringbuffer<Type>::isEmpty() const  {
 	int full_value, empty_value;
 	sem_getvalue(const_cast<sem_t*>(usage), &full_value);
 	sem_getvalue(const_cast<sem_t*>(space), &empty_value);
@@ -269,7 +314,7 @@ bool Ringbuffer<Type>::isEmpty() const noexcept {
  * announced that they stopped adding elements. False otherwise.
  */
 template <class Type>
-bool Ringbuffer<Type>::isFinished() const noexcept {
+bool Ringbuffer<Type>::isFinished() const  {
 	return (producer==0) && isEmpty();
 }
 
@@ -278,7 +323,7 @@ bool Ringbuffer<Type>::isFinished() const noexcept {
  *  To be called only once per producer. This is not checked.
  */
 template <class Type>
-void Ringbuffer<Type>::producerQuit() noexcept {
+void Ringbuffer<Type>::producerQuit()  {
 	__sync_sub_and_fetch(&producer,1);
 }
 #endif
