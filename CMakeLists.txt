@@ -71,6 +71,9 @@ target_link_libraries(CracenSink ${LIBS})
 add_executable(Benchmark "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/Benchmark.cpp;${graybat_GENERATED_FILES}")
 target_link_libraries(Benchmark ${LIBS})
 
+add_executable(Bench_Res "${SRCFILES};${CMAKE_CURRENT_SOURCE_DIR}/src/Example/Bench_Res.cpp;${graybat_GENERATED_FILES}")
+target_link_libraries(Bench_Res ${LIBS})
+
 # Test cases
 file(GLOB TESTS Tests/*.cpp)
 add_executable(unittest "${SRCFILES};${REMOVE_TESTS};${graybat_GENERATED_FILES}")
