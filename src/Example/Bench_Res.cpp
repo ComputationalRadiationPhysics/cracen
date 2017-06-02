@@ -13,8 +13,9 @@
 #include "Cracen/Util/Whoami.hpp"
 constexpr unsigned int kilo = 1024;
 constexpr unsigned int mega = kilo * kilo;
+constexpr unsigned int chunkSize = 10*mega;
 using Chunk = std::vector<char>;
-Chunk DefaultChunk(mega);
+Chunk DefaultChunk(chunkSize);
 
 unsigned int actions;
 
@@ -22,7 +23,7 @@ struct BandwidthSource {
 	Chunk chunk;
 
 	BandwidthSource() :
-		chunk(mega)
+		chunk(chunkSize)
 	{}
 
 	Chunk operator()() {
@@ -33,10 +34,8 @@ struct BandwidthSource {
 };
 
 struct BandwidthIntermediate {
-	Chunk chunk;
 
-	BandwidthIntermediate() :
-		chunk(mega)
+	BandwidthIntermediate()
 	{}
 
 	Chunk operator()(Chunk chunk) {
@@ -47,14 +46,11 @@ struct BandwidthIntermediate {
 };
 
 struct BandwidthSink {
-	BandwidthSink() :
-		chunk(mega)
+	BandwidthSink()
 	{
 	}
 
-	Chunk chunk;
-
-	void operator()(Chunk) {
+	void operator()(Chunk chunk) {
  	//	std::cout << "Receive" << std::endl;
 		actions++;
 	}
@@ -142,7 +138,7 @@ int main(int argc, char* argv[]) {
     // Get the rank of the process
     int rank = world.rank();
 
-	constexpr size_t chunkSize = sizeof(Chunk::value_type) * mega;
+	constexpr size_t byteSize = sizeof(Chunk::value_type) * chunkSize;
 
 	std::thread printer;
 
@@ -150,7 +146,7 @@ int main(int argc, char* argv[]) {
 		printer = std::thread([&]() {
 			std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
 			while(!done) {
-				float rate = actions * chunkSize / std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - begin).count();
+				float rate = actions * byteSize / std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - begin).count();
 				std::cout << rank << " " << "Datarate = " << rate / mega << "MiB/s" << std::endl;
 				actions = 0;
 				begin = std::chrono::high_resolution_clock::now();
