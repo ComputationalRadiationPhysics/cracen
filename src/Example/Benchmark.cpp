@@ -149,16 +149,25 @@ int main(int argc, char* argv[]) {
 
 	constexpr size_t chunkSize = sizeof(Chunk::value_type) * mega;
 
-	std::thread printer([&]() {
-		std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
-		while(!done) {
-			float rate = actions * chunkSize / std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - begin).count();
-			std::cout << "Datarate = " << rate / mega << "MiB/s" << std::endl;
-			actions = 0;
-			begin = std::chrono::high_resolution_clock::now();
-			std::this_thread::sleep_for(std::chrono::seconds(2));
-		}
-	});
+	unsigned int group = [&](){
+			if(rank < stageSize + (worldSize - 3*stageSize)) return 0;
+		else if(rank < 2*stageSize + (worldSize - 3*stageSize)) return 1;
+		else return 2;
+	}();
+
+	std::thread printer;
+	if(group == 2) {
+		printer = std::thread([&]() {
+			std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
+			while(!done) {
+				float rate = actions * chunkSize / std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - begin).count();
+				std::cout << "Rank " << rank << ", Datarate = " << rate / mega << "MiB/s" << std::endl;
+				actions = 0;
+				begin = std::chrono::high_resolution_clock::now();
+				std::this_thread::sleep_for(std::chrono::seconds(2));
+			}
+		});
+	}
 
 	CageFactory::Endpoint signaling = std::make_pair(
 		pt.get<std::string>("signaling.ip"),
@@ -187,7 +196,8 @@ int main(int argc, char* argv[]) {
 		done = true;
 	};
 
-	printer.join();
+	if(group == 2)
+		printer.join();
 
 	return 0;
 };
