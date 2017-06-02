@@ -60,12 +60,13 @@ public:
 	template <class Cracen>
 	void operator()(typename Cracen::Cage& cage, const typename Cracen::Output& out) {
 		//TODO: Wrap in std::async to terminate on !running
+
 		auto& vertices = cage.getHostedVertices();
-		while(edgeCounter > vertices.at(vertexCounter).getOutEdges()) {
+		while(static_cast<unsigned int>(edgeCounter) >= cage.getOutEdges(vertices.at(vertexCounter)).size()) {
 			vertexCounter = (vertexCounter + 1) % vertices.size();
 			edgeCounter = 0;
 		}
-		cage.send(vertices.at(vertexCounter).getOutEdges().at(edgeCounter), out);
+		cage.send(cage.getOutEdges(vertices.at(vertexCounter)).at(edgeCounter), out);
 		edgeCounter++;
 	}
 

@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
 		cracen->release();
 		done = true;
 	} else {
-		auto cracen = Cracen::make_cracen(BandwidthSink(), cf, Cracen::RoundRobinPolicy());
+		auto cracen = Cracen::make_cracen(BandwidthSink(), cf, Cracen::NoSend());
 		std::this_thread::sleep_for(std::chrono::seconds(15));
 		cracen->release();
 		done = true;
