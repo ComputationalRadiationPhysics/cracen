@@ -13,6 +13,19 @@
 
 namespace Cracen {
 
+namespace detail {
+
+	template <class Cage, class Edge, class Data>
+	void safeSend(Cage& cage, Edge& edge, Data& data) {
+		try {
+			cage.send(edge, data);
+		} catch(std::exception e) {
+			std::cerr << "Message could not be sended, because an error occured:" << std::endl;
+			std::cerr << e.what() << std::endl;
+		}
+	}
+};
+
 /**
  *
  * @class Cracen::NoSend
@@ -66,7 +79,11 @@ public:
 			vertexCounter = (vertexCounter + 1) % vertices.size();
 			edgeCounter = 0;
 		}
-		cage.send(cage.getOutEdges(vertices.at(vertexCounter)).at(edgeCounter), out);
+		detail::safeSend(
+			cage,
+			cage.getOutEdges(vertices.at(vertexCounter)).at(edgeCounter),
+			out
+		);
 		edgeCounter++;
 	}
 
@@ -110,8 +127,11 @@ public:
 			}
 		}
 
-		//TODO: Wrap in std::async to terminate on !running
-		cage.send(minEdge, out);
+		detail::safeSend(
+			cage,
+			minEdge,
+			out
+		);
 		edgeWeights[minEdge.id]++;
 	}
 
@@ -139,7 +159,11 @@ struct BroadCastPolicy {
 		for(typename Cracen::Cage::Vertex& v : cage.getHostedVertices()) {
 			for(typename Cracen::Cage::Edge e : cage.getOutEdges(v)) {
 				//TODO: Wrap in std::async to terminate on !running
-				cage.send(e, out);
+				detail::safeSend(
+					cage,
+					e,
+					out
+				);
 			}
 		}
 	}

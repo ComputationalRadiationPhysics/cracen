@@ -27,6 +27,7 @@
 #include "Cracen/Meta/FunctionInfo.hpp"
 #include "Cracen/Meta/ConditionalInvoke.hpp"
 //#include "Cracen/Util/TerminatableCall.hpp"
+#include "Cracen/Util/Thread.hpp"
 
 #include "BufferTraits.hpp"
 #include "SendPolicies.hpp"
@@ -192,27 +193,28 @@ private:
 	using Vertex = typename Cage::Vertex;
 	using Edge = typename Cage::Edge;
 	using Event = typename Cage::Event;
+	using Thread = Util::Thread<Util::ThreadDeletionPolicy::join>;
 
 	// Ringbuffers for in and output
 	OptionalAttribute<Ringbuffer<std::future<Input>>, !std::is_same<Input, void>::value> inputBuffer;
 	OptionalAttribute<Ringbuffer<std::future<Output>>, !std::is_same<Output, void>::value> outputBuffer;
 
-	// cages for dataflow and meta-dataflow
-	Cage dataCage; // cage for sending data
-	Cage metaCage; // back channel for keep alive messages and maybe more in the future
-
 	// SendPolicy instance
 	OptionalAttribute<SendPolicy, !std::is_same<Output, void>::value> sendPolicy;
-
-	std::shared_ptr<std::atomic<bool>> running; //flag is set to false, if the cracen is released.
-	std::thread receiveThread;
-	std::thread sendThread;
-	std::thread kernelThread;
-	std::thread keepAliveThread;
-
 	Incoming<Input> incomingFunctor;
 	KernelFunktor kf;
 	Outgoing<Output> outgoingFunctor;
+
+
+	std::shared_ptr<std::atomic<bool>> running; //flag is set to false, if the cracen is released.
+	Thread receiveThread;
+	Thread sendThread;
+	Thread kernelThread;
+	Thread keepAliveThread;
+
+		// cages for dataflow and meta-dataflow
+	Cage dataCage; // cage for sending data
+	Cage metaCage; // back channel for keep alive messages and maybe more in the future
 
 	template <class T>
 	bool tryWait(std::future<T> future) {
@@ -477,6 +479,11 @@ public:
 		config(config),
 		inputBuffer(config.inputBufferSize, 1),
 		outputBuffer(config.inputBufferSize, 1),
+		sendPolicy( sendPolicy ),
+		kf(kf),
+		running(
+			new std::atomic<bool>(true)
+		),
 		dataCage(
 			cf.commPoly("DataContext"),
 			cf.graphPoly()
@@ -484,12 +491,7 @@ public:
 		metaCage(
 			cf.commPoly("MetaContext"),
 			mirrorEdges(cf.graphPoly())
-		),
-		sendPolicy( sendPolicy ),
-		running(
-			new std::atomic<bool>(true)
-		),
-		kf(kf)
+		)
 	{
 		// distribute data cage and meta cage. These calls will block the execution until all
 		// participants joind the communication
@@ -499,26 +501,27 @@ public:
 		// Spawen the threads for sending, receiving and computing. This must be done after the
 		// distribution of the cages, because some of the threads require to have a valid cage present
 		// at all times.
-		receiveThread = std::thread(
+
+		receiveThread = Thread(
 			[=](){
 				this->receive<>();
 			}
 		);
-		sendThread = std::thread(
+		sendThread = Thread(
 			[=](){
 				this->send<>();
 			}
 		);
-		kernelThread = std::thread(
+		kernelThread = Thread(
 			[=](){
 				this->run<>();
 			}
 		);
-		keepAliveThread = std::thread(
-			[=](){
-				this->keepAlive();
-			}
-		);
+// 		keepAliveThread = Thread(
+// 			[=](){
+// 				this->keepAlive();
+// 			}
+// 		);
 	}
 
 	/**
@@ -530,12 +533,7 @@ public:
 	 *     Once the buffer are emptied, the threads will terminate and the destructor return.
 	 */
 
-	~Cracen() {
-		receiveThread.join();
-		sendThread.join();
-		kernelThread.join();
-		keepAliveThread.join();
-	}
+	~Cracen() {}
 
 	// Copy and move constructor is deleted, because cracen holds multiple threads, which have a pointer to
 	// the original cracen. There is no effective way to copy or move the cracen and keep all threads
@@ -570,7 +568,6 @@ public:
 	KernelFunktor& getKernel() {
 		return kf;
 	}
-
 };
 
 /**

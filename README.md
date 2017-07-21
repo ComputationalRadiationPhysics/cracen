@@ -3,14 +3,13 @@
 
 Communication pipeline for Reconfigurable Accelerated Computing in scientific ENvironments
 
-A set of applications to fit modelfunctions on digital signals. The whole application is splitted in programs for data sources, compute nodes and data sinks.
-Data sources can either be dump files from previous experiments or live measurement data. The data sinks write the fit data back into files in different files formats. 
-At the moment dump files in json format are supported, root files will be added soon. The compute node is a fixed application, however the fit function can be 
-customized. The applications can be split over a whole network in order to use dedicated hardware.
+Cracen is a framework for distributed dataflow programming. It is primarily made for applications with
+high bandwith datastreams with independent chunks.
 
-Fits model function to a set of waveforms.
+## Download and Install
 
-## Download
+
+Cracen is a header only library. It can be downloaded from:
 
 ```bash
   git clone https://github.com/ComputationalRadiationPhysics/cracen.git
@@ -18,54 +17,22 @@ Fits model function to a set of waveforms.
 
 ## Dependencies
 
-- gcc/5.1 or higher
-- Cuda 7.5
-- pthread
-- boost 1.59 or higher
-- gtk3
-- gtk3mm
-- staticTTY 
-  - https://github.com/ComputationalRadiationPhysics/staticTTY
+- gcc/5.3.0 or clang 3.8
+- graybat - https://github.com/ComputationalRadiationPhysics/graybat
 
-Optional:
-- propriatary acqiris library for the scopeReader
-- root 6 for root file output
+Since graybat is a header only library too and does make use of c++14 features and boost::hana, it also
+raises the dependencies for cracen too. If c++14 is not available on the target system, this can be circumvented,
+by using the dev-c++11 branch of graybat. It is not recomended to do so, because the this branch is no longer
+maintained.
 
-## Build
 
-```bash
-  cd DSP/build
-  cmake ..
-  make
-```
-In addition to these executables, the zmq signaling server must be compiled. How this can be done is documented in the ZMQ repository.
+## Build and Test
 
-## Run
+Cracen comes with a suite of examples and tests. The test suite is additionally dependent on boost 1.55.0 or higher.
+The examples can be build by the following commands:
 
-```bash
-  # in DSP
-  ./zmq_signaling
+TODO:
 
-  # in DSP/build
-  # Read values from a file (source)
-  ./FileReader
-  
-  # Read values from acqiris Scope (source)
-  ./ScopeReader
+The test suite can be build and executed this way:
 
-  # Compute fit parameter (compute)
-  ./Fitter
-  
-  # Write to file (json) (sink)
-  ./FileWriter
-  
-  # Write to file (root) (sink) (not yet implemented)
-  ./RootWriter
-```
-At least one source, compute and sink node must be started in parallel to establish a working programchain. Execution of all programs can start, after all
-participating programs have been started. Hotpluging of any program is not implemented at the moment.
-To get a list of all programoptions, each individual executable has an own help page. 
-
-```bash
-   ./<program> --help
-```
+TODO:

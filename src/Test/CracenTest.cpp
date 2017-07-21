@@ -11,10 +11,23 @@
 #include "../graybat/mapping/PeerGroupMapping.hpp"
 #include "../graybat/pattern/Pipeline.hpp"
 #include "Cracen/Util/Whoami.hpp"
+
+enum TestCases {
+	CracenConstructor,
+	CracenDestructor,
+	CracenSourceExecute,
+	CracenSourceSend,
+	CracenIntermediateSend,
+	CracenIntermediateReceive,
+
+	NumberOfTestcases
+};
+
+std::array<bool, static_cast<size_t>(NumberOfTestcases)> tests;
+std::vector<std::string> messages;
 constexpr unsigned int kilo = 1024;
 constexpr unsigned int mega = kilo * kilo;
-using Chunk = std::vector<char>;
-Chunk DefaultChunk(mega);
+using Chunk = std::array<char, mega>;
 
 unsigned int actions;
 
@@ -22,7 +35,7 @@ struct BandwidthSource {
 	Chunk chunk;
 
 	BandwidthSource() :
-		chunk(mega)
+		chunk()
 	{}
 
 	Chunk operator()() {
@@ -36,7 +49,7 @@ struct BandwidthIntermediate {
 	Chunk chunk;
 
 	BandwidthIntermediate() :
-		chunk(mega)
+		chunk()
 	{}
 
 	Chunk operator()(Chunk chunk) {
@@ -48,7 +61,7 @@ struct BandwidthIntermediate {
 
 struct BandwidthSink {
 	BandwidthSink() :
-		chunk(mega)
+		chunk()
 	{}
 
 	Chunk chunk;
@@ -87,11 +100,8 @@ public:
 		const std::string peerUri = "tcp://"+localIp.first+":"+std::to_string(localIp.second);
 		//std::cout << "My URI =" << peerUri << std::endl;
 		const unsigned int contextSize = worldSize;
-		const size_t maxBufferSize = 100 * 1000 * 1000;
-		const int recvTimeout = 1000;
-		const int sendTimeout = 1000;
 
-		return CP::Config({masterUri, peerUri, contextSize, contextName, maxBufferSize, recvTimeout, sendTimeout}); //ZMQ Config
+		return CP::Config({masterUri, peerUri, contextSize, contextName}); //ZMQ Config
 		//return CP::Config({}); //BMPI Config
 	}
 	auto graphPoly() {
@@ -121,7 +131,6 @@ public:
 
 int main(int argc, char* argv[]) {
 
-	try {
 	if(argc < 2) {
 		std::cerr << "No configuration file passed. Usage \"mpirun [...] ./Benchmark path/to/config.ini.\"" << std::endl;
 		return 1;
@@ -168,7 +177,7 @@ int main(int argc, char* argv[]) {
 				std::cout << "Rank " << rank << ", Datarate = " << rate / mega << "MiB/s" << std::endl;
 				actions = 0;
 				begin = std::chrono::high_resolution_clock::now();
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				std::this_thread::sleep_for(std::chrono::seconds(2));
 			}
 		});
 	}
@@ -195,7 +204,7 @@ int main(int argc, char* argv[]) {
 		done = true;
 	} else {
 		auto cracen = Cracen::make_cracen(BandwidthSink(), cf, Cracen::BroadCastPolicy());
-		std::this_thread::sleep_for(std::chrono::seconds(7));
+		std::this_thread::sleep_for(std::chrono::seconds(15));
 		cracen->release();
 		done = true;
 	};
@@ -203,8 +212,16 @@ int main(int argc, char* argv[]) {
 	if(group == 2)
 		printer.join();
 
-	} catch(std::exception e) {
-		std::cerr << e.what() << std::endl;
+
+	bool allPassed = true;
+	for(bool passed : tests) {
+		allPassed &= passed;
 	}
-	return 0;
+	if(allPassed) {
+		std::cout << "All tests passed." << std::endl;
+		return 0;
+	} else {
+		std::cout << "Tests failed." << std::endl;
+		return 1;
+	}
 };
